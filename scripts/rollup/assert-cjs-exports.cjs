@@ -4,7 +4,7 @@
  *
  * @see https://nodejs.org/docs/latest/api/packages.html#packages_determining_module_system
  */
-const exported = require('@basestacks/schema-form');
+const exported = require('@basestacks/react-datagrid');
 const assert = require('assert');
 const fs = require('fs');
 

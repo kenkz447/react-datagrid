@@ -19,6 +19,7 @@
     "not op_mini all"
   ],
   "dependencies": {
+    "@basestacks/react-datagrid": "file:..",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "^5.0.1",

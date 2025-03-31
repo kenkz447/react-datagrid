@@ -1,9 +1,16 @@
 [
-    "SchemaForm",
-    "SchemaFormField",
-    "SchemaFormProvider",
-    "useArrayField",
-    "useField",
-    "useObjectField",
-    "useUncontrolledField"
+    "DataSheetGrid",
+    "DynamicDataSheetGrid",
+    "checkboxColumn",
+    "createAddRowsComponent",
+    "createContextMenuComponent",
+    "createTextColumn",
+    "dateColumn",
+    "floatColumn",
+    "intColumn",
+    "isoDateColumn",
+    "keyColumn",
+    "percentColumn",
+    "renderContextMenuItem",
+    "textColumn"
 ]
