@@ -1,13 +1,13 @@
 {
-    "name": "@basestacks/package-template",
+    "name": "@basestacks/react-datagrid",
     "version": "0.1.0",
     "description": "A template for creating packages with TypeScript, Rollup, and Jest",
     "author": "BaseStacks",
     "keywords": [],
-    "homepage": "https://github.com/BaseStacks/package-template",
+    "homepage": "https://github.com/BaseStacks/react-datagrid",
     "repository": {
         "type": "git",
-        "url": "https://github.com/BaseStacks/package-template"
+        "url": "https://github.com/BaseStacks/react-datagrid"
     },
     "license": "MIT",
     "sideEffects": false,
