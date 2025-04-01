@@ -30,7 +30,6 @@ import {
     parseTextPlainData,
 } from '../utils/copyPasting';
 import {
-    getCell,
     getCellWithId,
     getSelectionWithId,
 } from '../utils/typeCheck';
@@ -204,63 +203,61 @@ export function useDatagrid<TRow extends RowData>({
     }, [activeCell !== null]);
 
     // Extract the coordinates of the cursor from a mouse event
-    const getCursorIndex = useCallback(
-        (
-            event: MouseEvent,
-            force: boolean = false,
-            includeSticky: boolean = false
-        ): Cell | null => {
-            const innerBoundingClientRect = getInnerBoundingClientRect(force);
-            const outerBoundingClientRect =
-                includeSticky && getOuterBoundingClientRect(force);
+    const getCursorIndex = useCallback((
+        event: MouseEvent,
+        force: boolean = false,
+        includeSticky: boolean = false
+    ): Cell | null => {
+        const innerBoundingClientRect = getInnerBoundingClientRect(force);
+        const outerBoundingClientRect =
+            includeSticky && getOuterBoundingClientRect(force);
 
-            if (innerBoundingClientRect && columnRights && columnWidths) {
-                let x = event.clientX - innerBoundingClientRect.left;
-                let y = event.clientY - innerBoundingClientRect.top;
+        if (innerBoundingClientRect && columnRights && columnWidths) {
+            let x = event.clientX - innerBoundingClientRect.left;
+            let y = event.clientY - innerBoundingClientRect.top;
 
-                if (outerBoundingClientRect) {
-                    if (
-                        event.clientY - outerBoundingClientRect.top <=
-                        headerRowHeight
-                    ) {
-                        y = 0;
-                    }
-
-                    if (
-                        event.clientX - outerBoundingClientRect.left <=
-                        columnWidths[0]
-                    ) {
-                        x = 0;
-                    }
-
-                    if (
-                        hasStickyRightColumn &&
-                        outerBoundingClientRect.right - event.clientX <=
-                        columnWidths[columnWidths.length - 1]
-                    ) {
-                        x = columnRights[columnRights.length - 2] + 1;
-                    }
+            if (outerBoundingClientRect) {
+                if (
+                    event.clientY - outerBoundingClientRect.top <=
+                    headerRowHeight
+                ) {
+                    y = 0;
                 }
 
-                return {
-                    col: columnRights.findIndex((right) => x < right) - 1,
-                    row: getRowIndex(y - headerRowHeight),
-                };
+                if (
+                    event.clientX - outerBoundingClientRect.left <=
+                    columnWidths[0]
+                ) {
+                    x = 0;
+                }
+
+                if (
+                    hasStickyRightColumn &&
+                    outerBoundingClientRect.right - event.clientX <=
+                    columnWidths[columnWidths.length - 1]
+                ) {
+                    x = columnRights[columnRights.length - 2] + 1;
+                }
             }
 
-            return null;
-        },
-        [
-            columnRights,
-            columnWidths,
-            data.length,
-            getInnerBoundingClientRect,
-            getOuterBoundingClientRect,
-            headerRowHeight,
-            hasStickyRightColumn,
-            getRowIndex,
-        ]
-    );
+            return {
+                col: columnRights.findIndex((right) => x < right) - 1,
+                row: getRowIndex(y - headerRowHeight),
+            };
+        }
+
+        return null;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        columnRights,
+        columnWidths,
+        getInnerBoundingClientRect,
+        getOuterBoundingClientRect,
+        headerRowHeight,
+        hasStickyRightColumn,
+        getRowIndex,
+        data.length,
+    ]);
 
     const dataRef = useRef(data);
     dataRef.current = data;
@@ -440,9 +437,9 @@ export function useDatagrid<TRow extends RowData>({
         (rowIndex: number, item: TRow) => {
             onChange(
                 [
-                    ...dataRef.current?.slice(0, rowIndex),
+                    ...(dataRef.current?.slice(0, rowIndex) ?? []),
                     item,
-                    ...dataRef.current?.slice(rowIndex + 1),
+                    ...(dataRef.current?.slice(rowIndex + 1) ?? []),
                 ],
                 [
                     {
@@ -552,6 +549,7 @@ export function useDatagrid<TRow extends RowData>({
             ]);
         },
         [
+            disableSmartDelete,
             activeCell,
             columns,
             data,

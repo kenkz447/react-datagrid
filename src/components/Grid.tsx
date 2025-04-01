@@ -5,13 +5,14 @@ import {
     Column,
     ContextMenuItem,
     DataSheetGridProps,
+    RowData,
     Selection,
 } from '../types';
 import cx from 'classnames';
 import { Cell as CellComponent } from './Cell';
 import { useMemoizedIndexCallback } from '../hooks/internal/useMemoizedIndexCallback';
 
-export const Grid = <T extends any>({
+export const Grid = <TRow extends RowData = RowData>({
     data,
     columns,
     outerRef,
@@ -37,8 +38,8 @@ export const Grid = <T extends any>({
     stopEditing,
     onScroll,
 }: {
-    data: T[]
-    columns: Column<T, any, any>[]
+    data: TRow[]
+    columns: Column<TRow, any, any>[]
     outerRef: RefObject<HTMLDivElement>
     innerRef: RefObject<HTMLDivElement>
     columnWidths?: number[]
@@ -46,16 +47,16 @@ export const Grid = <T extends any>({
     displayHeight: number
     headerRowHeight: number
     rowHeight: (index: number) => { height: number }
-    rowKey: DataSheetGridProps<T>['rowKey']
-    rowClassName: DataSheetGridProps<T>['rowClassName']
-    cellClassName: DataSheetGridProps<T>['cellClassName']
+    rowKey: DataSheetGridProps<TRow>['rowKey']
+    rowClassName: DataSheetGridProps<TRow>['rowClassName']
+    cellClassName: DataSheetGridProps<TRow>['cellClassName']
     fullWidth: boolean
     selection: Selection | null
     activeCell: Cell | null
     children: ReactNode
     editing: boolean
     getContextMenuItems: () => ContextMenuItem[]
-    setRowData: (rowIndex: number, item: T) => void
+    setRowData: (rowIndex: number, item: TRow) => void
     deleteRows: (rowMin: number, rowMax?: number) => void
     duplicateRows: (rowMin: number, rowMax?: number) => void
     insertRowAfter: (row: number, count?: number) => void
@@ -76,7 +77,7 @@ export const Grid = <T extends any>({
                     typeof rowKey === 'string' &&
                     row instanceof Object && rowKey in (row as any)
                 ) {
-                    const key = row[rowKey as keyof T];
+                    const key = row[rowKey as keyof TRow];
                     if (typeof key === 'string' || typeof key === 'number') {
                         return key;
                     }

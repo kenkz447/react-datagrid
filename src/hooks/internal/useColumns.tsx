@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { CellProps, Column, SimpleColumn } from '../../types';
+import { CellProps, Column, RowData, SimpleColumn } from '../../types';
 
 const defaultComponent = () => <></>;
 const defaultIsCellEmpty = () => false;
-const identityRow = <T extends any>({ rowData }: { rowData: T }) => rowData;
+const identityRow = <TRow extends RowData>({ rowData }: { rowData: TRow }) => rowData;
 const defaultCopyValue = () => null;
 const defaultGutterComponent = ({ rowIndex }: CellProps<any, any>) => (
     <>{rowIndex + 1}</>
@@ -70,20 +70,19 @@ export const parseFlexValue = (value: string | number) => {
     };
 };
 
-export const useColumns = <T extends any>(
-    columns: Partial<Column<T, any, any>>[],
-    gutterColumn?: SimpleColumn<T, any> | false,
-    stickyRightColumn?: SimpleColumn<T, any>
-): Column<T, any, any>[] => {
-    return useMemo<Column<T, any, any>[]>(() => {
-        const partialColumns: Partial<Column<T, any, any>>[] = [
+export const useColumns = <TValue = any>(
+    columns: Partial<Column<TValue, any, any>>[],
+    gutterColumn?: SimpleColumn<TValue, any> | false,
+    stickyRightColumn?: SimpleColumn<TValue, any>
+): Column<TValue, any, any>[] => {
+    return useMemo<Column<TValue, any, any>[]>(() => {
+        const partialColumns: Partial<Column<TValue, any, any>>[] = [
             gutterColumn === false
                 ? {
                     basis: 0,
                     grow: 0,
                     shrink: 0,
                     minWidth: 0,
-                    // eslint-disable-next-line react/display-name
                     component: () => <></>,
                     headerClassName: 'dsg-hidden-cell',
                     cellClassName: 'dsg-hidden-cell',
@@ -115,15 +114,15 @@ export const useColumns = <T extends any>(
             });
         }
 
-        return partialColumns.map<Column<T, any, any>>((column) => {
+        return partialColumns.map<Column<TValue, any, any>>((column) => {
             const legacyWidth =
-        column.width !== undefined
-            ? parseFlexValue(column.width)
-            : {
-                basis: undefined,
-                grow: undefined,
-                shrink: undefined,
-            };
+                column.width !== undefined
+                    ? parseFlexValue(column.width)
+                    : {
+                        basis: undefined,
+                        grow: undefined,
+                        shrink: undefined,
+                    };
 
             return {
                 ...column,

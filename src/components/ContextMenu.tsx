@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { FC, useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useDocumentEventListener } from '../hooks/internal/useDocumentEventListener';
-import { ContextMenuItem, ContextMenuComponentProps } from '../types';
+import { ContextMenuItem } from '../types';
 
 export const defaultRenderItem = (item: ContextMenuItem) => {
     if (item.type === 'CUT') {
@@ -23,7 +23,7 @@ export const defaultRenderItem = (item: ContextMenuItem) => {
     if (item.type === 'DELETE_ROWS') {
         return (
             <>
-        Delete rows <b>{item.fromRow}</b> to <b>{item.toRow}</b>
+                Delete rows <b>{item.fromRow}</b> to <b>{item.toRow}</b>
             </>
         );
     }
@@ -39,7 +39,7 @@ export const defaultRenderItem = (item: ContextMenuItem) => {
     if (item.type === 'DUPLICATE_ROWS') {
         return (
             <>
-        Duplicate rows <b>{item.fromRow}</b> to <b>{item.toRow}</b>
+                Duplicate rows <b>{item.fromRow}</b> to <b>{item.toRow}</b>
             </>
         );
     }
@@ -48,42 +48,41 @@ export const defaultRenderItem = (item: ContextMenuItem) => {
 };
 
 export const createContextMenuComponent =
-  (
-      renderItem: (item: ContextMenuItem) => React.JSX.Element = defaultRenderItem
-  ) =>
-  // eslint-disable-next-line react/display-name
-      ({ clientX, clientY, items, close }) => {
-          const containerRef = useRef<HTMLDivElement>(null);
+    (
+        renderItem: (item: ContextMenuItem) => React.JSX.Element = defaultRenderItem
+    ) =>
+        ({ clientX, clientY, items, close }) => {
+            const containerRef = useRef<HTMLDivElement>(null);
 
-          const onClickOutside = useCallback(
-              (event: MouseEvent) => {
-                  const clickInside = containerRef.current?.contains(event.target as Node);
+            const onClickOutside = useCallback(
+                (event: MouseEvent) => {
+                    const clickInside = containerRef.current?.contains(event.target as Node);
 
-                  if (!clickInside) {
-                      close();
-                  }
-              },
-              [close]
-          );
-          useDocumentEventListener('mousedown', onClickOutside);
+                    if (!clickInside) {
+                        close();
+                    }
+                },
+                [close]
+            );
+            useDocumentEventListener('mousedown', onClickOutside);
 
-          return (
-              <div
-                  className="dsg-context-menu"
-                  style={{ left: clientX + 'px', top: clientY + 'px' }}
-                  ref={containerRef}
-              >
-                  {items.map((item) => (
-                      <div
-                          key={item.type}
-                          onClick={item.action}
-                          className="dsg-context-menu-item"
-                      >
-                          {renderItem(item)}
-                      </div>
-                  ))}
-              </div>
-          );
-      };
+            return (
+                <div
+                    className="dsg-context-menu"
+                    style={{ left: clientX + 'px', top: clientY + 'px' }}
+                    ref={containerRef}
+                >
+                    {items.map((item) => (
+                        <div
+                            key={item.type}
+                            onClick={item.action}
+                            className="dsg-context-menu-item"
+                        >
+                            {renderItem(item)}
+                        </div>
+                    ))}
+                </div>
+            );
+        };
 
 export const ContextMenu = createContextMenuComponent(defaultRenderItem);
