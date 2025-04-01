@@ -5,6 +5,12 @@ export type Cell = {
   readonly row: number
 }
 
+
+export type ScrollBehavior = {
+  readonly doNotScrollX?: boolean
+  readonly doNotScrollY?: boolean
+}
+
 export type Selection = { readonly min: Cell; readonly max: Cell }
 
 export type RowData = Record<string, any>;
@@ -120,7 +126,7 @@ export type Operation = {
 }
 
 export type DataSheetGridProps<T> = {
-  readonly value?: T[]
+  readonly data?: T[]
   readonly style?: React.CSSProperties
   readonly className?: string
   readonly rowClassName?:

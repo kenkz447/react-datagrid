@@ -4,9 +4,9 @@ import { useMemo, useRef, useState } from 'react';
 type RowSize = { height: number; top: number }
 
 export const useRowHeights = <T extends any>({
-    value,
+    data,
     rowHeight,
-}: Required<Pick<DataSheetGridProps<T>, 'value' | 'rowHeight'>>) => {
+}: Required<Pick<DataSheetGridProps<T>, 'data' | 'rowHeight'>>) => {
     const calculatedHeights = useRef<RowSize[]>([]);
     const [, rerender] = useState(0);
 
@@ -14,7 +14,7 @@ export const useRowHeights = <T extends any>({
         const getRowIndex = (top: number): number => {
             if (typeof rowHeight === 'number') {
                 return Math.min(
-                    value.length - 1,
+                    data.length - 1,
                     Math.max(-1, Math.floor(top / rowHeight))
                 );
             }
@@ -36,21 +36,21 @@ export const useRowHeights = <T extends any>({
 
             if (
                 r === calculatedHeights.current.length - 1 &&
-        value.length > calculatedHeights.current.length &&
-        (!calculatedHeights.current.length ||
-          top >=
-            calculatedHeights.current[r].top +
-              calculatedHeights.current[r].height)
+                data.length > calculatedHeights.current.length &&
+                (!calculatedHeights.current.length ||
+                    top >=
+                    calculatedHeights.current[r].top +
+                    calculatedHeights.current[r].height)
             ) {
                 let lastBottom =
-          r === -1
-              ? 0
-              : calculatedHeights.current[r].top +
-              calculatedHeights.current[r].height;
+                    r === -1
+                        ? 0
+                        : calculatedHeights.current[r].top +
+                        calculatedHeights.current[r].height;
 
                 do {
                     r++;
-                    const height = rowHeight({ rowIndex: r, rowData: value[r] });
+                    const height = rowHeight({ rowIndex: r, rowData: data[r] });
                     calculatedHeights.current.push({
                         height,
                         top: lastBottom,
@@ -72,7 +72,7 @@ export const useRowHeights = <T extends any>({
                     return { height: rowHeight, top: rowHeight * index };
                 }
 
-                if (index >= value.length) {
+                if (index >= data.length) {
                     return { height: 0, top: 0 };
                 }
 
@@ -81,11 +81,11 @@ export const useRowHeights = <T extends any>({
                 }
 
                 let lastBottom =
-          calculatedHeights.current[calculatedHeights.current.length - 1].top +
-          calculatedHeights.current[calculatedHeights.current.length - 1].height;
+                    calculatedHeights.current[calculatedHeights.current.length - 1].top +
+                    calculatedHeights.current[calculatedHeights.current.length - 1].height;
 
                 for (let i = calculatedHeights.current.length; i <= index; i++) {
-                    const height = rowHeight({ rowIndex: i, rowData: value[i] });
+                    const height = rowHeight({ rowIndex: i, rowData: data[i] });
 
                     calculatedHeights.current.push({ height, top: lastBottom });
                     lastBottom += height;
@@ -96,16 +96,15 @@ export const useRowHeights = <T extends any>({
             getRowIndex,
             totalSize: (maxHeight: number) => {
                 if (typeof rowHeight === 'number') {
-                    return value.length * rowHeight;
+                    return data.length * rowHeight;
                 }
 
                 const index = getRowIndex(maxHeight);
 
                 return (
-                    calculatedHeights.current[index].top +
-          calculatedHeights.current[index].height
+                    calculatedHeights.current[index].top + calculatedHeights.current[index].height
                 );
             },
         };
-    }, [rowHeight, value]);
+    }, [rowHeight, data]);
 };

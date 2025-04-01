@@ -17,7 +17,7 @@ export default function Example() {
         <div>
             <h1>Index</h1>
             <DataSheetGrid
-                value={data}
+                data={data}
                 onChange={setData as any}
                 columns={columns}
             />
