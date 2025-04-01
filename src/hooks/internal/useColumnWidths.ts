@@ -1,4 +1,4 @@
-import { Column } from '../types'
+import { Column } from '../../types'
 import { useMemo } from 'react'
 
 export const getColumnWidths = (

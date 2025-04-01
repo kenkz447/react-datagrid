@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FC, useCallback, useRef } from 'react';
-import { useDocumentEventListener } from '../hooks/useDocumentEventListener';
+import { useDocumentEventListener } from '../hooks/internal/useDocumentEventListener';
 import { ContextMenuItem, ContextMenuComponentProps } from '../types';
 
 export const defaultRenderItem = (item: ContextMenuItem) => {

@@ -1,6 +1,6 @@
 import { useRef, useLayoutEffect, useEffect } from 'react';
 import { CellProps } from '../../types';
-import { useFirstRender } from '../../hooks/useFirstRender';
+import { useFirstRender } from '../../hooks/internal/useFirstRender';
 import cx from 'classnames';
 
 export type TextColumnData<T> = {

@@ -9,7 +9,7 @@ import {
 } from '../types';
 import cx from 'classnames';
 import { Cell as CellComponent } from './Cell';
-import { useMemoizedIndexCallback } from '../hooks/useMemoizedIndexCallback';
+import { useMemoizedIndexCallback } from '../hooks/internal/useMemoizedIndexCallback';
 
 export const Grid = <T extends any>({
     data,

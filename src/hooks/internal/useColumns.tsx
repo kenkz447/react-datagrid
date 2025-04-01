@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CellProps, Column, SimpleColumn } from '../types';
+import { CellProps, Column, SimpleColumn } from '../../types';
 
 const defaultComponent = () => <></>;
 const defaultIsCellEmpty = () => false;
