@@ -13,7 +13,6 @@ export default function Example() {
         { ...keyColumn('lastName', textColumn), title: 'Last name' },
     ];
 
-
     return (
         <div>
             <h1>Index</h1>

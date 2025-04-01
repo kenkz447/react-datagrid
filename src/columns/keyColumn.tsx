@@ -1,57 +1,17 @@
-import React, { useCallback, useRef } from 'react';
-import { CellComponent, Column } from '../types';
+import { Column, RowData } from '../types';
+import { CellWrapper } from '../components/cells/CellWrapper';
 
 type ColumnData = { key: string; original: Partial<Column<any, any, any>> }
 
-const KeyComponent: CellComponent<any, ColumnData> = ({
-    columnData: { key, original },
-    rowData,
-    setRowData,
-    ...rest
-}) => {
-    // We use a ref so useCallback does not produce a new setKeyData function every time the rowData changes
-    const rowDataRef = useRef(rowData);
-    rowDataRef.current = rowData;
-
-    // We wrap the setRowData function to assign the value to the desired key
-    const setKeyData = useCallback(
-        (value: any) => {
-            setRowData({ ...rowDataRef.current, [key]: value });
-        },
-        [key, setRowData]
-    );
-
-    if (!original.component) {
-        return <></>;
-    }
-
-    const Component = original.component;
-
-    return (
-        <Component
-            columnData={original.columnData}
-            setRowData={setKeyData}
-            // We only pass the value of the desired key, this is why each cell does not have to re-render everytime
-            // another cell in the same row changes!
-            rowData={rowData[key]}
-            {...rest}
-        />
-    );
-};
-
-export const keyColumn = <
-  T extends Record<string, any>,
-  K extends keyof T = keyof T,
-  PasteValue = string
->(
-        key: K,
-        column: Partial<Column<T[K], any, PasteValue>>
-    ): Partial<Column<T, ColumnData, PasteValue>> => ({
+export const keyColumn = <TRow extends RowData, TKey extends keyof TRow = keyof TRow, TPasteValue = string>(
+    key: TKey,
+    column: Partial<Column<TRow[TKey], any, TPasteValue>>
+): Partial<Column<TRow, ColumnData, TPasteValue>> => ({
         id: key as string,
         ...column,
         // We pass the key and the original column as columnData to be able to retrieve them in the cell component
         columnData: { key: key as string, original: column },
-        component: KeyComponent,
+        component: CellWrapper,
         // Here we simply wrap all functions to only pass the value of the desired key to the column, and not the entire row
         copyValue: ({ rowData, rowIndex }) =>
             column.copyValue?.({ rowData: rowData[key], rowIndex }) ?? null,
@@ -62,24 +22,22 @@ export const keyColumn = <
         pasteValue: ({ rowData, value, rowIndex }) => ({
             ...rowData,
             [key]:
-      column.pasteValue?.({ rowData: rowData[key], value, rowIndex }) ?? null,
+            column.pasteValue?.({ rowData: rowData[key], value, rowIndex }) ?? null,
         }),
-        disabled:
-    typeof column.disabled === 'function'
-        ? ({ rowData, rowIndex }) => {
-            return typeof column.disabled === 'function'
-                ? column.disabled({ rowData: rowData[key], rowIndex })
-                : column.disabled ?? false;
-        }
-        : column.disabled,
-        cellClassName:
-    typeof column.cellClassName === 'function'
-        ? ({ rowData, rowIndex, columnId }) => {
-            return typeof column.cellClassName === 'function'
-                ? column.cellClassName({ rowData: rowData[key], rowIndex, columnId })
-                : column.cellClassName ?? undefined;
-        }
-        : column.cellClassName,
+        disabled: typeof column.disabled === 'function'
+            ? ({ rowData, rowIndex }) => {
+                return typeof column.disabled === 'function'
+                    ? column.disabled({ rowData: rowData[key], rowIndex })
+                    : column.disabled ?? false;
+            }
+            : column.disabled,
+        cellClassName: typeof column.cellClassName === 'function'
+            ? ({ rowData, rowIndex, columnId }) => {
+                return typeof column.cellClassName === 'function'
+                    ? column.cellClassName({ rowData: rowData[key], rowIndex, columnId })
+                    : column.cellClassName ?? undefined;
+            }
+            : column.cellClassName,
         isCellEmpty: ({ rowData, rowIndex }) =>
             column.isCellEmpty?.({ rowData: rowData[key], rowIndex }) ?? false,
     });

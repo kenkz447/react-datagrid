@@ -1,9 +1,9 @@
-import { createTextColumn } from './textColumn';
+import { editableColumn } from '../editableColumn';
 
 const TEN_TO_THE_12 = 1000000000000;
 const TEN_TO_THE_10 = 10000000000;
 
-export const percentColumn = createTextColumn<number | null>({
+export const percentColumn = editableColumn<number>({
     alignRight: true,
     formatBlurredInput: (value) =>
         typeof value === 'number'

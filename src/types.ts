@@ -1,76 +1,78 @@
 import React from 'react';
 
 export type Cell = {
-  col: number
-  row: number
+  readonly col: number
+  readonly row: number
 }
 
-export type Selection = { min: Cell; max: Cell }
+export type Selection = { readonly min: Cell; readonly max: Cell }
+
+export type RowData = Record<string, any>;
 
 export type CellProps<T, C> = {
-  rowData: T
-  rowIndex: number
-  columnIndex: number
-  active: boolean
-  focus: boolean
-  disabled: boolean
-  columnData: C
-  setRowData: (rowData: T) => void
-  stopEditing: (opts?: { nextRow?: boolean }) => void
-  insertRowBelow: () => void
-  duplicateRow: () => void
-  deleteRow: () => void
-  getContextMenuItems: () => ContextMenuItem[]
+  readonly rowData: T
+  readonly rowIndex: number
+  readonly columnIndex: number
+  readonly active: boolean
+  readonly focus: boolean
+  readonly disabled: boolean
+  readonly columnData: C
+  readonly setRowData: (rowData: T) => void
+  readonly stopEditing: (opts?: { nextRow?: boolean }) => void
+  readonly insertRowBelow: () => void
+  readonly duplicateRow: () => void
+  readonly deleteRow: () => void
+  readonly getContextMenuItems: () => ContextMenuItem[]
 }
 
 export type CellComponent<T, C> = (props: CellProps<T, C>) => React.JSX.Element
 
-export type Column<T, C, PasteValue> = {
-  id?: string
-  headerClassName?: string
-  title?: React.ReactNode
+export type Column<TValue, C, PasteValue> = {
+  readonly id?: string
+  readonly headerClassName?: string
+  readonly title?: React.ReactNode
   /** @deprecated Use `basis`, `grow`, and `shrink` instead */
-  width?: string | number
-  basis: number
-  grow: number
-  shrink: number
-  minWidth: number
-  maxWidth?: number
-  component: CellComponent<T, C>
-  columnData?: C
-  disableKeys: boolean
-  disabled: boolean | ((opt: { rowData: T; rowIndex: number }) => boolean)
-  cellClassName?:
+  readonly width?: string | number
+  readonly basis: number
+  readonly grow: number
+  readonly shrink: number
+  readonly minWidth: number
+  readonly maxWidth?: number
+  readonly component: CellComponent<TValue, C>
+  readonly columnData?: C
+  readonly disableKeys: boolean
+  readonly disabled: boolean | ((opt: { rowData: TValue; rowIndex: number }) => boolean)
+  readonly cellClassName?:
     | string
     | ((opt: {
-        rowData: T
+        rowData: TValue
         rowIndex: number
         columnId?: string
       }) => string | undefined)
-  keepFocus: boolean
-  deleteValue: (opt: { rowData: T; rowIndex: number }) => T
-  copyValue: (opt: { rowData: T; rowIndex: number }) => number | string | null
-  pasteValue: (opt: { rowData: T; value: PasteValue; rowIndex: number }) => T
-  prePasteValues: (values: string[]) => PasteValue[] | Promise<PasteValue[]>
-  isCellEmpty: (opt: { rowData: T; rowIndex: number }) => boolean
+  readonly keepFocus: boolean
+  readonly deleteValue: (opt: { rowData: TValue; rowIndex: number }) => TValue
+  readonly copyValue: (opt: { rowData: TValue; rowIndex: number }) => number | string | null
+  readonly pasteValue: (opt: { rowData: TValue; value: PasteValue; rowIndex: number }) => TValue
+  readonly prePasteValues: (values: string[]) => PasteValue[] | Promise<PasteValue[]>
+  readonly isCellEmpty: (opt: { rowData: TValue; rowIndex: number }) => boolean
 }
 
 export type SelectionContextType = {
-  columnRights?: number[]
-  columnWidths?: number[]
-  activeCell: Cell | null
-  selection: Selection | null
-  dataLength: number
-  rowHeight: (index: number) => { height: number; top: number }
-  hasStickyRightColumn: boolean
-  editing: boolean
-  isCellDisabled: (cell: Cell) => boolean
-  headerRowHeight: number
-  viewWidth?: number
-  viewHeight?: number
-  contentWidth?: number
-  edges: { top: boolean; right: boolean; bottom: boolean; left: boolean }
-  expandSelection: number | null
+  readonly columnRights?: number[]
+  readonly columnWidths?: number[]
+  readonly activeCell: Cell | null
+  readonly selection: Selection | null
+  readonly dataLength: number
+  readonly rowHeight: (index: number) => { height: number; top: number }
+  readonly hasStickyRightColumn: boolean
+  readonly editing: boolean
+  readonly isCellDisabled: (cell: Cell) => boolean
+  readonly headerRowHeight: number
+  readonly viewWidth?: number
+  readonly viewHeight?: number
+  readonly contentWidth?: number
+  readonly edges: { readonly top: boolean; readonly right: boolean; readonly bottom: boolean; readonly left: boolean }
+  readonly expandSelection: number | null
 }
 
 export type SimpleColumn<T, C> = Partial<
@@ -88,95 +90,95 @@ export type SimpleColumn<T, C> = Partial<
 >
 
 export type AddRowsComponentProps = {
-  addRows: (count?: number) => void
+  readonly addRows: (count?: number) => void
 }
 
 export type ContextMenuItem =
   | {
-      type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW' | 'COPY' | 'CUT' | 'PASTE'
-      action: () => void
+      readonly type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW' | 'COPY' | 'CUT' | 'PASTE'
+      readonly action: () => void
     }
   | {
-      type: 'DELETE_ROWS' | 'DUPLICATE_ROWS'
-      action: () => void
-      fromRow: number
-      toRow: number
+      readonly type: 'DELETE_ROWS' | 'DUPLICATE_ROWS'
+      readonly action: () => void
+      readonly fromRow: number
+      readonly toRow: number
     }
 
 export type ContextMenuComponentProps = {
-  clientX: number
-  clientY: number
-  items: ContextMenuItem[]
-  cursorIndex: Cell
-  close: () => void
+  readonly clientX: number
+  readonly clientY: number
+  readonly items: ContextMenuItem[]
+  readonly cursorIndex: Cell
+  readonly close: () => void
 }
 
 export type Operation = {
-  type: 'UPDATE' | 'DELETE' | 'CREATE'
-  fromRowIndex: number
-  toRowIndex: number
+  readonly type: 'UPDATE' | 'DELETE' | 'CREATE'
+  readonly fromRowIndex: number
+  readonly toRowIndex: number
 }
 
 export type DataSheetGridProps<T> = {
-  value?: T[]
-  style?: React.CSSProperties
-  className?: string
-  rowClassName?:
+  readonly value?: T[]
+  readonly style?: React.CSSProperties
+  readonly className?: string
+  readonly rowClassName?:
     | string
     | ((opt: { rowData: T; rowIndex: number }) => string | undefined)
-  cellClassName?:
+  readonly cellClassName?:
     | string
     | ((opt: {
         rowData: unknown
         rowIndex: number
         columnId?: string
       }) => string | undefined)
-  onChange?: (value: T[], operations: Operation[]) => void
-  columns?: Partial<Column<T, any, any>>[]
-  gutterColumn?: SimpleColumn<T, any> | false
-  stickyRightColumn?: SimpleColumn<T, any>
-  rowKey?: string | ((opts: { rowData: T; rowIndex: number }) => string)
-  height?: number
-  rowHeight?: number | ((opt: { rowData: T; rowIndex: number }) => number)
-  headerRowHeight?: number
-  addRowsComponent?:
+  readonly onChange?: (value: T[], operations: Operation[]) => void
+  readonly columns?: Partial<Column<T, any, any>>[]
+  readonly gutterColumn?: SimpleColumn<T, any> | false
+  readonly stickyRightColumn?: SimpleColumn<T, any>
+  readonly rowKey?: string | ((opts: { rowData: T; rowIndex: number }) => string)
+  readonly height?: number
+  readonly rowHeight?: number | ((opt: { rowData: T; rowIndex: number }) => number)
+  readonly headerRowHeight?: number
+  readonly addRowsComponent?:
     | ((props: AddRowsComponentProps) => React.ReactElement | null)
     | false
-  createRow?: () => T
-  duplicateRow?: (opts: { rowData: T; rowIndex: number }) => T
-  autoAddRow?: boolean
-  lockRows?: boolean
-  disableContextMenu?: boolean
-  disableExpandSelection?: boolean
-  disableSmartDelete?: boolean
-  contextMenuComponent?: (
+  readonly createRow?: () => T
+  readonly duplicateRow?: (opts: { rowData: T; rowIndex: number }) => T
+  readonly autoAddRow?: boolean
+  readonly lockRows?: boolean
+  readonly disableContextMenu?: boolean
+  readonly disableExpandSelection?: boolean
+  readonly disableSmartDelete?: boolean
+  readonly contextMenuComponent?: (
     props: ContextMenuComponentProps
   ) => React.ReactElement | null
-  onFocus?: (opts: { cell: CellWithId }) => void
-  onBlur?: (opts: { cell: CellWithId }) => void
-  onActiveCellChange?: (opts: { cell: CellWithId | null }) => void
-  onSelectionChange?: (opts: { selection: SelectionWithId | null }) => void
-  onScroll?: React.UIEventHandler<HTMLDivElement> | undefined
+  readonly onFocus?: (opts: { cell: CellWithId }) => void
+  readonly onBlur?: (opts: { cell: CellWithId }) => void
+  readonly onActiveCellChange?: (opts: { cell: CellWithId | null }) => void
+  readonly onSelectionChange?: (opts: { selection: SelectionWithId | null }) => void
+  readonly onScroll?: React.UIEventHandler<HTMLDivElement> | undefined
 }
 
 type CellWithIdInput = {
-  col: number | string
-  row: number
+  readonly col: number | string
+  readonly row: number
 }
 
-type SelectionWithIdInput = { min: CellWithIdInput; max: CellWithIdInput }
+type SelectionWithIdInput = { readonly min: CellWithIdInput; readonly max: CellWithIdInput }
 
 export type CellWithId = {
-  colId?: string
-  col: number
-  row: number
+  readonly colId?: string
+  readonly col: number
+  readonly row: number
 }
 
-export type SelectionWithId = { min: CellWithId; max: CellWithId }
+export type SelectionWithId = { readonly min: CellWithId; readonly max: CellWithId }
 
 export type DataSheetGridRef = {
-  activeCell: CellWithId | null
-  selection: SelectionWithId | null
-  setActiveCell: (activeCell: CellWithIdInput | null) => void
-  setSelection: (selection: SelectionWithIdInput | null) => void
+  readonly activeCell: CellWithId | null
+  readonly selection: SelectionWithId | null
+  readonly setActiveCell: (activeCell: CellWithIdInput | null) => void
+  readonly setSelection: (selection: SelectionWithIdInput | null) => void
 }
