@@ -1,20 +1,17 @@
 import { useCallback } from 'react';
-import { getAllTabbableElements } from '../../utils/tab';
 import { isPrintableUnicode } from '../../utils/copyPasting';
 import { Cell, useDatagridContext } from '../../../core';
 
 interface UseKeydownHandlerProps {
     scrollTo,
-    beforeTabIndexRef,
-    afterTabIndexRef,
-    lastEditingCellRef
+    lastEditingCellRef,
+    onFocusOutside?: (direction: 'top' | 'bottom') => void;
 };
 
 export const useKeydownHandler = ({
     scrollTo,
-    beforeTabIndexRef,
-    afterTabIndexRef,
-    lastEditingCellRef
+    lastEditingCellRef,
+    onFocusOutside
 }: UseKeydownHandlerProps) => {
     const {
         activeCell,
@@ -51,19 +48,9 @@ export const useKeydownHandler = ({
             const disableKeys = columns[activeCell.col + 1].disableKeys;
 
             const focusController = {
-                goOutFromFirst: () => {
+                removeFocus: () => {
                     setActiveCell(null);
                     setSelectionCell(null);
-                    const allElements = getAllTabbableElements();
-                    const index = allElements.indexOf(beforeTabIndexRef.current);
-                    allElements[(index - 1 + allElements.length) % allElements.length].focus();
-                },
-                goOutFromLast: () => {
-                    setActiveCell(null);
-                    setSelectionCell(null);
-                    const allElements = getAllTabbableElements();
-                    const index = allElements.indexOf(afterTabIndexRef.current);
-                    allElements[(index + 1) % allElements.length].focus();
                 },
                 goPrevRow: () => {
                     setActiveCell((cell) => ({
@@ -100,9 +87,8 @@ export const useKeydownHandler = ({
                 event.preventDefault();
                 const isLastRow = activeCell.row === data.length - 1;
                 if (isLastRow) {
-                    if (afterTabIndexRef.current) {
-                        return focusController.goOutFromLast();
-                    }
+                    focusController.removeFocus();
+                    onFocusOutside?.('bottom');
                 } else {
                     return focusController.goNextRow();
                 }
@@ -115,9 +101,8 @@ export const useKeydownHandler = ({
                 event.preventDefault();
                 const isFirstRow = activeCell.row === 0;
                 if (isFirstRow) {
-                    if (beforeTabIndexRef.current) {
-                        return focusController.goOutFromFirst();
-                    }
+                    focusController.removeFocus();
+                    onFocusOutside?.('top');
                 } else {
                     return focusController.goPrevRow();
                 }
@@ -227,8 +212,7 @@ export const useKeydownHandler = ({
                 !isCellDisabled(activeCell)
             ) {
                 lastEditingCellRef.current = activeCell;
-                setSelectionCell(null);
-                setEditing(true);
+                focusController.removeFocus();
                 scrollTo(activeCell);
                 return;
             }

@@ -24,6 +24,7 @@ import { useCutHandler } from '../hooks/events/useCutHandler';
 import { useEdges } from '../hooks/useEdges';
 import { useUI } from '../hooks/useUI';
 import { useContextMenu } from '../hooks/useContextMenu';
+import { getAllTabbableElements } from '../utils/tab';
 
 function DataSheetGridImpl<T extends RowData>() {
     const context = useDatagridContext<T>();
@@ -112,9 +113,18 @@ function DataSheetGridImpl<T extends RowData>() {
 
     const onKeyDown = useKeydownHandler({
         scrollTo,
-        beforeTabIndexRef,
-        afterTabIndexRef,
-        lastEditingCellRef
+        lastEditingCellRef,
+        onFocusOutside: (direction) => {
+            if (direction === 'top') {
+                const allElements = getAllTabbableElements();
+                const index = allElements.indexOf(beforeTabIndexRef.current);
+                allElements[(index - 1 + allElements.length) % allElements.length].focus();
+            } else {
+                const allElements = getAllTabbableElements();
+                const index = allElements.indexOf(afterTabIndexRef.current);
+                allElements[(index + 1) % allElements.length].focus();
+            }
+        }
     });
 
     const onContextMenu = useContextMenuHandler({
