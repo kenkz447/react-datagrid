@@ -5,7 +5,6 @@ interface UseMouseDownHandlerProps {
     contextMenu,
     contextMenuItems,
     setContextMenu,
-    lastEditingCellRef,
     disableContextMenu,
     innerRef,
     getCursorIndex,
@@ -15,12 +14,12 @@ export const useMouseDownHandler = ({
     contextMenu,
     contextMenuItems,
     setContextMenu,
-    lastEditingCellRef,
     disableContextMenu,
     innerRef,
     getCursorIndex
 }: UseMouseDownHandlerProps) => {
     const {
+        lastEditingCellRef,
         activeCell,
         editing,
         columns,

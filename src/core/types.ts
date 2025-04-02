@@ -125,7 +125,7 @@ export type Operation = {
   readonly toRowIndex: number
 }
 
-export type DataSheetGridProps<T> = {
+export type DataSheetGridProps<T extends RowData = RowData> = {
   readonly data?: T[]
   readonly style?: React.CSSProperties
   readonly className?: string

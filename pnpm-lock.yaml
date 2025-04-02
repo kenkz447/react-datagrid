@@ -21,8 +21,8 @@ importers:
         specifier: ^12.0.2
         version: 12.0.2(react@19.0.0)
       throttle-debounce:
-        specifier: ^5.0.2
-        version: 5.0.2
+        specifier: ^2.1.0
+        version: 2.3.0
     devDependencies:
       '@eslint/js':
         specifier: ^9.20.0
@@ -2570,9 +2570,9 @@ packages:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
 
-  throttle-debounce@5.0.2:
-    resolution: {integrity: sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A==}
-    engines: {node: '>=12.22'}
+  throttle-debounce@2.3.0:
+    resolution: {integrity: sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==}
+    engines: {node: '>=8'}
 
   throttleit@1.0.1:
     resolution: {integrity: sha512-vDZpf9Chs9mAdfY046mcPt8fg5QSZr37hEH4TXYBnDF+izxgrbRGUAAaBvIk/fJm9aOFCGFd1EsNg5AZCbnQCQ==}
@@ -5712,7 +5712,7 @@ snapshots:
       glob: 7.2.3
       minimatch: 3.1.2
 
-  throttle-debounce@5.0.2: {}
+  throttle-debounce@2.3.0: {}
 
   throttleit@1.0.1: {}
 

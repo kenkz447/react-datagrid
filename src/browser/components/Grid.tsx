@@ -1,68 +1,58 @@
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
 import React, { ReactNode, RefObject, useEffect } from 'react';
 import type {
-    Cell,
-    Column,
     ContextMenuItem,
-    DataSheetGridProps,
     RowData,
-    Selection,
 } from '../../core';
 import cx from 'classnames';
 import { Cell as CellComponent } from './Cell';
-import { useMemoizedIndexCallback } from '../../core';
+import { useDatagridContext, useMemoizedIndexCallback } from '../../core';
+
+interface GridProps<TRow extends RowData = RowData> {
+    rowClassName?: string | ((opt: { rowData: TRow; rowIndex: number }) => string);
+    cellClassName?: string | ((opt: { rowData: TRow; rowIndex: number; columnId?: string }) => string);
+    children?: ReactNode;
+    onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
+    getContextMenuItems?: () => ContextMenuItem[];
+    outerRef: RefObject<HTMLDivElement>;
+    innerRef: RefObject<HTMLDivElement>;
+    columnWidths?: number[];
+    displayHeight: number;
+    headerRowHeight: number;
+    rowHeight: (index: number) => { height: number };
+    rowKey?: string | ((opt: { rowData: TRow; rowIndex: number }) => string | number);
+    fullWidth?: boolean;
+}
 
 export const Grid = <TRow extends RowData = RowData>({
-    data,
-    columns,
+    rowClassName,
+    cellClassName,
+    children,
+    onScroll,
+    getContextMenuItems,
     outerRef,
     innerRef,
     columnWidths,
-    hasStickyRightColumn,
     displayHeight,
     headerRowHeight,
     rowHeight,
     rowKey,
     fullWidth,
-    selection,
-    activeCell,
-    rowClassName,
-    cellClassName,
-    children,
-    editing,
-    getContextMenuItems,
-    setRowData,
-    deleteRows,
-    duplicateRows,
-    insertRowAfter,
-    stopEditing,
-    onScroll,
-}: {
-    data: TRow[]
-    columns: Column<TRow, any, any>[]
-    outerRef: RefObject<HTMLDivElement>
-    innerRef: RefObject<HTMLDivElement>
-    columnWidths?: number[]
-    hasStickyRightColumn: boolean
-    displayHeight: number
-    headerRowHeight: number
-    rowHeight: (index: number) => { height: number }
-    rowKey: DataSheetGridProps<TRow>['rowKey']
-    rowClassName: DataSheetGridProps<TRow>['rowClassName']
-    cellClassName: DataSheetGridProps<TRow>['cellClassName']
-    fullWidth: boolean
-    selection: Selection | null
-    activeCell: Cell | null
-    children: ReactNode
-    editing: boolean
-    getContextMenuItems: () => ContextMenuItem[]
-    setRowData: (rowIndex: number, item: TRow) => void
-    deleteRows: (rowMin: number, rowMax?: number) => void
-    duplicateRows: (rowMin: number, rowMax?: number) => void
-    insertRowAfter: (row: number, count?: number) => void
-    stopEditing: (opts?: { nextRow?: boolean }) => void
-    onScroll?: React.UIEventHandler<HTMLDivElement>
-}) => {
+}: GridProps<TRow>) => {
+    const {
+        data,
+        columns,
+        hasStickyRightColumn,
+        selection,
+        activeCell,
+        editing,
+        setRowData,
+        deleteRows,
+        duplicateRows,
+        insertRowAfter,
+        stopEditing,
+    } = useDatagridContext<TRow>();
+
     const rowVirtualizer = useVirtualizer({
         count: data.length,
         getScrollElement: () => outerRef.current,

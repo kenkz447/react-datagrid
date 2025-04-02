@@ -1,19 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { getCellWithId, getSelectionWithId, useDatagridContext } from '../../core';
 
-interface UseCallbacksProps {
-    lastEditingCellRef
-}
-
-export const useCallbacks = ({
-    lastEditingCellRef
-}: UseCallbacksProps) => {
+export const useCallbacks = () => {
     const {
         propsRef,
         activeCell,
         columns,
         editing,
         selection,
+        lastEditingCellRef
     } = useDatagridContext();
 
     const {

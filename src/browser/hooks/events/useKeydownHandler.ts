@@ -4,16 +4,16 @@ import { Cell, useDatagridContext } from '../../../core';
 
 interface UseKeydownHandlerProps {
     scrollTo,
-    lastEditingCellRef,
     onFocusOutside?: (direction: 'top' | 'bottom') => void;
 };
 
+
 export const useKeydownHandler = ({
     scrollTo,
-    lastEditingCellRef,
     onFocusOutside
 }: UseKeydownHandlerProps) => {
     const {
+        lastEditingCellRef,
         activeCell,
         columns,
         data,
@@ -41,25 +41,35 @@ export const useKeydownHandler = ({
                 return;
             }
 
+            const disableKeys = columns[activeCell.col + 1].disableKeys;
+            if (disableKeys) {
+                return;
+            }
+
+            const isArrows = event.key.startsWith('Arrow');
+            if (editing && isArrows) {
+                if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+                    return;
+                }
+            }
+
             if (event.key === 'Tab' || event.key === 'Enter' || event.key.startsWith('Arrow')) {
                 setEditing(false);
             }
-
-            const disableKeys = columns[activeCell.col + 1].disableKeys;
 
             const focusController = {
                 removeFocus: () => {
                     setActiveCell(null);
                     setSelectionCell(null);
                 },
-                goPrevRow: () => {
+                focusPrevRow: () => {
                     setActiveCell((cell) => ({
                         col: columns.length - (hasStickyRightColumn ? 3 : 2),
                         row: (cell?.row ?? 1) - 1,
                     }));
                     setSelectionCell(null);
                 },
-                goNextRow: () => {
+                focusNextRow: () => {
                     setActiveCell((cell) => ({ col: 0, row: (cell?.row ?? 0) + 1 }));
                     setSelectionCell(null);
                 },
@@ -82,63 +92,56 @@ export const useKeydownHandler = ({
             // Tab from last cell of a row
             const isTab = event.key === 'Tab';
             const isPureTab = isTab && !event.shiftKey;
-            const isLastCell = activeCell.col === columns.length - (hasStickyRightColumn ? 3 : 2);
-            if (isPureTab && isLastCell && !disableKeys) {
+            if (isPureTab) {
                 event.preventDefault();
-                const isLastRow = activeCell.row === data.length - 1;
-                if (isLastRow) {
-                    focusController.removeFocus();
-                    onFocusOutside?.('bottom');
-                } else {
-                    return focusController.goNextRow();
+                const isLastCell = activeCell.col === columns.length - (hasStickyRightColumn ? 3 : 2);
+                if (isLastCell) {
+                    const isLastRow = activeCell.row === data.length - 1;
+                    if (isLastRow) {
+                        focusController.removeFocus();
+                        return onFocusOutside?.('bottom');
+                    }
+                    return focusController.focusNextRow();
                 }
+
+                setActiveCell((cell) => add([1, 0], cell));
+                setSelectionCell(null);
+                return;
             }
+
+            const add = ([x, y]: [number, number], cell: Cell | null): Cell | null => cell && {
+                col: Math.max(0, Math.min(columns.length - (hasStickyRightColumn ? 3 : 2), cell.col + x)),
+                row: Math.max(0, Math.min(data.length - 1, cell.row + y)),
+            };
 
             // Shift+Tab from first cell of a row
             const isShiftTab = isTab && event.shiftKey;
-            const isFirstCell = activeCell.col === 0 && !disableKeys;
-            if (isShiftTab && isFirstCell) {
+            if (isShiftTab) {
                 event.preventDefault();
-                const isFirstRow = activeCell.row === 0;
-                if (isFirstRow) {
-                    focusController.removeFocus();
-                    onFocusOutside?.('top');
-                } else {
-                    return focusController.goPrevRow();
+                const isFirstCell = activeCell.col === 0;
+                if (isFirstCell) {
+                    const isFirstRow = activeCell.row === 0;
+                    if (isFirstRow) {
+                        focusController.removeFocus();
+                        return onFocusOutside?.('top');
+                    }
+                    return focusController.focusPrevRow();
                 }
+
+                event.preventDefault();
+                setActiveCell((cell) => add([-1, 0], cell));
+                setSelectionCell(null);
+                return;
             }
 
-            const isArrows = event.key.startsWith('Arrow');
-
-            if (editing && (isArrows || isPureTab)) {
-                if (disableKeys) {
-                    return;
-                }
-
-                if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
-                    return;
-                }
-            }
-
-            if (isArrows || isTab) {
+            if (isArrows) {
                 event.preventDefault();
-                const add = ([x, y]: [number, number], cell: Cell | null): Cell | null => cell && {
-                    col: Math.max(0, Math.min(columns.length - (hasStickyRightColumn ? 3 : 2), cell.col + x)),
-                    row: Math.max(0, Math.min(data.length - 1, cell.row + y)),
-                };
-
-                if (isShiftTab) {
-                    setActiveCell((cell) => add([-1, 0], cell));
-                    setSelectionCell(null);
-                    return;
-                }
 
                 const direction = {
                     ArrowDown: [0, 1],
                     ArrowUp: [0, -1],
                     ArrowLeft: [-1, 0],
-                    ArrowRight: [1, 0],
-                    Tab: [1, 0],
+                    ArrowRight: [1, 0]
                 }[event.key] as [number, number];
 
                 if (event.ctrlKey || event.metaKey) {
@@ -148,11 +151,11 @@ export const useKeydownHandler = ({
 
                 if (event.shiftKey) {
                     setSelectionCell((cell) => add(direction, cell || activeCell));
-                } else {
-                    setActiveCell((cell) => add(direction, cell));
-                    setSelectionCell(null);
+                    return;
                 }
 
+                setActiveCell((cell) => add(direction, cell));
+                setSelectionCell(null);
                 return;
             }
 
@@ -173,44 +176,36 @@ export const useKeydownHandler = ({
                 !event.shiftKey
             ) {
                 setSelectionCell(null);
+                event.preventDefault();
 
-                if (editing && !disableKeys) {
+                if (editing) {
                     stopEditing();
-                    event.preventDefault();
-                } else if (!isCellDisabled(activeCell)) {
+                    return;
+                }
+                if (!isCellDisabled(activeCell)) {
                     lastEditingCellRef.current = activeCell;
                     setEditing(true);
                     scrollTo(activeCell);
-                    event.preventDefault();
                 }
-
                 return;
             }
 
             const isShiftEnter = event.key === 'Enter' && event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey;
             if (isShiftEnter) {
-                insertRowAfter(selection?.max.row || activeCell.row);
+                insertRowAfter(selection?.max.row ?? activeCell.row);
                 return;
             }
 
             const isCtrlD = event.key === 'd' && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
             if (isCtrlD) {
-                duplicateRows(
-                    selection?.min.row || activeCell.row,
-                    selection?.max.row
-                );
+                duplicateRows(selection?.min.row ?? activeCell.row, selection?.max.row);
                 event.preventDefault();
                 return;
             }
 
-            if (
-                (isPrintableUnicode(event.key) || event.code.match(/Key[A-Z]$/)) &&
-                !event.ctrlKey &&
-                !event.metaKey &&
-                !event.altKey &&
-                !editing &&
-                !isCellDisabled(activeCell)
-            ) {
+            const isPureInput = (isPrintableUnicode(event.key) || event.code.match(/Key[A-Z]$/)) && !event.ctrlKey && !event.metaKey && !event.altKey;
+            const canInput = !isCellDisabled(activeCell);
+            if (isPureInput && !editing && !canInput) {
                 lastEditingCellRef.current = activeCell;
                 focusController.removeFocus();
                 scrollTo(activeCell);

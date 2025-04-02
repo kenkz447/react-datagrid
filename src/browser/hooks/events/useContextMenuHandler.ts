@@ -1,19 +1,19 @@
 import { useCallback } from 'react';
+import { useDatagridContext } from '../../../core';
 
 interface UseContextMenuHandlerProps {
     innerRef,
     getCursorIndex,
-    activeCell,
-    editing,
 }
 
-export const useContextMenuHandler = (props: UseContextMenuHandlerProps) => {
+export const useContextMenuHandler = ({
+    innerRef,
+    getCursorIndex,
+}: UseContextMenuHandlerProps) => {
     const {
-        innerRef,
-        getCursorIndex,
         activeCell,
         editing,
-    } = props;
+    } = useDatagridContext();
 
     const onContextMenu = useCallback(
         (event: MouseEvent) => {

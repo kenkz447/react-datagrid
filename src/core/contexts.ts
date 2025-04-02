@@ -10,6 +10,7 @@ type SelectionMode = {
 export interface DatagridContextType<TRow extends RowData = RowData> extends UseRowControllerReturn<TRow> {
     readonly propsRef: React.RefObject<DataSheetGridProps<TRow>>;
     readonly dataRef: React.RefObject<TRow[]>;
+    readonly lastEditingCellRef: React.RefObject<Cell>;
     readonly data: TRow[];
 
     readonly columns: Column<TRow, any, any>[];

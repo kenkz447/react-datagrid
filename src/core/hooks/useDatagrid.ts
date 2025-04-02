@@ -6,7 +6,6 @@ import {
 } from 'react';
 import {
     Cell,
-    Column,
     DataSheetGridProps,
     RowData,
 } from '../types';
@@ -29,6 +28,7 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
         onChange
     } = props;
 
+    const lastEditingCellRef = useRef<Cell>(null);
     const propsRef = useRef(props);
     const dataRef = useRef(data);
     dataRef.current = data;
@@ -114,6 +114,8 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
     return useMemo(() => ({
         propsRef,
         dataRef,
+        lastEditingCellRef,
+        
         data,
         columns,
         hasStickyRightColumn,

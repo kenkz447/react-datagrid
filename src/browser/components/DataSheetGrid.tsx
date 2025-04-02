@@ -1,5 +1,4 @@
 import type {
-    Cell,
     ContextMenuItem,
     DataSheetGridProps,
     RowData
@@ -29,7 +28,6 @@ import { getAllTabbableElements } from '../utils/tab';
 function DataSheetGridImpl<T extends RowData>() {
     const context = useDatagridContext<T>();
 
-    const lastEditingCellRef = useRef<Cell>(null);
     const beforeTabIndexRef = useRef<HTMLDivElement>(null);
     const afterTabIndexRef = useRef<HTMLDivElement>(null);
 
@@ -60,9 +58,7 @@ function DataSheetGridImpl<T extends RowData>() {
         applyPasteDataToDatasheet,
         duplicateRows,
         deleteRows,
-        insertRowAfter,
-        setRowData,
-        stopEditing,
+        insertRowAfter
     } = context;
 
     const {
@@ -96,13 +92,12 @@ function DataSheetGridImpl<T extends RowData>() {
     const onCut = useCutHandler({ onCopy });
 
     const onMouseDown = useMouseDownHandler({
+        innerRef,
+        getCursorIndex,
         contextMenu,
         contextMenuItems,
         setContextMenu,
-        lastEditingCellRef,
         disableContextMenu,
-        innerRef,
-        getCursorIndex,
     });
 
     const onMouseUp = useMouseUpHandler();
@@ -113,7 +108,6 @@ function DataSheetGridImpl<T extends RowData>() {
 
     const onKeyDown = useKeydownHandler({
         scrollTo,
-        lastEditingCellRef,
         onFocusOutside: (direction) => {
             if (direction === 'top') {
                 const allElements = getAllTabbableElements();
@@ -129,9 +123,7 @@ function DataSheetGridImpl<T extends RowData>() {
 
     const onContextMenu = useContextMenuHandler({
         innerRef,
-        getCursorIndex,
-        activeCell,
-        editing
+        getCursorIndex
     });
 
     useDocumentEventListener('paste', onPaste);
@@ -143,7 +135,7 @@ function DataSheetGridImpl<T extends RowData>() {
     useDocumentEventListener('keydown', onKeyDown);
     useDocumentEventListener('contextmenu', onContextMenu);
 
-    useCallbacks({ lastEditingCellRef });
+    useCallbacks();
 
     // Scroll to the selectionCell cell when it changes
     useEffect(() => {
@@ -315,27 +307,16 @@ function DataSheetGridImpl<T extends RowData>() {
                 }}
             />
             <Grid
-                columns={columns}
                 outerRef={outerRef}
                 columnWidths={columnWidths}
-                hasStickyRightColumn={hasStickyRightColumn}
                 displayHeight={displayHeight}
-                data={data}
                 fullWidth={fullWidth}
                 headerRowHeight={headerRowHeight}
-                activeCell={activeCell}
                 innerRef={innerRef}
                 rowHeight={getRowSize}
                 rowKey={rowKey}
-                selection={selection}
                 rowClassName={rowClassName}
-                editing={editing}
                 getContextMenuItems={getContextMenuItems}
-                setRowData={setRowData}
-                deleteRows={deleteRows}
-                insertRowAfter={insertRowAfter}
-                duplicateRows={duplicateRows}
-                stopEditing={stopEditing}
                 cellClassName={cellClassName}
                 onScroll={onScroll}
             >
