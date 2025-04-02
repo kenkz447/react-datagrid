@@ -1,9 +1,20 @@
 import { useCallback, useRef, useState } from 'react';
 import { RowData } from '../types';
 
-export const useRow = <TRow extends RowData>(props) => {
+interface UseRowProps<TRow> {
+    data: TRow[];
+    onChange;
+    createRow?;
+    lockRows;
+    autoAddRow;
+    setActiveCell;
+    setSelectionCell;
+    activeCell;
+}
+
+export const useRow = <TRow extends RowData>(props: UseRowProps<TRow>) => {
     const {
-        value: data,
+        data,
         onChange,
         createRow,
         lockRows,
@@ -27,10 +38,10 @@ export const useRow = <TRow extends RowData>(props) => {
             setSelectionCell(null);
             setEditing(false);
 
-            onChange(
+            onChange?.(
                 [
                     ...dataRef.current.slice(0, row + 1),
-                    ...new Array(count).fill(0).map(createRow),
+                    ...new Array(count).fill(0).map(() => createRow?.() ?? {}),
                     ...dataRef.current.slice(row + 1),
                 ],
                 [
@@ -52,7 +63,7 @@ export const useRow = <TRow extends RowData>(props) => {
 
     const setRowData = useCallback(
         (rowIndex: number, item: TRow) => {
-            onChange(
+            onChange?.(
                 [
                     ...(dataRef.current?.slice(0, rowIndex) ?? []),
                     item,
@@ -90,7 +101,7 @@ export const useRow = <TRow extends RowData>(props) => {
                 return a && { col: a.col, row };
             });
             setSelectionCell(null);
-            onChange(
+            onChange?.(
                 [
                     ...dataRef.current.slice(0, rowMin),
                     ...dataRef.current.slice(rowMax + 1),

@@ -9,8 +9,6 @@ import {
     ContextMenuItem as ContextMenuItemBase,
     DataSheetGridRef as DataSheetGridRefBase,
 } from './types';
-import { DataSheetGrid as DataSheetGridBase } from './components/DataSheetGrid';
-import { StaticDataSheetGrid as StaticDataSheetGridBase } from './components/StaticDataSheetGrid';
 
 export type Column<T = any, C = any, PasteValue = string> = Partial<
   ColumnBase<T, C, PasteValue>
@@ -23,8 +21,8 @@ export type SimpleColumn<T = any, C = any> = SimpleColumnBase<T, C>
 export type ContextMenuComponentProps = ContextMenuComponentPropsBase
 export type ContextMenuItem = ContextMenuItemBase
 export type DataSheetGridRef = DataSheetGridRefBase
-export const DynamicDataSheetGrid = DataSheetGridBase;
-export const DataSheetGrid = StaticDataSheetGridBase;
+
+export { DataSheetGrid } from './components/DataSheetGrid';
 export { editableColumn } from './columns/editableColumn';
 export { textColumn } from './columns/built-in/textColumn';
 export { checkboxColumn } from './columns/built-in/checkboxColumn';

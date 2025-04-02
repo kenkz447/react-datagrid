@@ -8,7 +8,7 @@ import { Grid } from './Grid';
 import { SelectionRect } from './SelectionRect';
 import { useDatagrid } from '../hooks/useDatagrid';
 
-export function DataSheetGrid<T extends RowData>(props: DataSheetGridProps<T>) {
+export function DataSheetGrid<T extends RowData>(props: Partial<DataSheetGridProps<T>>) {
     const {
         className,
         style,

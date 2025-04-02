@@ -6,6 +6,7 @@ import {
 } from 'react';
 import {
     Cell,
+    Column,
     DataSheetGridProps,
     Operation,
     RowData,
@@ -29,42 +30,33 @@ import { useMouseDownHandler } from './events/useMouseDownHandler';
 import { usePasteHandler } from './events/usePasteHandler';
 import { useCutHandler } from './events/useCutHandler';
 import { useCopyHandler } from './events/useCopyHandler';
-import { useDefaultProps } from './useDefaultProps';
 
+const DEFAULT_DATA: any[] = [];
+const DEFAULT_COLUMNS: Column<any, any, any>[] = [];
+const DEFAULT_ROW_HEIGHT = 40;
+const DEFAULT_MAX_HEIGHT = 400;
 
-export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow>) {
-    const {
-        data,
-        columns: rawColumns,
-        createRow,
-        rowHeight,
-        headerRowHeight,
-        onChange,
-        lockRows,
-        autoAddRow,
-        duplicateRow,
-        disableExpandSelection,
-        disableSmartDelete,
-        disableContextMenu: disableContextMenuRaw,
-        gutterColumn,
-        stickyRightColumn,
-        height: maxHeight,
-        onFocus,
-        onBlur,
-        onActiveCellChange,
-        onSelectionChange,
-    } = useDefaultProps(props);
-
-    const callbacksRef = useRef({
-        onFocus,
-        onBlur,
-        onActiveCellChange,
-        onSelectionChange,
-    });
-    callbacksRef.current.onFocus = onFocus;
-    callbacksRef.current.onBlur = onBlur;
-    callbacksRef.current.onActiveCellChange = onActiveCellChange;
-    callbacksRef.current.onSelectionChange = onSelectionChange;
+export function useDatagrid<TRow extends RowData>({
+    data = DEFAULT_DATA,
+    columns: rawColumns = DEFAULT_COLUMNS,
+    maxHeight = DEFAULT_MAX_HEIGHT,
+    rowHeight = DEFAULT_ROW_HEIGHT,
+    headerRowHeight = typeof rowHeight === 'number' ? rowHeight : DEFAULT_ROW_HEIGHT,
+    disableContextMenu: disableContextMenuRaw,
+    gutterColumn,
+    stickyRightColumn,
+    autoAddRow,
+    lockRows,
+    disableExpandSelection,
+    disableSmartDelete,
+    createRow,
+    duplicateRow,
+    onChange,
+    onFocus,
+    onBlur,
+    onActiveCellChange,
+    onSelectionChange
+}: DataSheetGridProps<TRow>) {
 
     const {
         expandingSelectionFromRowIndex,
@@ -144,7 +136,7 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
         rowHeight,
         headerRowHeight,
         maxHeight,
-        hasStickyRightColumn,
+        hasStickyRightColumn
     });
 
     const isCellDisabled = useCallback((cell: Cell): boolean => {
@@ -164,14 +156,12 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
                 return;
             }
 
-            onChange(
+            onChange?.(
                 [
                     ...dataRef.current.slice(0, rowMax + 1),
                     ...dataRef.current
                         .slice(rowMin, rowMax + 1)
-                        .map((rowData, i) =>
-                            duplicateRow({ rowData, rowIndex: i + rowMin })
-                        ),
+                        .map((rowData, i) => duplicateRow ? duplicateRow({ rowData, rowIndex: i + rowMin }) : { ...rowData }),
                     ...dataRef.current.slice(rowMax + 1),
                 ],
                 [
@@ -212,13 +202,11 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
             const max: Cell = selection?.max || activeCell;
 
             if (
-                data
-                    .slice(min.row, max.row + 1)
-                    .every((rowData, i) =>
-                        columns.every((column) =>
-                            column.isCellEmpty({ rowData, rowIndex: i + min.row })
-                        )
+                data?.slice(min.row, max.row + 1).every((rowData, i) =>
+                    columns.every((column) =>
+                        column.isCellEmpty({ rowData, rowIndex: i + min.row })
                     )
+                )
             ) {
                 if (smartDelete) {
                     deleteRows(min.row, max.row);
@@ -251,7 +239,7 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
                 return;
             }
 
-            onChange(newData, [
+            onChange?.(newData, [
                 {
                     type: 'UPDATE',
                     fromRowIndex: min.row,
@@ -342,7 +330,7 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
                         }
                     }
 
-                    onChange(newData, [
+                    onChange?.(newData, [
                         {
                             type: 'UPDATE',
                             fromRowIndex: min.row,
@@ -360,13 +348,13 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
                 } else {
                     // Paste multiple rows
                     let newData = [...data];
-                    const missingRows = min.row + pasteData.length - data.length;
+                    const missingRows = min.row + pasteData.length - data?.length;
 
                     if (missingRows > 0) {
                         if (!lockRows) {
                             newData = [
                                 ...newData,
-                                ...new Array(missingRows).fill(0).map(() => createRow()),
+                                ...new Array(missingRows).fill(0).map(() => createRow ? createRow() : {} as TRow),
                             ];
                         } else {
                             pasteData.splice(pasteData.length - missingRows, missingRows);
@@ -424,7 +412,7 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
                         });
                     }
 
-                    onChange(newData, operations);
+                    onChange?.(newData, operations);
                     setActiveCell({ col: min.col, row: min.row });
                     setSelectionCell({
                         col: Math.min(
@@ -569,6 +557,17 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
     useDocumentEventListener('keydown', onKeyDown);
     useDocumentEventListener('contextmenu', onContextMenu);
 
+    const callbacksRef = useRef({
+        onFocus,
+        onBlur,
+        onActiveCellChange,
+        onSelectionChange,
+    });
+    callbacksRef.current.onFocus = onFocus;
+    callbacksRef.current.onBlur = onBlur;
+    callbacksRef.current.onActiveCellChange = onActiveCellChange;
+    callbacksRef.current.onSelectionChange = onSelectionChange;
+
     // Scroll to the selectionCell cell when it changes
     useEffect(() => {
         if (selectionCell) {
@@ -595,11 +594,11 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
     useEffect(() => {
         if (lastEditingCellRef.current) {
             if (editing) {
-                callbacksRef.current.onFocus({
+                callbacksRef.current.onFocus?.({
                     cell: getCellWithId(lastEditingCellRef.current, columns),
                 });
             } else {
-                callbacksRef.current.onBlur({
+                callbacksRef.current.onBlur?.({
                     cell: getCellWithId(lastEditingCellRef.current, columns),
                 });
             }
@@ -607,14 +606,14 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
     }, [editing, columns]);
 
     useEffect(() => {
-        callbacksRef.current.onActiveCellChange({
+        callbacksRef.current.onActiveCellChange?.({
             cell: getCellWithId(activeCell, columns),
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeCell?.col, activeCell?.row, columns]);
 
     useEffect(() => {
-        callbacksRef.current.onSelectionChange({
+        callbacksRef.current.onSelectionChange?.({
             selection: getSelectionWithId(
                 selection ??
                 (activeCell ? { min: activeCell, max: activeCell } : null),

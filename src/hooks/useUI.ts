@@ -7,7 +7,16 @@ import { useGetBoundingClientRect } from './internal/useGetBoundingClientRect';
 import { useEdges } from './internal/useEdges';
 import { Cell, ScrollBehavior } from '../types';
 
-export const useUI = (props) => {
+interface UseUIProps {
+    data,
+    columns,
+    rowHeight,
+    headerRowHeight,
+    maxHeight,
+    hasStickyRightColumn
+}
+
+export const useUI = (props: UseUIProps) => {
     const {
         data,
         columns,

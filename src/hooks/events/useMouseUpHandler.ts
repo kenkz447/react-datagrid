@@ -101,7 +101,7 @@ export const useMouseUpHandler = (props: UseMouseUpHandlerProps) => {
                         }
                     }
 
-                    onChange(newData, [
+                    onChange?.(newData, [
                         {
                             type: 'UPDATE',
                             fromRowIndex: max.row + 1,

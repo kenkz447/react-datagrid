@@ -144,7 +144,7 @@ export type DataSheetGridProps<T> = {
   readonly gutterColumn?: SimpleColumn<T, any> | false
   readonly stickyRightColumn?: SimpleColumn<T, any>
   readonly rowKey?: string | ((opts: { rowData: T; rowIndex: number }) => string)
-  readonly height?: number
+  readonly maxHeight?: number
   readonly rowHeight?: number | ((opt: { rowData: T; rowIndex: number }) => number)
   readonly headerRowHeight?: number
   readonly addRowsComponent?:
