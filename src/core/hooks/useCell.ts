@@ -13,9 +13,7 @@ export const useCell = () => {
     const [activeCell, setActiveCell] = useDeepEqualState<(Cell & ScrollBehavior) | null>(null);
 
     // The selection cell and the active cell are the two corners of the selection, null when nothing is selected
-    const [selectionCell, setSelectionCell] = useDeepEqualState<
-        (Cell & ScrollBehavior) | null
-            >(null);
+    const [selectionCell, setSelectionCell] = useDeepEqualState<(Cell & ScrollBehavior) | null>(null);
 
     // Min and max of the current selection (rectangle defined by the active cell and the selection cell), null when nothing is selected
     const selection = useMemo<Selection | null>(

@@ -1,4 +1,5 @@
 import type {
+    Cell,
     ContextMenuItem,
     DataSheetGridProps,
     RowData
@@ -7,8 +8,8 @@ import { AddRows } from './AddRows';
 import { ContextMenu } from './ContextMenu';
 import { Grid } from './Grid';
 import { SelectionRect } from './SelectionRect';
-import { useDatagrid, useController } from '../../core';
-import { useEffect } from 'react';
+import { DatagridProvider, useDatagridContext } from '../../core';
+import { useEffect, useRef } from 'react';
 import { useMouseDownHandler } from '../hooks/events/useMouseDownHandler';
 import { useContextMenuHandler } from '../hooks/events/useContextMenuHandler';
 import { useKeydownHandler } from '../hooks/events/useKeydownHandler';
@@ -21,8 +22,16 @@ import { usePasteHandler } from '../hooks/events/usePasteHandler';
 import { useCopyHandler } from '../hooks/events/useCopyHandler';
 import { useCutHandler } from '../hooks/events/useCutHandler';
 import { useEdges } from '../hooks/useEdges';
+import { useUI } from '../hooks/useUI';
+import { useContextMenu } from '../hooks/useContextMenu';
 
-export function DataSheetGrid<T extends RowData>(props: Partial<DataSheetGridProps<T>>) {
+function DataSheetGridImpl<T extends RowData>() {
+    const context = useDatagridContext<T>();
+
+    const lastEditingCellRef = useRef<Cell>(null);
+    const beforeTabIndexRef = useRef<HTMLDivElement>(null);
+    const afterTabIndexRef = useRef<HTMLDivElement>(null);
+
     const {
         className,
         style,
@@ -32,156 +41,77 @@ export function DataSheetGrid<T extends RowData>(props: Partial<DataSheetGridPro
         onScroll,
         addRowsComponent: AddRowsComponent = AddRows,
         contextMenuComponent: ContextMenuComponent = ContextMenu,
-    } = props;
-
-    const context = useDatagrid<T>(props);
-
-    const {
-        applyPasteDataToDatasheet,
-        deleteSelection,
-        duplicateRows,
-    } = useController(context);
+        lockRows,
+        headerRowHeight
+    } = context.propsRef.current;
 
     const {
-        beforeTabIndexRef,
-        afterTabIndexRef,
-        outerRef,
-        innerRef,
-        fullWidth,
-        contentWidth,
-        displayHeight,
-        getRowSize,
-        headerRowHeight,
-        setRowData,
         setActiveCell,
-        setContextMenu,
-        rawColumns,
-        data,
-        columns,
-        columnWidths,
         hasStickyRightColumn,
+        columns,
         activeCell,
         selection,
         editing,
         isCellDisabled,
+        selectionCell,
+        expandSelection,
+        data,
+        applyPasteDataToDatasheet,
+        duplicateRows,
         deleteRows,
         insertRowAfter,
+        setRowData,
         stopEditing,
-        getContextMenuItems,
-        columnRights,
-        lockRows,
-        height,
-        width,
-        expandSelection,
-        contextMenu,
-        contextMenuItems,
-        scrollTo,
-        selectionCell,
-        getCursorIndex,
-        setSelectionCell,
-        setEditing,
-        setSelectionMode,
-        disableContextMenu,
-        lastEditingCellRef,
-        setExpandingSelectionFromRowIndex,
-        expandingSelectionFromRowIndex,
-        expandSelectionRowsCount,
-        setExpandSelectionRowsCount,
-        onChange,
-        selectionMode,
-        setContextMenuItems,
     } = context;
 
-    const onPaste = usePasteHandler({
-        activeCell,
-        editing,
-        applyPasteDataToDatasheet,
-    });
+    const {
+        contextMenu,
+        setContextMenu,
+        contextMenuItems,
+        getContextMenuItems,
+        disableContextMenu,
+        setContextMenuItems,
+    } = useContextMenu();
 
-    const onCopy = useCopyHandler({
-        editing,
-        activeCell,
-        selection,
-        columns,
-        data,
-    });
+    const {
+        outerRef,
+        width,
+        height,
+        displayHeight,
+        contentWidth,
+        columnWidths,
+        columnRights,
+        getRowSize,
+        fullWidth,
+        innerRef,
+        scrollTo,
+        getCursorIndex
+    } = useUI();
 
-    const onCut = useCutHandler({
-        activeCell,
-        editing,
-        deleteSelection,
-        onCopy,
-    });
+    const onPaste = usePasteHandler();
+
+    const onCopy = useCopyHandler();
+
+    const onCut = useCutHandler({ onCopy });
 
     const onMouseDown = useMouseDownHandler({
-        innerRef,
-        getCursorIndex,
-        activeCell,
-        editing,
-        columns,
-        data,
-        hasStickyRightColumn,
-        disableContextMenu,
-        setActiveCell,
-        setEditing,
-        setSelectionMode,
-        setSelectionCell,
-        selectionCell,
-        isCellDisabled,
         contextMenu,
         contextMenuItems,
         setContextMenu,
-        selection,
         lastEditingCellRef,
-        setExpandingSelectionFromRowIndex
-    });
-
-    const onMouseUp = useMouseUpHandler({
-        columns,
-        data,
-        setSelectionCell,
-        expandingSelectionFromRowIndex,
-        expandSelectionRowsCount,
-        setExpandSelectionRowsCount,
-        activeCell,
-        selection,
-        isCellDisabled,
-        onChange,
-        setActiveCell,
-        setExpandingSelectionFromRowIndex,
-        setSelectionMode
-    });
-
-    const onMouseMove = useMouseMoveHandler({
-        columns,
-        data,
-        hasStickyRightColumn,
-        scrollTo,
-        setEditing,
-        setSelectionCell,
-        expandingSelectionFromRowIndex,
-        setExpandSelectionRowsCount,
+        disableContextMenu,
+        innerRef,
         getCursorIndex,
-        selectionMode
+    });
+
+    const onMouseUp = useMouseUpHandler();
+    const onMouseMove = useMouseMoveHandler({
+        scrollTo,
+        getCursorIndex,
     });
 
     const onKeyDown = useKeydownHandler({
-        activeCell,
-        columns,
-        data,
-        editing,
-        hasStickyRightColumn,
-        insertRowAfter,
-        isCellDisabled,
         scrollTo,
-        setActiveCell,
-        setEditing,
-        selectionCell,
-        setSelectionCell,
-        stopEditing,
-        selection,
-        deleteSelection,
-        duplicateRows,
         beforeTabIndexRef,
         afterTabIndexRef,
         lastEditingCellRef
@@ -203,17 +133,7 @@ export function DataSheetGrid<T extends RowData>(props: Partial<DataSheetGridPro
     useDocumentEventListener('keydown', onKeyDown);
     useDocumentEventListener('contextmenu', onContextMenu);
 
-    useCallbacks({
-        activeCell,
-        columns,
-        editing,
-        lastEditingCellRef,
-        selection,
-        onFocus: props.onFocus,
-        onBlur: props.onFocus,
-        onActiveCellChange: props.onFocus,
-        onSelectionChange: props.onFocus,
-    });
+    useCallbacks({ lastEditingCellRef });
 
     // Scroll to the selectionCell cell when it changes
     useEffect(() => {
@@ -368,9 +288,12 @@ export function DataSheetGrid<T extends RowData>(props: Partial<DataSheetGridPro
         onCut,
         onCopy,
         applyPasteDataToDatasheet,
+        setContextMenu,
+        setContextMenuItems,
     ]);
 
     const edges = useEdges(outerRef, width, height);
+    const rawColumns = context.propsRef.current.columns;
 
     return (
         <div className={className} style={style}>
@@ -454,3 +377,10 @@ export function DataSheetGrid<T extends RowData>(props: Partial<DataSheetGridPro
     );
 };
 
+export function DataSheetGrid<TRow extends RowData>(props: Partial<DataSheetGridProps<TRow>>) {
+    return (
+        <DatagridProvider {...props}>
+            <DataSheetGridImpl />
+        </DatagridProvider>
+    );
+};

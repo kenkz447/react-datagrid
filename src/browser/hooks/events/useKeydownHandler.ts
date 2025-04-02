@@ -1,31 +1,21 @@
 import { useCallback } from 'react';
 import { getAllTabbableElements } from '../../utils/tab';
 import { isPrintableUnicode } from '../../utils/copyPasting';
-import { Cell } from '../../../core';
+import { Cell, useDatagridContext } from '../../../core';
 
 interface UseKeydownHandlerProps {
-    activeCell,
-    columns,
-    data,
-    editing,
-    hasStickyRightColumn,
-    insertRowAfter,
-    isCellDisabled,
     scrollTo,
-    setActiveCell,
-    setEditing,
-    selectionCell,
-    setSelectionCell,
-    stopEditing,
-    selection,
-    deleteSelection,
-    duplicateRows,
     beforeTabIndexRef,
     afterTabIndexRef,
     lastEditingCellRef
 };
 
-export const useKeydownHandler = (props: UseKeydownHandlerProps) => {
+export const useKeydownHandler = ({
+    scrollTo,
+    beforeTabIndexRef,
+    afterTabIndexRef,
+    lastEditingCellRef
+}: UseKeydownHandlerProps) => {
     const {
         activeCell,
         columns,
@@ -34,7 +24,6 @@ export const useKeydownHandler = (props: UseKeydownHandlerProps) => {
         hasStickyRightColumn,
         insertRowAfter,
         isCellDisabled,
-        scrollTo,
         setActiveCell,
         setEditing,
         selectionCell,
@@ -42,11 +31,8 @@ export const useKeydownHandler = (props: UseKeydownHandlerProps) => {
         stopEditing,
         selection,
         deleteSelection,
-        duplicateRows,
-        beforeTabIndexRef,
-        afterTabIndexRef,
-        lastEditingCellRef
-    } = props;
+        duplicateRows
+    } = useDatagridContext();
 
     const onKeyDown = useCallback(
         (event: KeyboardEvent) => {

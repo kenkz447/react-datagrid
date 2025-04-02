@@ -1,24 +1,9 @@
 import { useCallback } from 'react';
-import { Cell } from '../../../core';
+import { Cell, useDatagridContext } from '../../../core';
 
-interface UseMouseUpHandlerProps {
-    columns,
-    data,
-    setSelectionCell,
-    expandingSelectionFromRowIndex,
-    expandSelectionRowsCount,
-    setExpandSelectionRowsCount,
-    activeCell,
-    selection,
-    isCellDisabled,
-    onChange,
-    setActiveCell,
-    setExpandingSelectionFromRowIndex,
-    setSelectionMode
-}
-
-export const useMouseUpHandler = (props: UseMouseUpHandlerProps) => {
+export const useMouseUpHandler = () => {
     const {
+        propsRef,
         columns,
         data,
         setSelectionCell,
@@ -28,11 +13,12 @@ export const useMouseUpHandler = (props: UseMouseUpHandlerProps) => {
         activeCell,
         selection,
         isCellDisabled,
-        onChange,
         setActiveCell,
         setExpandingSelectionFromRowIndex,
         setSelectionMode
-    } = props;
+    } = useDatagridContext();
+
+    const { onChange } = propsRef.current;
 
     const onMouseUp = useCallback(() => {
         if (expandingSelectionFromRowIndex !== null) {

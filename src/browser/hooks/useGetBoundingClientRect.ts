@@ -9,15 +9,9 @@ export const useGetBoundingClientRect = (
     const boundingRect = useRef<DOMRect | null>(null);
 
     const throttledCompute = useMemo(
-        () =>
-            throttle(delay, true, () => {
-                setTimeout(
-                    () =>
-                        (boundingRect.current =
-              ref.current?.getBoundingClientRect() || null),
-                    0
-                );
-            }),
+        () => throttle(delay, true, () => {
+            setTimeout(() => (boundingRect.current = ref.current?.getBoundingClientRect() || null), 0);
+        }),
         [ref, delay]
     );
 

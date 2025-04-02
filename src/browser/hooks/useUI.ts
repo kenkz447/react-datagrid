@@ -1,29 +1,17 @@
 import { useCallback, useRef } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-import { useRowHeights } from './internal/useRowHeights';
-import { useDebounceState } from './internal/useDebounceState';
-import { useColumnWidths } from './internal/useColumnWidths';
-import { useGetBoundingClientRect } from './internal/useGetBoundingClientRect';
-import { Cell, ScrollBehavior } from '../types';
+import { useGetBoundingClientRect } from './useGetBoundingClientRect';
+import { Cell, ScrollBehavior, useColumnWidths, useRowHeights, useDebounceState, useDatagridContext } from '../../core';
 
-interface UseUIProps {
-    data,
-    columns,
-    rowHeight,
-    headerRowHeight,
-    maxHeight,
-    hasStickyRightColumn
-}
-
-export const useUI = (props: UseUIProps) => {
+export const useUI = () => {
     const {
+        propsRef,
         data,
         columns,
-        rowHeight,
-        headerRowHeight,
-        maxHeight,
         hasStickyRightColumn
-    } = props;
+    } = useDatagridContext();
+
+    const { rowHeight, maxHeight, headerRowHeight } = propsRef.current;
 
     const outerRef = useRef<HTMLDivElement>(null);
     

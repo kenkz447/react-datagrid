@@ -1,5 +1,6 @@
 import {
     useCallback,
+    useMemo,
     useRef,
     useState,
 } from 'react';
@@ -10,33 +11,29 @@ import {
     RowData,
 } from '../types';
 import { useColumns } from './internal/useColumns';
-import { useRow } from './useRow';
 import { useCell } from './useCell';
-import { useUI } from './useUI';
-import { useContextMenu } from './useContextMenu';
+import { DatagridContextType } from '../contexts';
+import { useRowController } from './useRowController';
 
-const DEFAULT_DATA: any[] = [];
-const DEFAULT_COLUMNS: Column<any, any, any>[] = [];
-const DEFAULT_ROW_HEIGHT = 40;
-const DEFAULT_MAX_HEIGHT = 400;
+export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow>): DatagridContextType<TRow> {
+    const {
+        data,
+        gutterColumn,
+        stickyRightColumn,
+        disableExpandSelection,
+        disableSmartDelete,
+        lockRows,
+        autoAddRow,
+        createRow,
+        duplicateRow,
+        onChange
+    } = props;
 
-export function useDatagrid<TRow extends RowData>({
-    data = DEFAULT_DATA,
-    columns: rawColumns = DEFAULT_COLUMNS,
-    maxHeight = DEFAULT_MAX_HEIGHT,
-    rowHeight = DEFAULT_ROW_HEIGHT,
-    headerRowHeight = typeof rowHeight === 'number' ? rowHeight : DEFAULT_ROW_HEIGHT,
-    disableContextMenu: disableContextMenuRaw,
-    gutterColumn,
-    stickyRightColumn,
-    autoAddRow,
-    lockRows,
-    disableExpandSelection,
-    createRow,
-    onChange,
-    duplicateRow,
-    disableSmartDelete
-}: DataSheetGridProps<TRow>) {
+    const propsRef = useRef(props);
+    const dataRef = useRef(data);
+    dataRef.current = data;
+
+    const [editing, setEditing] = useState(false);
 
     const {
         expandingSelectionFromRowIndex,
@@ -50,30 +47,9 @@ export function useDatagrid<TRow extends RowData>({
         setSelectionMode
     } = useCell();
 
-    const {
-        editing,
-        dataRef,
-        insertRowAfter,
-        setRowData,
-        deleteRows,
-        stopEditing,
-        setEditing,
-    } = useRow({
-        data,
-        onChange,
-        createRow,
-        lockRows,
-        autoAddRow,
-        setActiveCell,
-        setSelectionCell,
-        activeCell,
-    });
-
-    const lastEditingCellRef = useRef<Cell | null>(null);
     const hasStickyRightColumn = Boolean(stickyRightColumn);
-    const beforeTabIndexRef = useRef<HTMLDivElement>(null);
-    const afterTabIndexRef = useRef<HTMLDivElement>(null);
 
+    const rawColumns = props.columns;
     const columns = useColumns(rawColumns, gutterColumn, stickyRightColumn);
 
     // Number of rows the user is expanding the selection by, always a number, even when not expanding selection
@@ -96,28 +72,6 @@ export function useDatagrid<TRow extends RowData>({
             ? null
             : expandSelectionRowsCount;
 
-    const {
-        outerRef,
-        width,
-        height,
-        displayHeight,
-        contentWidth,
-        columnWidths,
-        columnRights,
-        getRowSize,
-        fullWidth,
-        innerRef,
-        scrollTo,
-        getCursorIndex
-    } = useUI({
-        data,
-        columns,
-        rowHeight,
-        headerRowHeight,
-        maxHeight,
-        hasStickyRightColumn
-    });
-
     const isCellDisabled = useCallback((cell: Cell): boolean => {
         const disabled = columns[cell.col + 1].disabled;
 
@@ -130,68 +84,57 @@ export function useDatagrid<TRow extends RowData>({
     }, [columns]);
 
     const {
-        contextMenu,
-        setContextMenu,
-        contextMenuItems,
-        getContextMenuItems,
-        disableContextMenu,
-        setContextMenuItems,
-    } = useContextMenu({
-        disableContextMenu: disableContextMenuRaw,
-        lockRows
-    });
-
-    return {
-        beforeTabIndexRef,
-        afterTabIndexRef,
-        outerRef,
-        innerRef,
-        fullWidth,
-        contentWidth,
-        displayHeight,
-        getRowSize,
-        headerRowHeight,
-        setRowData,
-        setActiveCell,
-        setContextMenu,
-        rawColumns,
-        data,
-        columns,
-        columnWidths,
-        hasStickyRightColumn,
-        activeCell,
-        selection,
-        editing,
-        isCellDisabled,
+        applyPasteDataToDatasheet,
+        deleteSelection,
+        duplicateRows,
         deleteRows,
         insertRowAfter,
+        setRowData,
         stopEditing,
-        getContextMenuItems,
-        columnRights,
-        lockRows,
-        height,
-        width,
-        expandSelection,
-        contextMenu,
-        contextMenuItems,
-        scrollTo,
-        selectionCell,
-        getCursorIndex,
+    } = useRowController({
+        dataRef,
+        columns,
+        data,
+        activeCell,
+        selection,
+        setActiveCell,
         setSelectionCell,
-        setEditing,
-        setSelectionMode,
-        disableContextMenu,
-        lastEditingCellRef,
-        setExpandingSelectionFromRowIndex,
-        expandingSelectionFromRowIndex,
-        expandSelectionRowsCount,
-        setExpandSelectionRowsCount,
-        onChange,
-        selectionMode,
-        setContextMenuItems,
-        dataRef, 
+        editing,
+        isCellDisabled,
+        lockRows,
         createRow,
         duplicateRow,
-        disableSmartDelete
-    };
+        onChange,
+        hasStickyRightColumn,
+        disableSmartDelete,
+        setEditing,
+        autoAddRow
+    });
+
+    return useMemo(() => ({
+        propsRef,
+        dataRef,
+        data,
+        columns,
+        hasStickyRightColumn,
+        selection,
+        isCellDisabled,
+        expandSelection,
+        activeCell, setActiveCell,
+        selectionCell, setSelectionCell,
+        editing, setEditing,
+        selectionMode, setSelectionMode,
+        expandingSelectionFromRowIndex, setExpandingSelectionFromRowIndex,
+        expandSelectionRowsCount, setExpandSelectionRowsCount,
+
+        // Data controller
+        applyPasteDataToDatasheet,
+        deleteSelection,
+        duplicateRows,
+        deleteRows,
+        insertRowAfter,
+        setRowData,
+        stopEditing,
+    }), [activeCell, columns, data, editing, expandSelection, expandSelectionRowsCount, expandingSelectionFromRowIndex, hasStickyRightColumn, isCellDisabled, selection, selectionCell, selectionMode, setActiveCell, setExpandingSelectionFromRowIndex, setSelectionCell, setSelectionMode, applyPasteDataToDatasheet,
+        deleteSelection, duplicateRows, deleteRows, insertRowAfter, setRowData, stopEditing]);
 };

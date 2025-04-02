@@ -188,3 +188,13 @@ export type DataSheetGridRef = {
   readonly setActiveCell: (activeCell: CellWithIdInput | null) => void
   readonly setSelection: (selection: SelectionWithIdInput | null) => void
 }
+
+export interface UseRowControllerReturn<TRow extends RowData> {
+  readonly duplicateRows: (rowMin: number, rowMax?: number) => void;
+  readonly applyPasteDataToDatasheet: (pasteData: string[][]) => Promise<void>;
+  readonly deleteSelection: (_smartDelete?: boolean) => void;
+  readonly deleteRows: (rowMin: number, rowMax?: number) => void;
+  readonly insertRowAfter: (row: number, count?: number) => void;
+  readonly setRowData: (rowIndex: number, item: TRow) => void;
+  readonly stopEditing: (options?: { nextRow?: boolean }) => void;
+}

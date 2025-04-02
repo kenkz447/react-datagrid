@@ -1,31 +1,25 @@
 import { useCallback } from 'react';
+import { useDatagridContext } from '../../../core';
 
 interface UseMouseMoveHandlerProps {
-    columns,
-    data,
-    hasStickyRightColumn,
     scrollTo,
-    setEditing,
-    setSelectionCell,
-    expandingSelectionFromRowIndex,
-    setExpandSelectionRowsCount,
     getCursorIndex,
-    selectionMode
 }
 
-export const useMouseMoveHandler = (props: UseMouseMoveHandlerProps) => {
+export const useMouseMoveHandler = ({
+    scrollTo,
+    getCursorIndex,
+}: UseMouseMoveHandlerProps) => {
     const {
         columns,
         data,
         hasStickyRightColumn,
-        scrollTo,
         setEditing,
         setSelectionCell,
         expandingSelectionFromRowIndex,
         setExpandSelectionRowsCount,
-        getCursorIndex,
         selectionMode
-    } = props;
+    } = useDatagridContext();
 
     const onMouseMove = useCallback(
         (event: MouseEvent) => {

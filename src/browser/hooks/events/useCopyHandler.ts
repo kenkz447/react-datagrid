@@ -1,23 +1,15 @@
 import { useCallback } from 'react';
-import { Cell } from '../../../core';
+import { Cell, useDatagridContext } from '../../../core';
 import { encodeHtml } from '../../utils/copyPasting';
 
-interface UseCopyHandlerProps {
-    editing,
-    activeCell,
-    selection,
-    columns,
-    data,
-}
-
-export const useCopyHandler = (props: UseCopyHandlerProps) => {
+export const useCopyHandler = () => {
     const {
         editing,
         activeCell,
         selection,
         columns,
         data,
-    } = props;
+    } = useDatagridContext();
 
     const onCopy = useCallback(
         async (event?: ClipboardEvent) => {
