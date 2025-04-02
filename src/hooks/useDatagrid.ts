@@ -1,6 +1,5 @@
 import {
     useCallback,
-    useEffect,
     useRef,
     useState,
 } from 'react';
@@ -12,21 +11,11 @@ import {
     RowData,
 } from '../types';
 import { useColumns } from './internal/useColumns';
-import { useDocumentEventListener } from './internal/useDocumentEventListener';
 import deepEqual from 'fast-deep-equal';
-import {
-    getCellWithId,
-    getSelectionWithId,
-} from '../utils/typeCheck';
 import { useRow } from './useRow';
 import { useCell } from './useCell';
 import { useUI } from './useUI';
 import { useContextMenu } from './useContextMenu';
-import { useContextMenuHandler } from './events/useContextMenuHandler';
-import { useKeydownHandler } from './events/useKeydownHandler';
-import { useMouseMoveHandler } from './events/useMouseMoveHandler';
-import { useMouseUpHandler } from './events/useMouseUpHandler';
-import { useMouseDownHandler } from './events/useMouseDownHandler';
 import { usePasteHandler } from './events/usePasteHandler';
 import { useCutHandler } from './events/useCutHandler';
 import { useCopyHandler } from './events/useCopyHandler';
@@ -51,11 +40,7 @@ export function useDatagrid<TRow extends RowData>({
     disableSmartDelete,
     createRow,
     duplicateRow,
-    onChange,
-    onFocus,
-    onBlur,
-    onActiveCellChange,
-    onSelectionChange
+    onChange
 }: DataSheetGridProps<TRow>) {
 
     const {
@@ -191,92 +176,6 @@ export function useDatagrid<TRow extends RowData>({
         ]
     );
 
-    const deleteSelection = useCallback(
-        (_smartDelete = true) => {
-            const smartDelete = _smartDelete && !disableSmartDelete;
-            if (!activeCell) {
-                return;
-            }
-
-            const min: Cell = selection?.min || activeCell;
-            const max: Cell = selection?.max || activeCell;
-
-            if (
-                data?.slice(min.row, max.row + 1).every((rowData, i) =>
-                    columns.every((column) =>
-                        column.isCellEmpty({ rowData, rowIndex: i + min.row })
-                    )
-                )
-            ) {
-                if (smartDelete) {
-                    deleteRows(min.row, max.row);
-                }
-                return;
-            }
-
-            const newData = [...data];
-
-            for (let row = min.row; row <= max.row; ++row) {
-                for (let col = min.col; col <= max.col; ++col) {
-                    if (!isCellDisabled({ col, row })) {
-                        const { deleteValue = ({ rowData }) => rowData } =
-                            columns[col + 1];
-                        newData[row] = deleteValue({
-                            rowData: newData[row],
-                            rowIndex: row,
-                        });
-                    }
-                }
-            }
-
-            if (smartDelete && deepEqual(newData, data)) {
-                setActiveCell({ col: 0, row: min.row, doNotScrollX: true });
-                setSelectionCell({
-                    col: columns.length - (hasStickyRightColumn ? 3 : 2),
-                    row: max.row,
-                    doNotScrollX: true,
-                });
-                return;
-            }
-
-            onChange?.(newData, [
-                {
-                    type: 'UPDATE',
-                    fromRowIndex: min.row,
-                    toRowIndex: max.row + 1,
-                },
-            ]);
-        },
-        [
-            disableSmartDelete,
-            activeCell,
-            columns,
-            data,
-            deleteRows,
-            isCellDisabled,
-            onChange,
-            selection?.max,
-            selection?.min,
-            setActiveCell,
-            setSelectionCell,
-            hasStickyRightColumn,
-        ]
-    );
-
-    const onCopy = useCopyHandler({
-        editing,
-        activeCell,
-        selection,
-        columns,
-        data,
-    });
-
-    const onCut = useCutHandler({
-        activeCell,
-        editing,
-        deleteSelection,
-        onCopy,
-    });
     const applyPasteDataToDatasheet = useCallback(
         async (pasteData: string[][]) => {
             if (!editing && activeCell) {
@@ -441,24 +340,77 @@ export function useDatagrid<TRow extends RowData>({
         ]
     );
 
-    const {
-        contextMenu,
-        setContextMenu,
-        contextMenuItems,
-        getContextMenuItems,
-        disableContextMenu,
-    } = useContextMenu({
-        disableContextMenu: disableContextMenuRaw,
-        lockRows,
-        activeCell,
-        selection,
-        deleteRows,
-        duplicateRows,
-        insertRowAfter,
-        onCut,
-        onCopy,
-        applyPasteDataToDatasheet,
-    });
+    const deleteSelection = useCallback(
+        (_smartDelete = true) => {
+            const smartDelete = _smartDelete && !disableSmartDelete;
+            if (!activeCell) {
+                return;
+            }
+
+            const min: Cell = selection?.min || activeCell;
+            const max: Cell = selection?.max || activeCell;
+
+            if (
+                data?.slice(min.row, max.row + 1).every((rowData, i) =>
+                    columns.every((column) =>
+                        column.isCellEmpty({ rowData, rowIndex: i + min.row })
+                    )
+                )
+            ) {
+                if (smartDelete) {
+                    deleteRows(min.row, max.row);
+                }
+                return;
+            }
+
+            const newData = [...data];
+
+            for (let row = min.row; row <= max.row; ++row) {
+                for (let col = min.col; col <= max.col; ++col) {
+                    if (!isCellDisabled({ col, row })) {
+                        const { deleteValue = ({ rowData }) => rowData } =
+                            columns[col + 1];
+                        newData[row] = deleteValue({
+                            rowData: newData[row],
+                            rowIndex: row,
+                        });
+                    }
+                }
+            }
+
+            if (smartDelete && deepEqual(newData, data)) {
+                setActiveCell({ col: 0, row: min.row, doNotScrollX: true });
+                setSelectionCell({
+                    col: columns.length - (hasStickyRightColumn ? 3 : 2),
+                    row: max.row,
+                    doNotScrollX: true,
+                });
+                return;
+            }
+
+            onChange?.(newData, [
+                {
+                    type: 'UPDATE',
+                    fromRowIndex: min.row,
+                    toRowIndex: max.row + 1,
+                },
+            ]);
+        },
+        [
+            disableSmartDelete,
+            activeCell,
+            columns,
+            data,
+            deleteRows,
+            isCellDisabled,
+            onChange,
+            selection?.max,
+            selection?.min,
+            setActiveCell,
+            setSelectionCell,
+            hasStickyRightColumn,
+        ]
+    );
 
     const onPaste = usePasteHandler({
         activeCell,
@@ -466,174 +418,32 @@ export function useDatagrid<TRow extends RowData>({
         applyPasteDataToDatasheet,
     });
 
-    const onMouseDown = useMouseDownHandler({
-        innerRef,
-        getCursorIndex,
+    const onCopy = useCopyHandler({
+        editing,
+        activeCell,
+        selection,
+        columns,
+        data,
+    });
+
+    const onCut = useCutHandler({
         activeCell,
         editing,
-        columns,
-        data,
-        hasStickyRightColumn,
-        disableContextMenu,
-        setActiveCell,
-        setEditing,
-        setSelectionMode,
-        setSelectionCell,
-        selectionCell,
-        isCellDisabled,
-        contextMenu,
-        contextMenuItems,
-        setContextMenu,
-        selection,
-        lastEditingCellRef,
-        setExpandingSelectionFromRowIndex
-    });
-
-    const onMouseUp = useMouseUpHandler({
-        columns,
-        data,
-        setSelectionCell,
-        expandingSelectionFromRowIndex,
-        expandSelectionRowsCount,
-        setExpandSelectionRowsCount,
-        activeCell,
-        selection,
-        isCellDisabled,
-        onChange,
-        setActiveCell,
-        setExpandingSelectionFromRowIndex,
-        setSelectionMode
-    });
-
-    const onMouseMove = useMouseMoveHandler({
-        columns,
-        data,
-        hasStickyRightColumn,
-        scrollTo,
-        setEditing,
-        setSelectionCell,
-        expandingSelectionFromRowIndex,
-        setExpandSelectionRowsCount,
-        getCursorIndex,
-        selectionMode
-    });
-
-    const onKeyDown = useKeydownHandler({
-        activeCell,
-        columns,
-        data,
-        editing,
-        hasStickyRightColumn,
-        insertRowAfter,
-        isCellDisabled,
-        scrollTo,
-        setActiveCell,
-        setEditing,
-        selectionCell,
-        setSelectionCell,
-        stopEditing,
-        selection,
         deleteSelection,
-        duplicateRows,
-        beforeTabIndexRef,
-        afterTabIndexRef,
-        lastEditingCellRef
+        onCopy,
     });
 
-    const onContextMenu = useContextMenuHandler({
-        innerRef,
-        getCursorIndex,
-        activeCell,
-        editing
+    const {
+        contextMenu,
+        setContextMenu,
+        contextMenuItems,
+        getContextMenuItems,
+        disableContextMenu,
+        setContextMenuItems,
+    } = useContextMenu({
+        disableContextMenu: disableContextMenuRaw,
+        lockRows
     });
-
-
-    useDocumentEventListener('paste', onPaste);
-    useDocumentEventListener('copy', onCopy);
-    useDocumentEventListener('cut', onCut);
-    useDocumentEventListener('mouseup', onMouseUp);
-    useDocumentEventListener('mousedown', onMouseDown);
-    useDocumentEventListener('mousemove', onMouseMove);
-    useDocumentEventListener('keydown', onKeyDown);
-    useDocumentEventListener('contextmenu', onContextMenu);
-
-    const callbacksRef = useRef({
-        onFocus,
-        onBlur,
-        onActiveCellChange,
-        onSelectionChange,
-    });
-    callbacksRef.current.onFocus = onFocus;
-    callbacksRef.current.onBlur = onBlur;
-    callbacksRef.current.onActiveCellChange = onActiveCellChange;
-    callbacksRef.current.onSelectionChange = onSelectionChange;
-
-    // Scroll to the selectionCell cell when it changes
-    useEffect(() => {
-        if (selectionCell) {
-            scrollTo(selectionCell);
-        }
-    }, [selectionCell, scrollTo]);
-
-    // Scroll to the active cell when it changes
-    useEffect(() => {
-        if (activeCell) {
-            scrollTo(activeCell);
-        }
-    }, [activeCell, scrollTo]);
-
-    // Blur any element on focusing the grid
-    useEffect(() => {
-        if (activeCell !== null) {
-            (document.activeElement as HTMLElement).blur();
-            window.getSelection()?.removeAllRanges();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeCell !== null]);
-
-    useEffect(() => {
-        if (lastEditingCellRef.current) {
-            if (editing) {
-                callbacksRef.current.onFocus?.({
-                    cell: getCellWithId(lastEditingCellRef.current, columns),
-                });
-            } else {
-                callbacksRef.current.onBlur?.({
-                    cell: getCellWithId(lastEditingCellRef.current, columns),
-                });
-            }
-        }
-    }, [editing, columns]);
-
-    useEffect(() => {
-        callbacksRef.current.onActiveCellChange?.({
-            cell: getCellWithId(activeCell, columns),
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeCell?.col, activeCell?.row, columns]);
-
-    useEffect(() => {
-        callbacksRef.current.onSelectionChange?.({
-            selection: getSelectionWithId(
-                selection ??
-                (activeCell ? { min: activeCell, max: activeCell } : null),
-                columns
-            ),
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.min.col ?? activeCell?.col,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.min.row ?? activeCell?.row,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.max.col ?? activeCell?.col,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.max.row ?? activeCell?.row,
-        activeCell?.col,
-        activeCell?.row,
-        columns,
-    ]);
 
     return {
         beforeTabIndexRef,
@@ -670,5 +480,25 @@ export function useDatagrid<TRow extends RowData>({
         expandSelection,
         contextMenu,
         contextMenuItems,
+        scrollTo,
+        selectionCell,
+        getCursorIndex,
+        setSelectionCell,
+        setEditing,
+        setSelectionMode,
+        disableContextMenu,
+        lastEditingCellRef,
+        setExpandingSelectionFromRowIndex,
+        expandingSelectionFromRowIndex,
+        expandSelectionRowsCount,
+        setExpandSelectionRowsCount,
+        onChange,
+        selectionMode,
+        deleteSelection,
+        onPaste,
+        onCopy,
+        onCut,
+        setContextMenuItems,
+        applyPasteDataToDatasheet
     };
 };
