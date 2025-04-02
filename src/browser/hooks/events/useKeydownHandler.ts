@@ -75,6 +75,20 @@ export const useKeydownHandler = ({
                 goNextRow: () => {
                     setActiveCell((cell) => ({ col: 0, row: (cell?.row ?? 0) + 1 }));
                     setSelectionCell(null);
+                },
+                selectAll: () => {
+                    setActiveCell({
+                        col: 0,
+                        row: 0,
+                        doNotScrollY: true,
+                        doNotScrollX: true,
+                    });
+                    setSelectionCell({
+                        col: columns.length - (hasStickyRightColumn ? 3 : 2),
+                        row: data.length - 1,
+                        doNotScrollY: true,
+                        doNotScrollX: true,
+                    });
                 }
             };
 
@@ -96,7 +110,7 @@ export const useKeydownHandler = ({
 
             // Shift+Tab from first cell of a row
             const isShiftTab = isTab && event.shiftKey;
-            const isFirstCell = activeCell.col === 0 && !columns[activeCell.col + 1].disableKeys;
+            const isFirstCell = activeCell.col === 0 && !disableKeys;
             if (isShiftTab && isFirstCell) {
                 event.preventDefault();
                 const isFirstRow = activeCell.row === 0;
@@ -122,6 +136,7 @@ export const useKeydownHandler = ({
             }
 
             if (isArrows || isTab) {
+                event.preventDefault();
                 const add = ([x, y]: [number, number], cell: Cell | null): Cell | null => cell && {
                     col: Math.max(0, Math.min(columns.length - (hasStickyRightColumn ? 3 : 2), cell.col + x)),
                     row: Math.max(0, Math.min(data.length - 1, cell.row + y)),
@@ -130,29 +145,29 @@ export const useKeydownHandler = ({
                 if (isShiftTab) {
                     setActiveCell((cell) => add([-1, 0], cell));
                     setSelectionCell(null);
-                } else {
-                    const direction = {
-                        ArrowDown: [0, 1],
-                        ArrowUp: [0, -1],
-                        ArrowLeft: [-1, 0],
-                        ArrowRight: [1, 0],
-                        Tab: [1, 0],
-                    }[event.key] as [number, number];
-
-                    if (event.ctrlKey || event.metaKey) {
-                        direction[0] *= columns.length;
-                        direction[1] *= data.length;
-                    }
-
-                    if (event.shiftKey) {
-                        setSelectionCell((cell) => add(direction, cell || activeCell));
-                    } else {
-                        setActiveCell((cell) => add(direction, cell));
-                        setSelectionCell(null);
-                    }
+                    return;
                 }
 
-                event.preventDefault();
+                const direction = {
+                    ArrowDown: [0, 1],
+                    ArrowUp: [0, -1],
+                    ArrowLeft: [-1, 0],
+                    ArrowRight: [1, 0],
+                    Tab: [1, 0],
+                }[event.key] as [number, number];
+
+                if (event.ctrlKey || event.metaKey) {
+                    direction[0] *= columns.length;
+                    direction[1] *= data.length;
+                }
+
+                if (event.shiftKey) {
+                    setSelectionCell((cell) => add(direction, cell || activeCell));
+                } else {
+                    setActiveCell((cell) => add(direction, cell));
+                    setSelectionCell(null);
+                }
+
                 return;
             }
 
@@ -174,7 +189,7 @@ export const useKeydownHandler = ({
             ) {
                 setSelectionCell(null);
 
-                if (editing && !columns[activeCell.col + 1].disableKeys) {
+                if (editing && !disableKeys) {
                     stopEditing();
                     event.preventDefault();
                 } else if (!isCellDisabled(activeCell)) {
@@ -215,7 +230,6 @@ export const useKeydownHandler = ({
                 setSelectionCell(null);
                 setEditing(true);
                 scrollTo(activeCell);
-
                 return;
             }
 
@@ -228,18 +242,7 @@ export const useKeydownHandler = ({
 
             const isControlA = event.key === 'a' && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
             if (isControlA && !editing) {
-                setActiveCell({
-                    col: 0,
-                    row: 0,
-                    doNotScrollY: true,
-                    doNotScrollX: true,
-                });
-                setSelectionCell({
-                    col: columns.length - (hasStickyRightColumn ? 3 : 2),
-                    row: data.length - 1,
-                    doNotScrollY: true,
-                    doNotScrollX: true,
-                });
+                focusController.selectAll();
                 event.preventDefault();
                 return;
             }
