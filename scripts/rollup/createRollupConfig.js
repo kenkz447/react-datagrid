@@ -28,6 +28,12 @@ export function createRollupConfig(options, callback) {
         tsconfig: options.tsconfig,
         clean: true,
         exclude: ['**/__tests__', '**/*.test.ts', '**/__typetest__'],
+        useTsconfigDeclarationDir: true,
+        tsconfigOverride: {
+          compilerOptions: {
+            declarationDir: 'dist/.'
+          },
+        },
       }),
       options.format === 'umd' &&
       commonjs({

@@ -1,10 +1,9 @@
 [
     "DataSheetGrid",
-    "DynamicDataSheetGrid",
     "checkboxColumn",
     "createAddRowsComponent",
     "createContextMenuComponent",
-    "createTextColumn",
+    "createEditableColumn",
     "dateColumn",
     "floatColumn",
     "intColumn",
