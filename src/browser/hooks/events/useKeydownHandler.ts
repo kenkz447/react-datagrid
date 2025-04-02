@@ -44,103 +44,90 @@ export const useKeydownHandler = ({
                 return;
             }
 
-            // Tab from last cell of a row
-            if (
-                event.key === 'Tab' &&
-                !event.shiftKey &&
-                activeCell.col ===
-                columns.length - (hasStickyRightColumn ? 3 : 2) &&
-                !columns[activeCell.col + 1].disableKeys
-            ) {
-                // Last row
-                if (activeCell.row === data.length - 1) {
-                    if (afterTabIndexRef.current) {
-                        event.preventDefault();
-
-                        setActiveCell(null);
-                        setSelectionCell(null);
-                        setEditing(false);
-
-                        const allElements = getAllTabbableElements();
-                        const index = allElements.indexOf(afterTabIndexRef.current);
-
-                        allElements[(index + 1) % allElements.length].focus();
-
-                        return;
-                    }
-                } else {
-                    setActiveCell((cell) => ({ col: 0, row: (cell?.row ?? 0) + 1 }));
-                    setSelectionCell(null);
-                    setEditing(false);
-                    event.preventDefault();
-
-                    return;
-                }
+            if (event.key === 'Tab' || event.key === 'Enter' || event.key.startsWith('Arrow')) {
+                setEditing(false);
             }
 
-            // Shift+Tab from first cell of a row
-            if (
-                event.key === 'Tab' &&
-                event.shiftKey &&
-                activeCell.col === 0 &&
-                !columns[activeCell.col + 1].disableKeys
-            ) {
-                // First row
-                if (activeCell.row === 0) {
-                    if (beforeTabIndexRef.current) {
-                        event.preventDefault();
+            const disableKeys = columns[activeCell.col + 1].disableKeys;
 
-                        setActiveCell(null);
-                        setSelectionCell(null);
-                        setEditing(false);
-
-                        const allElements = getAllTabbableElements();
-                        const index = allElements.indexOf(beforeTabIndexRef.current);
-
-                        allElements[
-                            (index - 1 + allElements.length) % allElements.length
-                        ].focus();
-
-                        return;
-                    }
-                } else {
+            const focusController = {
+                goOutFromFirst: () => {
+                    setActiveCell(null);
+                    setSelectionCell(null);
+                    const allElements = getAllTabbableElements();
+                    const index = allElements.indexOf(beforeTabIndexRef.current);
+                    allElements[(index - 1 + allElements.length) % allElements.length].focus();
+                },
+                goOutFromLast: () => {
+                    setActiveCell(null);
+                    setSelectionCell(null);
+                    const allElements = getAllTabbableElements();
+                    const index = allElements.indexOf(afterTabIndexRef.current);
+                    allElements[(index + 1) % allElements.length].focus();
+                },
+                goPrevRow: () => {
                     setActiveCell((cell) => ({
                         col: columns.length - (hasStickyRightColumn ? 3 : 2),
                         row: (cell?.row ?? 1) - 1,
                     }));
                     setSelectionCell(null);
-                    setEditing(false);
-                    event.preventDefault();
+                },
+                goNextRow: () => {
+                    setActiveCell((cell) => ({ col: 0, row: (cell?.row ?? 0) + 1 }));
+                    setSelectionCell(null);
+                }
+            };
 
+            // Tab from last cell of a row
+            const isTab = event.key === 'Tab';
+            const isPureTab = isTab && !event.shiftKey;
+            const isLastCell = activeCell.col === columns.length - (hasStickyRightColumn ? 3 : 2);
+            if (isPureTab && isLastCell && !disableKeys) {
+                event.preventDefault();
+                const isLastRow = activeCell.row === data.length - 1;
+                if (isLastRow) {
+                    if (afterTabIndexRef.current) {
+                        return focusController.goOutFromLast();
+                    }
+                } else {
+                    return focusController.goNextRow();
+                }
+            }
+
+            // Shift+Tab from first cell of a row
+            const isShiftTab = isTab && event.shiftKey;
+            const isFirstCell = activeCell.col === 0 && !columns[activeCell.col + 1].disableKeys;
+            if (isShiftTab && isFirstCell) {
+                event.preventDefault();
+                const isFirstRow = activeCell.row === 0;
+                if (isFirstRow) {
+                    if (beforeTabIndexRef.current) {
+                        return focusController.goOutFromFirst();
+                    }
+                } else {
+                    return focusController.goPrevRow();
+                }
+            }
+
+            const isArrows = event.key.startsWith('Arrow');
+
+            if (editing && (isArrows || isPureTab)) {
+                if (disableKeys) {
+                    return;
+                }
+
+                if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
                     return;
                 }
             }
 
-            if (event.key?.startsWith('Arrow') || event.key === 'Tab') {
-                if (editing && columns[activeCell.col + 1].disableKeys) {
-                    return;
-                }
+            if (isArrows || isTab) {
+                const add = ([x, y]: [number, number], cell: Cell | null): Cell | null => cell && {
+                    col: Math.max(0, Math.min(columns.length - (hasStickyRightColumn ? 3 : 2), cell.col + x)),
+                    row: Math.max(0, Math.min(data.length - 1, cell.row + y)),
+                };
 
-                if (editing && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
-                    return;
-                }
-
-                const add = (
-                    [x, y]: [number, number],
-                    cell: Cell | null
-                ): Cell | null =>
-                    cell && {
-                        col: Math.max(
-                            0,
-                            Math.min(
-                                columns.length - (hasStickyRightColumn ? 3 : 2),
-                                cell.col + x
-                            )
-                        ),
-                        row: Math.max(0, Math.min(data.length - 1, cell.row + y)),
-                    };
-
-                if (event.key === 'Tab' && event.shiftKey) {
+                if (isShiftTab) {
                     setActiveCell((cell) => add([-1, 0], cell));
                     setSelectionCell(null);
                 } else {
@@ -164,17 +151,21 @@ export const useKeydownHandler = ({
                         setSelectionCell(null);
                     }
                 }
-                setEditing(false);
 
                 event.preventDefault();
-            } else if (event.key === 'Escape') {
+                return;
+            }
+
+            if (event.key === 'Escape') {
                 if (!editing && !selectionCell) {
                     setActiveCell(null);
                 }
 
                 setSelectionCell(null);
-                setEditing(false);
-            } else if (
+                return;
+            }
+
+            if (
                 (event.key === 'Enter' || event.key === 'F2') &&
                 !event.ctrlKey &&
                 !event.metaKey &&
@@ -183,69 +174,74 @@ export const useKeydownHandler = ({
             ) {
                 setSelectionCell(null);
 
-                if (editing) {
-                    if (!columns[activeCell.col + 1].disableKeys) {
-                        stopEditing();
-                        event.preventDefault();
-                    }
+                if (editing && !columns[activeCell.col + 1].disableKeys) {
+                    stopEditing();
+                    event.preventDefault();
                 } else if (!isCellDisabled(activeCell)) {
                     lastEditingCellRef.current = activeCell;
                     setEditing(true);
                     scrollTo(activeCell);
                     event.preventDefault();
                 }
-            } else if (
-                event.key === 'Enter' &&
-                !event.ctrlKey &&
-                !event.metaKey &&
-                !event.altKey &&
-                event.shiftKey
-            ) {
+
+                return;
+            }
+
+            const isShiftEnter = event.key === 'Enter' && event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey;
+            if (isShiftEnter) {
                 insertRowAfter(selection?.max.row || activeCell.row);
-            } else if (
-                event.key === 'd' &&
-                (event.ctrlKey || event.metaKey) &&
-                !event.altKey &&
-                !event.shiftKey
-            ) {
+                return;
+            }
+
+            const isCtrlD = event.key === 'd' && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
+            if (isCtrlD) {
                 duplicateRows(
                     selection?.min.row || activeCell.row,
                     selection?.max.row
                 );
                 event.preventDefault();
-            } else if (
+                return;
+            }
+
+            if (
                 (isPrintableUnicode(event.key) || event.code.match(/Key[A-Z]$/)) &&
                 !event.ctrlKey &&
                 !event.metaKey &&
-                !event.altKey
+                !event.altKey &&
+                !editing &&
+                !isCellDisabled(activeCell)
             ) {
-                if (!editing && !isCellDisabled(activeCell)) {
-                    lastEditingCellRef.current = activeCell;
-                    setSelectionCell(null);
-                    setEditing(true);
-                    scrollTo(activeCell);
-                }
-            } else if (['Backspace', 'Delete'].includes(event.key)) {
-                if (!editing) {
-                    deleteSelection();
-                    event.preventDefault();
-                }
-            } else if (event.key === 'a' && (event.ctrlKey || event.metaKey)) {
-                if (!editing) {
-                    setActiveCell({
-                        col: 0,
-                        row: 0,
-                        doNotScrollY: true,
-                        doNotScrollX: true,
-                    });
-                    setSelectionCell({
-                        col: columns.length - (hasStickyRightColumn ? 3 : 2),
-                        row: data.length - 1,
-                        doNotScrollY: true,
-                        doNotScrollX: true,
-                    });
-                    event.preventDefault();
-                }
+                lastEditingCellRef.current = activeCell;
+                setSelectionCell(null);
+                setEditing(true);
+                scrollTo(activeCell);
+
+                return;
+            }
+
+            const isDelete = ['Backspace', 'Delete'].includes(event.key);
+            if (isDelete && !editing) {
+                deleteSelection();
+                event.preventDefault();
+                return;
+            }
+
+            const isControlA = event.key === 'a' && (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey;
+            if (isControlA && !editing) {
+                setActiveCell({
+                    col: 0,
+                    row: 0,
+                    doNotScrollY: true,
+                    doNotScrollX: true,
+                });
+                setSelectionCell({
+                    col: columns.length - (hasStickyRightColumn ? 3 : 2),
+                    row: data.length - 1,
+                    doNotScrollY: true,
+                    doNotScrollX: true,
+                });
+                event.preventDefault();
+                return;
             }
         },
         [

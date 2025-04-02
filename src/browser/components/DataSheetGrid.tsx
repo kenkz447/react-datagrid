@@ -158,7 +158,6 @@ function DataSheetGridImpl<T extends RowData>() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeCell !== null]);
 
-
     useEffect(() => {
         const items: ContextMenuItem[] = [];
 
