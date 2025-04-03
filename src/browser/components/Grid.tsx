@@ -1,29 +1,28 @@
-import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
-import React, { ReactNode, RefObject, useEffect } from 'react';
-import type {
-    RowData,
-} from '../../core';
-import cx from 'classnames';
-import { Cell as CellComponent } from './Cell';
+import React, { RefObject } from 'react';
+import type { RowData } from '../../core';
 import { useDatagridContext, useMemoizedIndexCallback } from '../../core';
+import { useVirtualizers } from '../hooks/useVirtualizers';
+import { HeaderRow } from './HeaderRow';
+import { DataRow } from './DataRow';
 
-interface GridProps {
-    children?: ReactNode;
-    outerRef: RefObject<HTMLDivElement>;
-    innerRef: RefObject<HTMLDivElement>;
-    columnWidths?: number[];
-    displayHeight: number;
-    isFullWidth?: boolean;
+export interface GridProps {
+    readonly children?: React.ReactNode;
+    readonly outerRef: RefObject<HTMLDivElement>;
+    readonly innerRef: RefObject<HTMLDivElement>;
+    readonly columnWidths?: number[];
+    readonly displayHeight: number;
+    readonly isFullWidth?: boolean;
 }
 
-export const Grid = <TRow extends RowData = RowData>({
+// ===== Main Component =====
+export function Grid<TRow extends RowData = RowData>({
     children,
     outerRef,
     innerRef,
     columnWidths,
     displayHeight,
     isFullWidth,
-}: GridProps) => {
+}: GridProps) {
     const {
         propsRef,
         data,
@@ -48,56 +47,16 @@ export const Grid = <TRow extends RowData = RowData>({
         onScroll,
     } = propsRef.current;
 
-    const rowVirtualizer = useVirtualizer({
-        count: data.length,
-        getScrollElement: () => outerRef.current,
-        paddingStart: headerRowHeight,
-        estimateSize: (index) => getRowSize(index).height,
-        getItemKey: (index: number): React.Key => {
-            if (rowKey && index > 0) {
-                const row = data[index - 1];
-                if (typeof rowKey === 'function') {
-                    return rowKey({ rowData: row, rowIndex: index });
-                } else if (
-                    typeof rowKey === 'string' &&
-                    row instanceof Object && rowKey in (row as any)
-                ) {
-                    const key = row[rowKey as keyof TRow];
-                    if (typeof key === 'string' || typeof key === 'number') {
-                        return key;
-                    }
-                }
-            }
-            return index;
-        },
-        overscan: 5,
+    const { rowVirtualizer, colVirtualizer } = useVirtualizers({
+        data,
+        outerRef,
+        headerRowHeight,
+        columnWidths,
+        getRowSize,
+        columns,
+        hasStickyRightColumn,
+        rowKey
     });
-
-    const colVirtualizer = useVirtualizer({
-        count: columns.length,
-        getScrollElement: () => outerRef.current,
-        estimateSize: (index) => columnWidths?.[index] ?? 100,
-        horizontal: true,
-        getItemKey: (index: number): React.Key => columns[index].id ?? index,
-        overscan: 1,
-        rangeExtractor: (range) => {
-            const result = defaultRangeExtractor(range);
-            if (result[0] !== 0) {
-                result.unshift(0);
-            }
-            if (
-                hasStickyRightColumn &&
-                result[result.length - 1] !== columns.length - 1
-            ) {
-                result.push(columns.length - 1);
-            }
-            return result;
-        },
-    });
-
-    useEffect(() => {
-        colVirtualizer.measure();
-    }, [colVirtualizer, columnWidths]);
 
     const setGivenRowData = useMemoizedIndexCallback(setRowData, 1);
     const deleteGivenRow = useMemoizedIndexCallback(deleteRows, 0);
@@ -123,129 +82,41 @@ export const Grid = <TRow extends RowData = RowData>({
                     height: rowVirtualizer.getTotalSize(),
                 }}
             >
-                {headerRowHeight > 0 && (
-                    <div
-                        className={cx('dsg-row', 'dsg-row-header')}
-                        style={{
-                            width: isFullWidth ? '100%' : colVirtualizer.getTotalSize(),
-                            height: headerRowHeight,
-                        }}
-                    >
-                        {colVirtualizer.getVirtualItems().map((col) => (
-                            <CellComponent
-                                key={col.key}
-                                gutter={col.index === 0}
-                                stickyRight={
-                                    hasStickyRightColumn && col.index === columns.length - 1
-                                }
-                                width={col.size}
-                                left={col.start}
-                                className={cx(
-                                    'dsg-cell-header',
-                                    selectionColMin !== undefined &&
-                                    selectionColMax !== undefined &&
-                                    selectionColMin <= col.index - 1 &&
-                                    selectionColMax >= col.index - 1 &&
-                                    'dsg-cell-header-active',
-                                    columns[col.index].headerClassName
-                                )}
-                            >
-                                <div className="dsg-cell-header-container">
-                                    {columns[col.index].title}
-                                </div>
-                            </CellComponent>
-                        ))}
-                    </div>
-                )}
-                {rowVirtualizer.getVirtualItems().map((row) => {
-                    const rowActive = Boolean(
-                        row.index >= (selectionMinRow ?? Infinity) &&
-                        row.index <= (selectionMaxRow ?? -Infinity)
-                    );
-                    return (
-                        <div
-                            key={row.key}
-                            className={cx(
-                                'dsg-row',
-                                typeof rowClassName === 'string' ? rowClassName : null,
-                                typeof rowClassName === 'function'
-                                    ? rowClassName({
-                                        rowData: data[row.index],
-                                        rowIndex: row.index,
-                                    })
-                                    : null
-                            )}
-                            style={{
-                                height: row.size,
-                                top: row.start,
-                                width: isFullWidth ? '100%' : colVirtualizer.getTotalSize(),
-                            }}
-                        >
-                            {colVirtualizer.getVirtualItems().map((col) => {
-                                const colCellClassName = columns[col.index].cellClassName;
-                                const disabled = columns[col.index].disabled;
-                                const Component = columns[col.index].component;
-                                const cellDisabled =
-                                    disabled === true ||
-                                    (typeof disabled === 'function' &&
-                                        disabled({
-                                            rowData: data[row.index],
-                                            rowIndex: row.index,
-                                        }));
-                                const cellIsActive =
-                                    activeCell?.row === row.index &&
-                                    activeCell.col === col.index - 1;
-
-                                return (
-                                    <CellComponent
-                                        key={col.key}
-                                        gutter={col.index === 0}
-                                        stickyRight={
-                                            hasStickyRightColumn && col.index === columns.length - 1
-                                        }
-                                        active={col.index === 0 && rowActive}
-                                        disabled={cellDisabled}
-                                        className={cx(
-                                            typeof colCellClassName === 'function'
-                                                ? colCellClassName({
-                                                    rowData: data[row.index],
-                                                    rowIndex: row.index,
-                                                    columnId: columns[col.index].id,
-                                                })
-                                                : colCellClassName,
-                                            typeof cellClassName === 'function'
-                                                ? cellClassName({
-                                                    rowData: data[row.index],
-                                                    rowIndex: row.index,
-                                                    columnId: columns[col.index].id,
-                                                })
-                                                : cellClassName
-                                        )}
-                                        width={col.size}
-                                        left={col.start}
-                                    >
-                                        <Component
-                                            rowData={data[row.index]}
-                                            disabled={cellDisabled}
-                                            active={cellIsActive}
-                                            columnIndex={col.index - 1}
-                                            rowIndex={row.index}
-                                            focus={cellIsActive && editing}
-                                            deleteRow={deleteGivenRow(row.index)}
-                                            duplicateRow={duplicateGivenRow(row.index)}
-                                            stopEditing={stopEditing}
-                                            insertRowBelow={insertAfterGivenRow(row.index)}
-                                            setRowData={setGivenRowData(row.index)}
-                                            columnData={columns[col.index].columnData}
-                                        />
-                                    </CellComponent>
-                                );
-                            })}
-                        </div>
-                    );
-                })}
+                <HeaderRow
+                    headerRowHeight={headerRowHeight}
+                    colVirtualizer={colVirtualizer}
+                    columns={columns}
+                    isFullWidth={isFullWidth}
+                    hasStickyRightColumn={hasStickyRightColumn}
+                    selectionColMin={selectionColMin}
+                    selectionColMax={selectionColMax}
+                />
+                
+                {rowVirtualizer.getVirtualItems().map((row) => (
+                    <DataRow
+                        key={row.key}
+                        row={row}
+                        colVirtualizer={colVirtualizer}
+                        columns={columns}
+                        data={data}
+                        rowClassName={rowClassName}
+                        isFullWidth={isFullWidth}
+                        hasStickyRightColumn={hasStickyRightColumn}
+                        activeCell={activeCell}
+                        editing={editing}
+                        selectionMinRow={selectionMinRow}
+                        selectionMaxRow={selectionMaxRow}
+                        cellClassName={cellClassName}
+                        deleteGivenRow={deleteGivenRow}
+                        duplicateGivenRow={duplicateGivenRow}
+                        insertAfterGivenRow={insertAfterGivenRow}
+                        setGivenRowData={setGivenRowData}
+                        stopEditing={stopEditing}
+                    />
+                ))}
+                
                 {children}
             </div>
         </div>
     );
-};
+}

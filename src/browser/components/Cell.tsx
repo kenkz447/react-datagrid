@@ -1,16 +1,18 @@
-import React, { FC } from 'react';
+import React from 'react';
 import cx from 'classnames';
 
-export const Cell: FC<{
-  gutter: boolean
-  stickyRight: boolean
-  disabled?: boolean
-  className?: string
-  active?: boolean
-  children?: any
-  width: number
-  left: number
-}> = ({
+interface CellProps {
+    readonly gutter: boolean;
+    readonly stickyRight: boolean;
+    readonly disabled?: boolean;
+    readonly className?: string;
+    readonly active?: boolean;
+    readonly children?: React.ReactNode;
+    readonly width: number;
+    readonly left: number;
+}
+
+export function Cell({
     children,
     gutter,
     stickyRight,
@@ -19,7 +21,7 @@ export const Cell: FC<{
     className,
     width,
     left,
-}) => {
+}: CellProps) {
     return (
         <div
             className={cx(

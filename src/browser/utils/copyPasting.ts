@@ -111,3 +111,27 @@ export const encodeHtml = (str: string) => {
 export const isPrintableUnicode = (str: string): boolean => {
     return str.match(/^[^\x00-\x20\x7F-\x9F]$/) !== null;
 };
+
+// Format copy data as plain text and HTML
+export const formatCopyData = (
+    copyData: Array<Array<number | string | null>>
+): { textPlain: string; textHtml: string } => {
+    const textPlain = copyData.map((row) => row.join('\t')).join('\n');
+    const textHtml = `<table>${copyData
+        .map(
+            (row) =>
+                `<tr>${row
+                    .map(
+                        (cell) =>
+                            `<td>${encodeHtml(String(cell ?? '')).replace(
+                                /\n/g,
+                                '<br/>'
+                            )}</td>`
+                    )
+                    .join('')}</tr>`
+        )
+        .join('')}</table>`;
+    
+    return { textPlain, textHtml };
+};
+

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import cx from 'classnames';
 import { useDatagridContext, type SelectionContextType } from '../../core';
 import { useEdges } from '../hooks/useEdges';
+import { useSelectionRects } from '../hooks/useSelectionRects';
 
 // ===== Utility Functions =====
 const buildSquare = (
@@ -37,71 +38,59 @@ const buildClipPath = (
 
 // ===== Interfaces =====
 interface ScrollableViewProps {
-    headerRowHeight: number;
-    columnWidths: number[];
-    viewHeight: number | undefined;
-    viewWidth: number | undefined;
-    contentWidth: number | undefined;
-    edges: { top: boolean; right: boolean; bottom: boolean; left: boolean };
-    data: any[];
-    getRowSize: (row: number) => { top: number; height: number };
-    hasStickyRightColumn: boolean;
+    readonly headerRowHeight: number;
+    readonly columnWidths: number[];
+    readonly viewHeight: number | undefined;
+    readonly viewWidth: number | undefined;
+    readonly contentWidth: number | undefined;
+    readonly edges: { readonly top: boolean; readonly right: boolean; readonly bottom: boolean; readonly left: boolean };
+    readonly data: any[];
+    readonly getRowSize: (row: number) => { readonly top: number; readonly height: number };
+    readonly hasStickyRightColumn: boolean;
 }
 
 interface RectType {
-    width: number;
-    height: number;
-    left: number;
-    top: number;
+    readonly width: number;
+    readonly height: number;
+    readonly left: number;
+    readonly top: number;
 }
 
 interface SelectionColumnMarkerProps {
-    rect: RectType;
-    data: any[];
-    headerRowHeight: number;
-    getRowSize: (row: number) => { top: number; height: number };
-    selectionIsDisabled: boolean;
+    readonly rect: RectType;
+    readonly data: any[];
+    readonly headerRowHeight: number;
+    readonly getRowSize: (row: number) => { readonly top: number; readonly height: number };
+    readonly selectionIsDisabled: boolean;
 }
 
 interface SelectionRowMarkerProps {
-    rect: RectType;
-    contentWidth: number | undefined;
-    columnWidths: number[];
-    selectionIsDisabled: boolean;
+    readonly rect: RectType;
+    readonly contentWidth: number | undefined;
+    readonly columnWidths: number[];
+    readonly selectionIsDisabled: boolean;
 }
 
 interface ActiveCellComponentProps {
-    rect: RectType;
-    editing: boolean;
-    isDisabled: boolean;
+    readonly rect: RectType;
+    readonly editing: boolean;
+    readonly isDisabled: boolean;
 }
 
 interface SelectionRectComponentProps {
-    selectionRect: RectType;
-    activeCellRect: RectType;
-    selectionIsDisabled: boolean;
+    readonly selectionRect: RectType;
+    readonly activeCellRect: RectType;
+    readonly selectionIsDisabled: boolean;
 }
 
 interface ExpandRowsProps {
-    rect?: RectType;
-    indicator?: {
-        left: number;
-        top: number;
-        transform: string;
+    readonly rect?: RectType;
+    readonly indicator?: {
+        readonly left: number;
+        readonly top: number;
+        readonly transform: string;
     };
-    selectionIsDisabled: boolean;
-}
-
-interface UseSelectionRectsProps {
-    columnWidths: number[];
-    columnRights: number[];
-    headerRowHeight: number;
-    data: any[];
-    selection: { min: { col: number; row: number }; max: { col: number; row: number } } | null;
-    activeCell: { col: number; row: number } | null;
-    hasStickyRightColumn: boolean;
-    getRowSize: (row: number) => { top: number; height: number };
-    expandSelection: number | null;
+    readonly selectionIsDisabled: boolean;
 }
 
 // ===== Sub-Components =====
@@ -234,71 +223,6 @@ function ExpandRows({ rect, indicator, selectionIsDisabled }: ExpandRowsProps) {
             )}
         </>
     );
-}
-
-// ===== Custom Hooks =====
-function useSelectionRects(props: UseSelectionRectsProps) {
-    const {
-        columnWidths,
-        columnRights,
-        headerRowHeight,
-        data,
-        selection,
-        activeCell,
-        hasStickyRightColumn,
-        getRowSize,
-        expandSelection
-    } = props;
-
-    const extraPixelV = (rowI) => rowI < data.length - 1 ? 1 : 0;
-    const extraPixelH = (colI) => colI < columnWidths.length - (hasStickyRightColumn ? 3 : 2) ? 1 : 0;
-
-    const activeCellRect = activeCell && {
-        width: columnWidths[activeCell.col + 1] + extraPixelH(activeCell.col),
-        height: getRowSize(activeCell.row).height + extraPixelV(activeCell.row),
-        left: columnRights[activeCell.col],
-        top: getRowSize(activeCell.row).top + headerRowHeight,
-    };
-
-    const selectionRect = selection && {
-        width: columnWidths
-            .slice(selection.min.col + 1, selection.max.col + 2)
-            .reduce((a, b) => a + b) + extraPixelH(selection.max.col),
-        height: getRowSize(selection.max.row).top +
-            getRowSize(selection.max.row).height -
-            getRowSize(selection.min.row).top +
-            extraPixelV(selection.max.row),
-        left: columnRights[selection.min.col],
-        top: getRowSize(selection.min.row).top + headerRowHeight,
-    };
-
-    const minSelection = selection?.min || activeCell;
-    const maxSelection = selection?.max || activeCell;
-
-    const expandRowsIndicator = maxSelection && expandSelection !== null && {
-        left: columnRights[maxSelection.col] + columnWidths[maxSelection.col + 1],
-        top: getRowSize(maxSelection.row).top + getRowSize(maxSelection.row).height + headerRowHeight,
-        transform: `translate(-${maxSelection.col < columnWidths.length - (hasStickyRightColumn ? 3 : 2) ? 50 : 100}%, -${maxSelection.row < data.length - 1 ? 50 : 100}%)`,
-    };
-
-    const expandRowsRect = minSelection && maxSelection && expandSelection !== null && {
-        width: columnWidths
-            .slice(minSelection.col + 1, maxSelection.col + 2)
-            .reduce((a, b) => a + b) + extraPixelH(maxSelection.col),
-        height: getRowSize(maxSelection.row + expandSelection).top +
-            getRowSize(maxSelection.row + expandSelection).height -
-            getRowSize(maxSelection.row + 1).top +
-            extraPixelV(maxSelection.row + expandSelection) - 1,
-        left: columnRights[minSelection.col],
-        top: getRowSize(maxSelection.row).top + getRowSize(maxSelection.row).height + headerRowHeight + 1,
-    };
-
-    return {
-        activeCellRect,
-        selectionRect,
-        expandRowsIndicator,
-        expandRowsRect
-    };
 }
 
 // ===== Main Component =====

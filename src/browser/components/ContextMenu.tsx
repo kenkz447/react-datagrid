@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { useCallback, useRef } from 'react';
 import { useDocumentEventListener } from '../hooks/useDocumentEventListener';
-import { ContextMenuItem, useDatagridContext } from '../../core';
-import { parseTextHtmlData, parseTextPlainData } from '../utils/copyPasting';
+import { Cell, ContextMenuItem, useDatagridContext } from '../../core';
 import { useContextMenuHandler } from '../hooks/events/useContextMenuHandler';
+import { useContextMenuItems } from '../hooks/useContextMenuItems';
 
-const defaultRenderItem = (item: ContextMenuItem) => {
+const ContextMenuItemComponent = ({ item }: { item: ContextMenuItem }) => {
     if (item.type === 'CUT') {
         return <>Cut</>;
     }
@@ -46,17 +46,17 @@ const defaultRenderItem = (item: ContextMenuItem) => {
         );
     }
 
-    return item.type;
+    return <>{item.type}</>;
 };
 
 interface ContextMenuProps {
-    clientX,
-    clientY,
-    close,
-    onCut,
-    onCopy,
-    innerRef,
-    getCursorIndex
+    clientX: number;
+    clientY: number;
+    close: (event?: React.MouseEvent | null) => void;
+    onCut: () => void;
+    onCopy: () => void;
+    innerRef: React.RefObject<HTMLDivElement>;
+    getCursorIndex: (event: MouseEvent, force?: boolean, includeSticky?: boolean) => Cell | null;
 }
 
 export function ContextMenu({
@@ -76,8 +76,6 @@ export function ContextMenu({
         deleteRows,
         insertRowAfter
     } = useDatagridContext();
-
-    const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -100,139 +98,19 @@ export function ContextMenu({
     useDocumentEventListener('mousedown', onClickOutside);
     useDocumentEventListener('contextmenu', onContextMenu);
 
-    React.useEffect(() => {
-        const items: ContextMenuItem[] = [];
-
-        if (activeCell?.row !== undefined) {
-            items.push(
-                {
-                    type: 'COPY',
-                    action: (): void => {
-                        onCopy();
-                        close(null);
-                    },
-                },
-                {
-                    type: 'CUT',
-                    action: (): void => {
-                        onCut();
-                        close(null);
-                    },
-                },
-                {
-                    type: 'PASTE',
-                    action: async (): Promise<void> => {
-                        if (navigator.clipboard.read !== undefined) {
-                            const items = await navigator.clipboard.read();
-                            items.forEach(async (item) => {
-                                let pasteData = [['']];
-                                if (item.types.includes('text/html')) {
-                                    const htmlTextData = await item.getType('text/html');
-                                    pasteData = parseTextHtmlData(await htmlTextData.text());
-                                } else if (item.types.includes('text/plain')) {
-                                    const plainTextData = await item.getType('text/plain');
-                                    pasteData = parseTextPlainData(await plainTextData.text());
-                                } else if (item.types.includes('text')) {
-                                    const htmlTextData = await item.getType('text');
-                                    pasteData = parseTextHtmlData(await htmlTextData.text());
-                                }
-                                applyPasteDataToDatasheet(pasteData);
-                            });
-                        } else if (navigator.clipboard.readText !== undefined) {
-                            const text = await navigator.clipboard.readText();
-                            applyPasteDataToDatasheet(parseTextPlainData(text));
-                        } else {
-                            alert(
-                                'This action is unavailable in your browser, but you can still use Ctrl+V for paste'
-                            );
-                        }
-                        close(null);
-                    },
-                }
-            );
-        }
-
-        if (selection?.max.row !== undefined) {
-            items.push({
-                type: 'INSERT_ROW_BELLOW',
-                action: () => {
-                    close(null);
-                    insertRowAfter(selection.max.row);
-                },
-            });
-        } else if (activeCell?.row !== undefined) {
-            items.push({
-                type: 'INSERT_ROW_BELLOW',
-                action: () => {
-                    close(null);
-                    insertRowAfter(activeCell.row);
-                },
-            });
-        }
-
-        if (
-            selection?.min.row !== undefined &&
-            selection.min.row !== selection.max.row
-        ) {
-            items.push({
-                type: 'DUPLICATE_ROWS',
-                fromRow: selection.min.row + 1,
-                toRow: selection.max.row + 1,
-                action: () => {
-                    close(null);
-                    duplicateRows(selection.min.row, selection.max.row);
-                },
-            });
-        } else if (activeCell?.row !== undefined) {
-            items.push({
-                type: 'DUPLICATE_ROW',
-                action: () => {
-                    close(null);
-                    duplicateRows(activeCell.row);
-                },
-            });
-        }
-
-        if (
-            selection?.min.row !== undefined &&
-            selection.min.row !== selection.max.row
-        ) {
-            items.push({
-                type: 'DELETE_ROWS',
-                fromRow: selection.min.row + 1,
-                toRow: selection.max.row + 1,
-                action: () => {
-                    close(null);
-                    deleteRows(selection.min.row, selection.max.row);
-                },
-            });
-        } else if (activeCell?.row !== undefined) {
-            items.push({
-                type: 'DELETE_ROW',
-                action: () => {
-                    close(null);
-                    deleteRows(activeCell.row);
-                },
-            });
-        }
-
-        setContextMenuItems(items);
-        if (!items.length) {
-            close(null);
-        }
-    }, [
+    const contextMenuItems = useContextMenuItems(
+        activeCell, 
         selection,
-        activeCell,
-        deleteRows,
-        duplicateRows,
-        insertRowAfter,
-        onCut,
-        onCopy,
-        applyPasteDataToDatasheet,
-        close,
-        setContextMenuItems,
-    ]);
-
+        {
+            onCut,
+            onCopy,
+            applyPasteDataToDatasheet,
+            duplicateRows,
+            deleteRows,
+            insertRowAfter,
+            close
+        }
+    );
 
     return (
         <div
@@ -246,7 +124,7 @@ export function ContextMenu({
                     onClick={item.action}
                     className="dsg-context-menu-item"
                 >
-                    {defaultRenderItem(item)}
+                    <ContextMenuItemComponent item={item} />
                 </div>
             ))}
         </div>

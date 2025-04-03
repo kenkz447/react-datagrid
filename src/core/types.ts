@@ -33,6 +33,8 @@ export type CellProps<T, C> = {
 
 export type CellComponent<T, C> = (props: CellProps<T, C>) => React.JSX.Element
 
+export type CellClassName<TValue> = string | ((opt: { rowData: TValue; rowIndex: number; columnId?: string }) => string | undefined);
+
 export type Column<TValue, C, PasteValue> = {
   readonly id?: string
   readonly headerClassName?: string
@@ -48,13 +50,7 @@ export type Column<TValue, C, PasteValue> = {
   readonly columnData?: C
   readonly disableKeys: boolean
   readonly disabled: boolean | ((opt: { rowData: TValue; rowIndex: number }) => boolean)
-  readonly cellClassName?:
-    | string
-    | ((opt: {
-        rowData: TValue
-        rowIndex: number
-        columnId?: string
-      }) => string | undefined)
+  readonly cellClassName?: CellClassName<TValue>
   readonly keepFocus: boolean
   readonly deleteValue: (opt: { rowData: TValue; rowIndex: number }) => TValue
   readonly copyValue: (opt: { rowData: TValue; rowIndex: number }) => number | string | null
@@ -88,15 +84,15 @@ export type SimpleColumn<T, C> = Partial<
 
 export type ContextMenuItem =
   | {
-      readonly type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW' | 'COPY' | 'CUT' | 'PASTE'
-      readonly action: () => void
-    }
+    readonly type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW' | 'COPY' | 'CUT' | 'PASTE'
+    readonly action: () => void
+  }
   | {
-      readonly type: 'DELETE_ROWS' | 'DUPLICATE_ROWS'
-      readonly action: () => void
-      readonly fromRow: number
-      readonly toRow: number
-    }
+    readonly type: 'DELETE_ROWS' | 'DUPLICATE_ROWS'
+    readonly action: () => void
+    readonly fromRow: number
+    readonly toRow: number
+  }
 
 export type ContextMenuComponentProps = {
   readonly clientX: number
@@ -116,15 +112,9 @@ export type DataSheetGridProps<T extends RowData = RowData> = {
   readonly style?: React.CSSProperties
   readonly className?: string
   readonly rowClassName?:
-    | string
-    | ((opt: { rowData: T; rowIndex: number }) => string | undefined)
-  readonly cellClassName?:
-    | string
-    | ((opt: {
-        rowData: unknown
-        rowIndex: number
-        columnId?: string
-      }) => string | undefined)
+  | string
+  | ((opt: { rowData: T; rowIndex: number }) => string | undefined)
+  readonly cellClassName?: CellClassName<T>
   readonly onChange?: (value: T[], operations: Operation[]) => void
   readonly columns?: Partial<Column<T, any, any>>[]
   readonly gutterColumn?: SimpleColumn<T, any> | false
