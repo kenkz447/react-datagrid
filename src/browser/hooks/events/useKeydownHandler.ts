@@ -89,6 +89,11 @@ export const useKeydownHandler = ({
                 }
             };
 
+            const add = ([x, y]: [number, number], cell: Cell | null): Cell | null => cell && {
+                col: Math.max(0, Math.min(columns.length - (hasStickyRightColumn ? 3 : 2), cell.col + x)),
+                row: Math.max(0, Math.min(data.length - 1, cell.row + y)),
+            };
+
             // Tab from last cell of a row
             const isTab = event.key === 'Tab';
             const isPureTab = isTab && !event.shiftKey;
@@ -108,11 +113,6 @@ export const useKeydownHandler = ({
                 setSelectionCell(null);
                 return;
             }
-
-            const add = ([x, y]: [number, number], cell: Cell | null): Cell | null => cell && {
-                col: Math.max(0, Math.min(columns.length - (hasStickyRightColumn ? 3 : 2), cell.col + x)),
-                row: Math.max(0, Math.min(data.length - 1, cell.row + y)),
-            };
 
             // Shift+Tab from first cell of a row
             const isShiftTab = isTab && event.shiftKey;
