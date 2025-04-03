@@ -1,14 +1,11 @@
-import { DataSheetGridProps } from '../../types';
-import { useMemo, useRef, useState } from 'react';
+import { DataSheetGridProps, RowData, RowSize } from '../../types';
+import { useMemo, useRef } from 'react';
 
-type RowSize = { height: number; top: number }
-
-export const useRowHeights = <T extends any>({
+export const useRowHeights = <TRow extends RowData>({
     data,
     rowHeight,
-}: Required<Pick<DataSheetGridProps<T>, 'data' | 'rowHeight'>>) => {
+}: Required<Pick<DataSheetGridProps<TRow>, 'data' | 'rowHeight'>>) => {
     const calculatedHeights = useRef<RowSize[]>([]);
-    const [, rerender] = useState(0);
 
     return useMemo(() => {
         const getRowIndex = (top: number): number => {
@@ -63,10 +60,6 @@ export const useRowHeights = <T extends any>({
         };
 
         return {
-            resetAfter: (index: number) => {
-                calculatedHeights.current = calculatedHeights.current.slice(0, index);
-                rerender((x) => x + 1);
-            },
             getRowSize: (index: number): RowSize => {
                 if (typeof rowHeight === 'number') {
                     return { height: rowHeight, top: rowHeight * index };
@@ -94,7 +87,7 @@ export const useRowHeights = <T extends any>({
                 return calculatedHeights.current[index];
             },
             getRowIndex,
-            totalSize: (maxHeight: number) => {
+            getRowTotalSize: (maxHeight: number) => {
                 if (typeof rowHeight === 'number') {
                     return data.length * rowHeight;
                 }

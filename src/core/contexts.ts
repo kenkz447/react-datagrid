@@ -1,5 +1,5 @@
 import React, { createContext } from 'react';
-import { Cell, Column, DataSheetGridProps, RowData, UseRowControllerReturn, ScrollBehavior } from './types';
+import { Cell, Column, DataSheetGridProps, RowData, UseRowControllerReturn, ScrollBehavior, RowSize } from './types';
 
 type SelectionMode = {
     columns: boolean;
@@ -9,7 +9,6 @@ type SelectionMode = {
 
 export interface DatagridContextType<TRow extends RowData = RowData> extends UseRowControllerReturn<TRow> {
     readonly propsRef: React.RefObject<DataSheetGridProps<TRow>>;
-    readonly dataRef: React.RefObject<TRow[]>;
     readonly lastEditingCellRef: React.RefObject<Cell>;
     readonly data: TRow[];
 
@@ -18,6 +17,9 @@ export interface DatagridContextType<TRow extends RowData = RowData> extends Use
     readonly selection: { min: Cell; max: Cell } | null;
     readonly isCellDisabled: (cell: Cell) => boolean;
     readonly expandSelection: number | null;
+
+    readonly maxHeight: number;
+    readonly headerRowHeight: number;
 
     readonly activeCell: Cell | null;
     readonly setActiveCell: React.Dispatch<React.SetStateAction<Cell & ScrollBehavior | null>>;
@@ -31,6 +33,10 @@ export interface DatagridContextType<TRow extends RowData = RowData> extends Use
     readonly setExpandingSelectionFromRowIndex: React.Dispatch<React.SetStateAction<number | null>>;
     readonly expandSelectionRowsCount: number;
     readonly setExpandSelectionRowsCount: React.Dispatch<React.SetStateAction<number>>;
+
+    readonly getRowSize: (index: number) => RowSize;
+    readonly getRowTotalSize: (top: number) =>number;
+    readonly getRowIndex: (top: number) => number;
 }
 
 export const DatagridContext = createContext<DatagridContextType>(null!);

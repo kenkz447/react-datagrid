@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { RefObject } from 'react';
 
 export type Cell = {
   readonly col: number
@@ -14,6 +14,7 @@ export type ScrollBehavior = {
 export type Selection = { readonly min: Cell; readonly max: Cell }
 
 export type RowData = Record<string, any>;
+export type RowSize = { height: number; top: number }
 
 export type CellProps<T, C> = {
   readonly rowData: T
@@ -28,7 +29,6 @@ export type CellProps<T, C> = {
   readonly insertRowBelow: () => void
   readonly duplicateRow: () => void
   readonly deleteRow: () => void
-  readonly getContextMenuItems: () => ContextMenuItem[]
 }
 
 export type CellComponent<T, C> = (props: CellProps<T, C>) => React.JSX.Element
@@ -64,21 +64,12 @@ export type Column<TValue, C, PasteValue> = {
 }
 
 export type SelectionContextType = {
+  readonly outerRef: RefObject<HTMLDivElement>;
   readonly columnRights?: number[]
   readonly columnWidths?: number[]
-  readonly activeCell: Cell | null
-  readonly selection: Selection | null
-  readonly dataLength: number
-  readonly rowHeight: (index: number) => { height: number; top: number }
-  readonly hasStickyRightColumn: boolean
-  readonly editing: boolean
-  readonly isCellDisabled: (cell: Cell) => boolean
-  readonly headerRowHeight: number
   readonly viewWidth?: number
   readonly viewHeight?: number
   readonly contentWidth?: number
-  readonly edges: { readonly top: boolean; readonly right: boolean; readonly bottom: boolean; readonly left: boolean }
-  readonly expandSelection: number | null
 }
 
 export type SimpleColumn<T, C> = Partial<
@@ -95,10 +86,6 @@ export type SimpleColumn<T, C> = Partial<
   >
 >
 
-export type AddRowsComponentProps = {
-  readonly addRows: (count?: number) => void
-}
-
 export type ContextMenuItem =
   | {
       readonly type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW' | 'COPY' | 'CUT' | 'PASTE'
@@ -114,7 +101,6 @@ export type ContextMenuItem =
 export type ContextMenuComponentProps = {
   readonly clientX: number
   readonly clientY: number
-  readonly items: ContextMenuItem[]
   readonly cursorIndex: Cell
   readonly close: () => void
 }
@@ -147,9 +133,7 @@ export type DataSheetGridProps<T extends RowData = RowData> = {
   readonly maxHeight?: number
   readonly rowHeight?: number | ((opt: { rowData: T; rowIndex: number }) => number)
   readonly headerRowHeight?: number
-  readonly addRowsComponent?:
-    | ((props: AddRowsComponentProps) => React.ReactElement | null)
-    | false
+  readonly addRowsComponent?: React.ComponentType;
   readonly createRow?: () => T
   readonly duplicateRow?: (opts: { rowData: T; rowIndex: number }) => T
   readonly autoAddRow?: boolean

@@ -99,7 +99,7 @@ export const useColumnWidths = (
     return useMemo(() => {
         if (width === undefined) {
             return {
-                fullWidth: false,
+                isFullWidth: false,
                 columnWidths: undefined,
                 columnRights: undefined,
                 totalWidth: undefined,
@@ -116,7 +116,7 @@ export const useColumnWidths = (
         });
 
         return {
-            fullWidth: Math.abs(width - totalWidth) < 0.1,
+            isFullWidth: Math.abs(width - totalWidth) < 0.1,
             columnWidths,
             columnRights,
             totalWidth,

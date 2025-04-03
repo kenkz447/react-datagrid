@@ -1,20 +1,24 @@
 import { useCallback, useRef } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import { useGetBoundingClientRect } from './useGetBoundingClientRect';
-import { Cell, ScrollBehavior, useColumnWidths, useRowHeights, useDebounceState, useDatagridContext } from '../../core';
+import { Cell, ScrollBehavior, useColumnWidths, useDebounceState, useDatagridContext } from '../../core';
+
+const BORDER_WIDTH = 1;
 
 export const useUI = () => {
     const {
-        propsRef,
         data,
         columns,
-        hasStickyRightColumn
+        hasStickyRightColumn,
+        getRowSize,
+        getRowTotalSize,
+        getRowIndex,
+        maxHeight, 
+        headerRowHeight
     } = useDatagridContext();
 
-    const { rowHeight, maxHeight, headerRowHeight } = propsRef.current;
-
     const outerRef = useRef<HTMLDivElement>(null);
-    
+
     const getOuterBoundingClientRect = useGetBoundingClientRect(outerRef);
 
     // Width and height of the scrollable area
@@ -24,29 +28,22 @@ export const useUI = () => {
         refreshRate: 100,
     });
 
-    const { getRowSize, totalSize, getRowIndex } = useRowHeights({
-        data,
-        rowHeight,
-    });
-
-    // Default value is 1 for the border
-    const [heightDiff, setHeightDiff] = useDebounceState(1, 100);
+    const [heightDiff, setHeightDiff] = useDebounceState(BORDER_WIDTH, 100);
 
     // Height of the list (including scrollbars and borders) to display
     const displayHeight = Math.min(
         maxHeight,
-        headerRowHeight + totalSize(maxHeight) + heightDiff
+        headerRowHeight + getRowTotalSize(maxHeight) + heightDiff
     );
 
     setHeightDiff(height ? displayHeight - height : 0);
 
     const {
-        fullWidth,
+        isFullWidth,
         totalWidth: contentWidth,
         columnWidths,
         columnRights,
     } = useColumnWidths(columns, width);
-
 
     const innerRef = useRef<HTMLDivElement>(null);
     const getInnerBoundingClientRect = useGetBoundingClientRect(innerRef);
@@ -54,37 +51,25 @@ export const useUI = () => {
     // Scroll to any given cell making sure it is in view
     const scrollTo = useCallback(
         (cell: Cell & ScrollBehavior) => {
-            if (!height || !width) {
+            if (!height || !width || cell.doNotScrollY) {
                 return;
             }
 
-            if (!cell.doNotScrollY) {
-                // Align top
-                const topMax = getRowSize(cell.row).top;
-                // Align bottom
-                const topMin =
-                    getRowSize(cell.row).top +
-                    getRowSize(cell.row).height +
-                    headerRowHeight -
-                    height +
-                    1;
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const scrollTop = outerRef.current!.scrollTop;
+            // Align top
+            const rowSize = getRowSize(cell.row);
+            const topMax = rowSize.top;
+            // Align bottom
+            const topMin = rowSize.top + rowSize.height + headerRowHeight - height + BORDER_WIDTH;
 
-                if (scrollTop > topMax) {
-                    outerRef.current!.scrollTop = topMax;
-                } else if (scrollTop < topMin) {
-                    outerRef.current!.scrollTop = topMin;
-                }
+            const scrollTop = outerRef.current!.scrollTop;
+
+            if (scrollTop > topMax) {
+                outerRef.current!.scrollTop = topMax;
+            } else if (scrollTop < topMin) {
+                outerRef.current!.scrollTop = topMin;
             }
 
-            if (
-                columnRights &&
-                columnWidths &&
-                outerRef.current &&
-                !cell.doNotScrollX
-            ) {
+            if (columnRights && columnWidths && outerRef.current) {
                 // Align left
                 const leftMax = columnRights[cell.col] - columnRights[0];
                 // Align right
@@ -95,7 +80,7 @@ export const useUI = () => {
                         ? columnWidths[columnWidths.length - 1]
                         : 0) -
                     width +
-                    1;
+                    BORDER_WIDTH;
 
                 const scrollLeft = outerRef.current.scrollLeft;
 
@@ -182,9 +167,7 @@ export const useUI = () => {
         contentWidth,
         columnWidths,
         columnRights,
-        getRowSize,
-        totalSize,
-        fullWidth,
+        isFullWidth,
         setHeightDiff,
         innerRef,
         scrollTo,

@@ -3,7 +3,6 @@ import { Cell, useDatagridContext } from '../../../core';
 
 interface UseMouseDownHandlerProps {
     contextMenu,
-    contextMenuItems,
     setContextMenu,
     disableContextMenu,
     innerRef,
@@ -12,7 +11,6 @@ interface UseMouseDownHandlerProps {
 
 export const useMouseDownHandler = ({
     contextMenu,
-    contextMenuItems,
     setContextMenu,
     disableContextMenu,
     innerRef,
@@ -37,7 +35,7 @@ export const useMouseDownHandler = ({
 
     const onMouseDown = useCallback(
         (event: MouseEvent) => {
-            if (contextMenu && contextMenuItems.length) {
+            if (contextMenu) {
                 return;
             }
 
@@ -45,10 +43,6 @@ export const useMouseDownHandler = ({
                 event.button === 2 || (event.button === 0 && event.ctrlKey);
             const clickInside =
                 innerRef.current?.contains(event.target as Node) || false;
-
-            const cursorIndex = clickInside
-                ? getCursorIndex(event, true, true)
-                : null;
 
             if (
                 !clickInside &&
@@ -69,6 +63,10 @@ export const useMouseDownHandler = ({
                 return;
             }
 
+            const cursorIndex = clickInside
+                ? getCursorIndex(event, true, true)
+                : null;
+
             const clickOnActiveCell =
                 cursorIndex &&
                 activeCell &&
@@ -78,6 +76,14 @@ export const useMouseDownHandler = ({
 
             if (clickOnActiveCell && editing) {
                 return;
+            }
+
+            if (rightClick && !disableContextMenu) {
+                setContextMenu({
+                    x: event.clientX,
+                    y: event.clientY,
+                    cursorIndex: cursorIndex as Cell,
+                });
             }
 
             const clickOnStickyRightColumn =
@@ -114,14 +120,6 @@ export const useMouseDownHandler = ({
                 cursorIndex &&
                 cursorIndex.row >= selection.min.row &&
                 cursorIndex.row <= selection.max.row;
-
-            if (rightClick && !disableContextMenu) {
-                setContextMenu({
-                    x: event.clientX,
-                    y: event.clientY,
-                    cursorIndex: cursorIndex as Cell,
-                });
-            }
 
             if (
                 (!(event.shiftKey && activeCell) || rightClick) &&
@@ -232,7 +230,6 @@ export const useMouseDownHandler = ({
         },
         [
             contextMenu,
-            contextMenuItems.length,
             getCursorIndex,
             editing,
             activeCell,

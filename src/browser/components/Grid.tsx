@@ -1,51 +1,39 @@
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
 import React, { ReactNode, RefObject, useEffect } from 'react';
 import type {
-    ContextMenuItem,
     RowData,
 } from '../../core';
 import cx from 'classnames';
 import { Cell as CellComponent } from './Cell';
 import { useDatagridContext, useMemoizedIndexCallback } from '../../core';
 
-interface GridProps<TRow extends RowData = RowData> {
-    rowClassName?: string | ((opt: { rowData: TRow; rowIndex: number }) => string);
-    cellClassName?: string | ((opt: { rowData: TRow; rowIndex: number; columnId?: string }) => string);
+interface GridProps {
     children?: ReactNode;
-    onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
-    getContextMenuItems?: () => ContextMenuItem[];
     outerRef: RefObject<HTMLDivElement>;
     innerRef: RefObject<HTMLDivElement>;
     columnWidths?: number[];
     displayHeight: number;
-    headerRowHeight: number;
-    rowHeight: (index: number) => { height: number };
-    rowKey?: string | ((opt: { rowData: TRow; rowIndex: number }) => string | number);
-    fullWidth?: boolean;
+    isFullWidth?: boolean;
 }
 
 export const Grid = <TRow extends RowData = RowData>({
-    rowClassName,
-    cellClassName,
     children,
-    onScroll,
-    getContextMenuItems,
     outerRef,
     innerRef,
     columnWidths,
     displayHeight,
-    headerRowHeight,
-    rowHeight,
-    rowKey,
-    fullWidth,
-}: GridProps<TRow>) => {
+    isFullWidth,
+}: GridProps) => {
     const {
+        propsRef,
         data,
         columns,
         hasStickyRightColumn,
         selection,
         activeCell,
         editing,
+        headerRowHeight,
+        getRowSize,
         setRowData,
         deleteRows,
         duplicateRows,
@@ -53,11 +41,18 @@ export const Grid = <TRow extends RowData = RowData>({
         stopEditing,
     } = useDatagridContext<TRow>();
 
+    const {
+        rowKey,
+        rowClassName,
+        cellClassName,
+        onScroll,
+    } = propsRef.current;
+
     const rowVirtualizer = useVirtualizer({
         count: data.length,
         getScrollElement: () => outerRef.current,
         paddingStart: headerRowHeight,
-        estimateSize: (index) => rowHeight(index).height,
+        estimateSize: (index) => getRowSize(index).height,
         getItemKey: (index: number): React.Key => {
             if (rowKey && index > 0) {
                 const row = data[index - 1];
@@ -124,7 +119,7 @@ export const Grid = <TRow extends RowData = RowData>({
             <div
                 ref={innerRef}
                 style={{
-                    width: fullWidth ? '100%' : colVirtualizer.getTotalSize(),
+                    width: isFullWidth ? '100%' : colVirtualizer.getTotalSize(),
                     height: rowVirtualizer.getTotalSize(),
                 }}
             >
@@ -132,7 +127,7 @@ export const Grid = <TRow extends RowData = RowData>({
                     <div
                         className={cx('dsg-row', 'dsg-row-header')}
                         style={{
-                            width: fullWidth ? '100%' : colVirtualizer.getTotalSize(),
+                            width: isFullWidth ? '100%' : colVirtualizer.getTotalSize(),
                             height: headerRowHeight,
                         }}
                     >
@@ -183,7 +178,7 @@ export const Grid = <TRow extends RowData = RowData>({
                             style={{
                                 height: row.size,
                                 top: row.start,
-                                width: fullWidth ? '100%' : colVirtualizer.getTotalSize(),
+                                width: isFullWidth ? '100%' : colVirtualizer.getTotalSize(),
                             }}
                         >
                             {colVirtualizer.getVirtualItems().map((col) => {
@@ -231,7 +226,6 @@ export const Grid = <TRow extends RowData = RowData>({
                                     >
                                         <Component
                                             rowData={data[row.index]}
-                                            getContextMenuItems={getContextMenuItems}
                                             disabled={cellDisabled}
                                             active={cellIsActive}
                                             columnIndex={col.index - 1}

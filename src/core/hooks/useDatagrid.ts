@@ -13,6 +13,7 @@ import { useColumns } from './internal/useColumns';
 import { useCell } from './useCell';
 import { DatagridContextType } from '../contexts';
 import { useRowController } from './useRowController';
+import { useRowHeights } from './internal/useRowHeights';
 
 export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow>): DatagridContextType<TRow> {
     const {
@@ -23,6 +24,9 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
         disableSmartDelete,
         lockRows,
         autoAddRow,
+        rowHeight,
+        maxHeight,
+        headerRowHeight,
         createRow,
         duplicateRow,
         onChange
@@ -111,11 +115,15 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
         autoAddRow
     });
 
+    const { getRowSize, getRowTotalSize, getRowIndex } = useRowHeights({
+        data,
+        rowHeight,
+    });
+
     return useMemo(() => ({
         propsRef,
-        dataRef,
         lastEditingCellRef,
-        
+
         data,
         columns,
         hasStickyRightColumn,
@@ -129,6 +137,14 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
         expandingSelectionFromRowIndex, setExpandingSelectionFromRowIndex,
         expandSelectionRowsCount, setExpandSelectionRowsCount,
 
+        maxHeight,
+        headerRowHeight,
+
+        // Calculators
+        getRowSize,
+        getRowTotalSize,
+        getRowIndex,
+
         // Data controller
         applyPasteDataToDatasheet,
         deleteSelection,
@@ -137,6 +153,10 @@ export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow
         insertRowAfter,
         setRowData,
         stopEditing,
-    }), [activeCell, columns, data, editing, expandSelection, expandSelectionRowsCount, expandingSelectionFromRowIndex, hasStickyRightColumn, isCellDisabled, selection, selectionCell, selectionMode, setActiveCell, setExpandingSelectionFromRowIndex, setSelectionCell, setSelectionMode, applyPasteDataToDatasheet,
-        deleteSelection, duplicateRows, deleteRows, insertRowAfter, setRowData, stopEditing]);
+    }), [
+        activeCell, columns, data, editing, expandSelection, expandSelectionRowsCount, expandingSelectionFromRowIndex, hasStickyRightColumn, isCellDisabled, selection, selectionCell, selectionMode, setActiveCell, setExpandingSelectionFromRowIndex, setSelectionCell, setSelectionMode, applyPasteDataToDatasheet,
+        maxHeight, headerRowHeight,
+        getRowSize, getRowTotalSize, getRowIndex,
+        deleteSelection, duplicateRows, deleteRows, insertRowAfter, setRowData, stopEditing]
+    );
 };
