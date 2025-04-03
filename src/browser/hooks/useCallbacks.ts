@@ -1,16 +1,16 @@
 import { useEffect, useRef } from 'react';
-import { getCellWithId, getSelectionWithId, useDatagridContext } from '../../core';
+import { getCellWithId, getSelectionWithId, RowData, UseDatagridCoreReturn } from '../../core';
 
-export const useCallbacks = () => {
-    const {
-        propsRef,
-        activeCell,
-        columns,
-        editing,
-        selection,
-        lastEditingCellRef
-    } = useDatagridContext();
+type UseCallbacksProps<TRow extends RowData>  = Pick<UseDatagridCoreReturn<TRow>, 'propsRef' | 'activeCell' | 'columns' | 'editing' | 'selection' | 'lastEditingCellRef'>;
 
+export const useCallbacks = <TRow extends RowData>({
+    propsRef,
+    activeCell,
+    columns,
+    editing,
+    selection,
+    lastEditingCellRef
+}: UseCallbacksProps<TRow>) => {
     const {
         onFocus,
         onBlur,

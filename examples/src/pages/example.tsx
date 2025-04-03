@@ -1,4 +1,4 @@
-import { checkboxColumn, DataSheetGrid, keyColumn, textColumn } from '@basestacks/react-datagrid';
+import { AddRows, checkboxColumn, ContextMenu, DatagridProvider, Datagrid, keyColumn, textColumn, useDatagrid } from '@basestacks/react-datagrid';
 import { useState } from 'react';
 
 export default function Example() {
@@ -13,14 +13,20 @@ export default function Example() {
         { ...keyColumn('lastName', textColumn), title: 'Last name' },
     ];
 
+    const datagrid = useDatagrid({
+        columns,
+        data,
+        onChange: setData as any,
+    });
+
     return (
         <div>
             <h1>Index</h1>
-            <DataSheetGrid
-                data={data}
-                onChange={setData as any}
-                columns={columns}
-            />
+            <DatagridProvider {...datagrid}>
+                <Datagrid />
+                <AddRows />
+                <ContextMenu />
+            </DatagridProvider>
         </div>
     );
 };

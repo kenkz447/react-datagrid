@@ -1,9 +1,9 @@
 export * from './types';
 
-export * from './components/DatagridProvider';
+export * from '../browser/components/DatagridProvider';
 
-export * from './hooks/useDatagrid';
-export * from './hooks/useDatagridContext';
+export * from './hooks/useDatagridCore';
+export * from '../browser/hooks/useDatagridContext';
 
 export * from './hooks/internal/useMemoizedIndexCallback';
 export * from './hooks/internal/useFirstRender'; 

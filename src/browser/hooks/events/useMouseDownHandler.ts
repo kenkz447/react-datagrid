@@ -1,22 +1,13 @@
 import { useCallback } from 'react';
-import { Cell, useDatagridContext } from '../../../core';
+import { Cell, RowData, useDatagridContext } from '../../../core';
 
-interface UseMouseDownHandlerProps {
-    contextMenu,
-    setContextMenu,
-    disableContextMenu,
-    innerRef,
-    getCursorIndex,
-}
-
-export const useMouseDownHandler = ({
-    contextMenu,
-    setContextMenu,
-    disableContextMenu,
-    innerRef,
-    getCursorIndex
-}: UseMouseDownHandlerProps) => {
+export const useMouseDownHandler = <TRow extends RowData>() => {
     const {
+        contextMenu,
+        setContextMenu,
+        disableContextMenu,
+        innerRef,
+        getCursorIndex,
         lastEditingCellRef,
         activeCell,
         editing,
@@ -31,7 +22,7 @@ export const useMouseDownHandler = ({
         isCellDisabled,
         selection,
         setExpandingSelectionFromRowIndex
-    } = useDatagridContext();
+    } = useDatagridContext<TRow>();
 
     const onMouseDown = useCallback(
         (event: MouseEvent) => {

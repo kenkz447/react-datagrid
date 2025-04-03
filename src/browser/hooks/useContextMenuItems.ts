@@ -166,12 +166,18 @@ export const createDeleteRowItems = (
     return items;
 };
 
+interface UseContextMenuItemsProps {
+    activeCell: CellPosition | null;
+    selection: Selection | null;
+    options: ContextMenuOptions;
+}
+
 // Main hook that uses the pure functions
-export const useContextMenuItems = (
-    activeCell: CellPosition | null,
-    selection: Selection | null,
-    options: ContextMenuOptions
-) => {
+export const useContextMenuItems = ({
+    activeCell,
+    selection,
+    options
+}: UseContextMenuItemsProps) => {
     const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
     const { close } = options;
 

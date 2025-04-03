@@ -7,7 +7,6 @@ interface UseKeydownHandlerProps {
     onFocusOutside?: (direction: 'top' | 'bottom') => void;
 };
 
-
 export const useKeydownHandler = ({
     scrollTo,
     onFocusOutside

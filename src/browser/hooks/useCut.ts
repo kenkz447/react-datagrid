@@ -1,17 +1,16 @@
 import { useCallback } from 'react';
-import { useDatagridContext } from '../../../core';
+import { UseDatagridCoreReturn } from '../../core';
 
-interface UseCutHandlerProps {
+type UseCutHandlerProps = Pick<UseDatagridCoreReturn, 'activeCell' | 'editing' | 'deleteSelection'> & {
     readonly onCopy: (e: ClipboardEvent) => void;
 };
 
-export const useCutHandler = ({ onCopy }: UseCutHandlerProps) => {
-    const {
-        activeCell,
-        editing,
-        deleteSelection,
-    } = useDatagridContext();
-
+export const useCutHandler = ({ 
+    activeCell,
+    editing,
+    deleteSelection,
+    onCopy 
+}: UseCutHandlerProps) => {
     const onCut = useCallback(
         (event?: ClipboardEvent) => {
             if (!editing && activeCell) {

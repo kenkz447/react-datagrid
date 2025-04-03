@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { Cell, useDatagridContext } from '../../../core';
-import { formatCopyData } from '../../utils/copyPasting';
-import { writeToClipboard } from '../../utils/clipboard';
+import { Cell, UseDatagridCoreReturn } from '../../core';
+import { formatCopyData } from '../utils/copyPasting';
+import { writeToClipboard } from '../utils/clipboard';
 
 // Generate 2D array of data to be copied
 export const generateCopyData = (
@@ -28,24 +28,16 @@ export const generateCopyData = (
     return copyData;
 };
 
-export const useCopyHandler = (deps?: {
-    editing?: boolean;
-    activeCell?: Cell | null;
-    selection?: { min: Cell; max: Cell } | null;
-    columns?: any[];
-    data?: any[];
-}) => {
-    const context = useDatagridContext();
-    
-    // Use provided dependencies or fall back to context
-    const {
-        editing = context.editing,
-        activeCell = context.activeCell,
-        selection = context.selection,
-        columns = context.columns,
-        data = context.data,
-    } = deps || {};
+type CopyHandlerProps =  Pick<UseDatagridCoreReturn, 'editing' | 'activeCell' | 'selection' | 'columns' | 'data'>;
 
+export const useCopyHandler = ({
+    editing,
+    activeCell,
+    selection,
+    columns,
+    data,
+}: CopyHandlerProps) => {
+    
     const onCopy = useCallback(
         async (event?: ClipboardEvent) => {
             if (!editing && activeCell) {

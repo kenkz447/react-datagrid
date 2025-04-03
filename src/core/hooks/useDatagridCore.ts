@@ -8,14 +8,14 @@ import {
     Cell,
     DataSheetGridProps,
     RowData,
+    UseDatagridCoreReturn,
 } from '../types';
 import { useColumns } from './internal/useColumns';
 import { useCell } from './useCell';
-import { DatagridContextType } from '../contexts';
 import { useRowController } from './useRowController';
 import { useRowHeights } from './internal/useRowHeights';
 
-export function useDatagrid<TRow extends RowData>(props: DataSheetGridProps<TRow>): DatagridContextType<TRow> {
+export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<TRow>): UseDatagridCoreReturn<TRow> {
     const {
         data,
         gutterColumn,

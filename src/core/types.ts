@@ -163,6 +163,12 @@ export type DataSheetGridRef = {
   readonly setSelection: (selection: SelectionWithIdInput | null) => void
 }
 
+export type SelectionMode = {
+  readonly columns: boolean;
+  readonly rows: boolean;
+  readonly active: boolean;
+}
+
 export interface UseRowControllerReturn<TRow extends RowData> {
   readonly duplicateRows: (rowMin: number, rowMax?: number) => void;
   readonly applyPasteDataToDatasheet: (pasteData: string[][]) => Promise<void>;
@@ -171,4 +177,36 @@ export interface UseRowControllerReturn<TRow extends RowData> {
   readonly insertRowAfter: (row: number, count?: number) => void;
   readonly setRowData: (rowIndex: number, item: TRow) => void;
   readonly stopEditing: (options?: { nextRow?: boolean }) => void;
+}
+
+export interface UseDatagridCoreReturn<TRow extends RowData = RowData> extends UseRowControllerReturn<TRow> {
+  readonly propsRef: React.RefObject<DataSheetGridProps<TRow>>;
+  readonly lastEditingCellRef: React.RefObject<Cell>;
+  readonly data: TRow[];
+
+  readonly columns: Column<TRow, any, any>[];
+  readonly hasStickyRightColumn: boolean;
+  readonly selection: { min: Cell; max: Cell } | null;
+  readonly isCellDisabled: (cell: Cell) => boolean;
+  readonly expandSelection: number | null;
+
+  readonly maxHeight: number;
+  readonly headerRowHeight: number;
+
+  readonly activeCell: Cell | null;
+  readonly setActiveCell: React.Dispatch<React.SetStateAction<Cell & ScrollBehavior | null>>;
+  readonly selectionCell: Cell | null;
+  readonly setSelectionCell: React.Dispatch<React.SetStateAction<Cell & ScrollBehavior | null>>;
+  readonly editing: boolean;
+  readonly setEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  readonly selectionMode: SelectionMode;
+  readonly setSelectionMode: React.Dispatch<React.SetStateAction<SelectionMode>>;
+  readonly expandingSelectionFromRowIndex: number | null;
+  readonly setExpandingSelectionFromRowIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  readonly expandSelectionRowsCount: number;
+  readonly setExpandSelectionRowsCount: React.Dispatch<React.SetStateAction<number>>;
+
+  readonly getRowSize: (index: number) => RowSize;
+  readonly getRowTotalSize: (top: number) =>number;
+  readonly getRowIndex: (top: number) => number;
 }
