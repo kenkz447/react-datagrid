@@ -14,8 +14,8 @@ interface UseRowControllerProps<TRow extends RowData> {
     dataRef,
     columns,
     data,
-    activeCellRef,
     selection,
+    activeCell,
     setActiveCell,
     setSelectionCell,
     editing,
@@ -36,9 +36,9 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
         dataRef,
         columns,
         data,
-        activeCellRef,
-        selection,
+        activeCell,
         setActiveCell,
+        selection,
         setSelectionCell,
         editing,
         isCellDisabled,
@@ -52,7 +52,11 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
         autoAddRow
     } = props;
 
+    const activeCellRef = useRef(activeCell);
+    activeCellRef.current = activeCell;
+
     const selectionRef = useRef(selection);
+    selectionRef.current = selection;
 
     const duplicateRows = useCallback(
         (rowMin: number, rowMax: number = rowMin) => {
@@ -234,7 +238,7 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 }
             }
         },
-        [activeCellRef, columns, createRow, data, editing, hasStickyRightColumn, isCellDisabled, lockRows, onChange, setActiveCell, setSelectionCell]
+        [columns, createRow, data, editing, hasStickyRightColumn, isCellDisabled, lockRows, onChange, setActiveCell, setSelectionCell]
     );
 
     const deleteRows = useCallback(
@@ -330,7 +334,7 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 },
             ]);
         },
-        [disableSmartDelete, activeCellRef, data, onChange, columns, deleteRows, isCellDisabled, setActiveCell, setSelectionCell, hasStickyRightColumn]
+        [disableSmartDelete, data, onChange, columns, deleteRows, isCellDisabled, setActiveCell, setSelectionCell, hasStickyRightColumn]
     );
 
     const insertRowAfter = useCallback(
@@ -401,7 +405,7 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 }
             }
         },
-        [activeCellRef, autoAddRow, dataRef, insertRowAfter, setActiveCell, setEditing]
+        [autoAddRow, dataRef, insertRowAfter, setActiveCell, setEditing]
     );
 
     // Row Modifiers (but performed on a given index)

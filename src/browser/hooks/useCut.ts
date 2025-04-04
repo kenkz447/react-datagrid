@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { RowData, UseDatagridCoreReturn } from '../../core';
 
 type UseCutHandlerProps = {
@@ -9,7 +9,10 @@ export const useCutHandler = <TRow extends RowData = RowData>(
     coreContext: UseDatagridCoreReturn<TRow>,
     { copy }: UseCutHandlerProps
 ) => {
-    const { activeCellRef, editing, deleteSelection } = coreContext;
+    const { activeCell, editing, deleteSelection } = coreContext;
+
+    const activeCellRef = useRef(activeCell);
+    activeCellRef.current = activeCell;
 
     const onCut = useCallback(
         (event?: ClipboardEvent) => {
@@ -18,7 +21,7 @@ export const useCutHandler = <TRow extends RowData = RowData>(
                 deleteSelection(false);
             }
         },
-        [activeCellRef, deleteSelection, editing, copy]
+        [deleteSelection, editing, copy]
     );
 
     return onCut;

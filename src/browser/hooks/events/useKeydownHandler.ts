@@ -6,7 +6,7 @@ import { getAllTabbableElements } from '../../utils/tab';
 
 export const useKeydownHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const {
-        lastEditingCellRef,
+        setLastEditingCell,
         activeCell,
         columns,
         data,
@@ -191,7 +191,7 @@ export const useKeydownHandler = <TRow extends RowData>(datagrid: UseDatagridRet
                     return;
                 }
                 if (!isCellDisabled(activeCell)) {
-                    lastEditingCellRef.current = activeCell;
+                    setLastEditingCell(activeCell);
                     setEditing(true);
                     scrollTo(activeCell);
                 }
@@ -214,7 +214,7 @@ export const useKeydownHandler = <TRow extends RowData>(datagrid: UseDatagridRet
             const isPureInput = (isPrintableUnicode(event.key) || event.code.match(/Key[A-Z]$/)) && !event.ctrlKey && !event.metaKey && !event.altKey;
             const canInput = !isCellDisabled(activeCell);
             if (isPureInput && !editing && !canInput) {
-                lastEditingCellRef.current = activeCell;
+                setLastEditingCell(activeCell);
                 focusController.removeFocus();
                 scrollTo(activeCell);
                 return;
@@ -234,24 +234,7 @@ export const useKeydownHandler = <TRow extends RowData>(datagrid: UseDatagridRet
                 return;
             }
         },
-        [
-            activeCell,
-            columns,
-            data.length,
-            deleteSelection,
-            duplicateRows,
-            editing,
-            insertRowAfter,
-            isCellDisabled,
-            scrollTo,
-            selection?.max.row,
-            selection?.min.row,
-            selectionCell,
-            setActiveCell,
-            setSelectionCell,
-            stopEditing,
-            hasStickyRightColumn,
-        ]
+        [activeCell, columns, editing, isCellDisabled, beforeTabIndexRef, afterTabIndexRef, setEditing, setActiveCell, setSelectionCell, hasStickyRightColumn, data.length, selectionCell, stopEditing, setLastEditingCell, scrollTo, insertRowAfter, selection?.max.row, selection?.min.row, duplicateRows, deleteSelection]
     );
 
     return onKeyDown;

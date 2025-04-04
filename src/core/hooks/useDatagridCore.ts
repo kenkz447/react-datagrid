@@ -5,7 +5,6 @@ import {
 } from 'react';
 import {
     Cell,
-    ScrollBehavior,
     DataSheetGridProps,
     RowData
 } from '../types';
@@ -33,7 +32,8 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         onChange
     } = props;
 
-    const lastEditingCellRef = useRef<Cell>(null);
+    const [lastEditingCell, setLastEditingCell] = useState<Cell | null>(null);
+
     const propsRef = useRef(props);
     const dataRef = useRef(data);
     dataRef.current = data;
@@ -50,12 +50,8 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         selection,
         selectionMode,
         startSelection,
-        endSelection,
-        selectionRef,
+        endSelection
     } = useCell();
-
-    const activeCellRef = useRef<(Cell & ScrollBehavior) | null>(activeCell);
-    activeCellRef.current = activeCell;
 
     const hasStickyRightColumn = Boolean(stickyRightColumn);
 
@@ -109,8 +105,8 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         dataRef,
         columns,
         data,
-        activeCellRef,
         selection,
+        activeCell,
         setActiveCell,
         setSelectionCell,
         editing,
@@ -132,10 +128,6 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
 
     return {
         propsRef,
-        lastEditingCellRef,
-        activeCellRef,
-        selectionRef,
-
         data,
         columns,
         hasStickyRightColumn,
@@ -147,6 +139,7 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         editing, setEditing,
         expandingSelectionFromRowIndex, setExpandingSelectionFromRowIndex,
         expandSelectionRowsCount, setExpandSelectionRowsCount,
+        lastEditingCell, setLastEditingCell,
 
         selectionMode,
         startSelection,

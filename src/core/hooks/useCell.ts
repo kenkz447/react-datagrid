@@ -32,9 +32,6 @@ export const useCell = () => {
         [activeCell, selectionCell]
     );
 
-    const selectionRef = useRef(selection);
-    selectionRef.current = selection;
-
     // Behavior of the selection when the user drags the mouse around
     const [selectionMode, setSelectionMode] = useDeepEqualState<SelectionMode>({
         // True when the position of the cursor should impact the columns of the selection
@@ -72,7 +69,6 @@ export const useCell = () => {
         selection,
         selectionMode,
         startSelection,
-        endSelection,
-        selectionRef
+        endSelection
     };
 };

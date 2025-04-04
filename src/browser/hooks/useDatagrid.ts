@@ -19,8 +19,6 @@ const DEFAULT_COLUMNS: Column<any, any, any>[] = [];
 const DEFAULT_ROW_HEIGHT = 40;
 const DEFAULT_MAX_HEIGHT = 400;
 
-const x = [];
-
 export function useDatagrid<TRow extends RowData>({
     data = DEFAULT_DATA,
     columns: rawColumns = DEFAULT_COLUMNS,

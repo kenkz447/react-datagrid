@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Cell, UseDatagridCoreReturn } from '../../core';
 import { formatCopyData } from '../utils/copyPasting';
 import { writeToClipboard } from '../utils/clipboard';
@@ -24,26 +24,32 @@ export const generateCopyData = (
             );
         }
     }
-    
+
     return copyData;
 };
 
 export const useCopyHandler = ({
-    activeCellRef,
+    activeCell,
+    selection,
     editing,
-    selectionRef,
     columns,
     data,
 }: UseDatagridCoreReturn) => {
-    
+
+    const activeCellRef = useRef(activeCell);
+    activeCellRef.current = activeCell;
+
+    const selectionRef = useRef(selection);
+    selectionRef.current = selection;
+
     const onCopy = useCallback(
         async (event?: ClipboardEvent) => {
             if (!editing && activeCellRef.current) {
                 const copyData = generateCopyData(activeCellRef.current, selectionRef.current, columns, data);
                 const { textPlain, textHtml } = formatCopyData(copyData);
-                
+
                 const success = await writeToClipboard(textPlain, textHtml, event);
-                
+
                 if (!success) {
                     alert(
                         'This action is unavailable in your browser, but you can still use Ctrl+C for copy or Ctrl+X for cut'
@@ -51,7 +57,7 @@ export const useCopyHandler = ({
                 }
             }
         },
-        [activeCellRef, columns, data, editing, selectionRef]
+        [columns, data, editing]
     );
 
     return onCopy;

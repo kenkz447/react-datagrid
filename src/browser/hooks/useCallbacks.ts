@@ -7,7 +7,7 @@ export const useCallbacks = <TRow extends RowData>({
     columns,
     editing,
     selection,
-    lastEditingCellRef
+    lastEditingCell
 }: UseDatagridCoreReturn<TRow>) => {
     const {
         onFocus,
@@ -26,6 +26,8 @@ export const useCallbacks = <TRow extends RowData>({
     callbacksRef.current.onBlur = onBlur;
     callbacksRef.current.onActiveCellChange = onActiveCellChange;
     callbacksRef.current.onSelectionChange = onSelectionChange;
+
+    const lastEditingCellRef = useRef(lastEditingCell);
 
     useEffect(() => {
         if (lastEditingCellRef.current) {

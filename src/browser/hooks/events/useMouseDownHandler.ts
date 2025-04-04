@@ -9,7 +9,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
         disableContextMenu,
         innerRef,
         getCursorIndex,
-        lastEditingCellRef,
+        setLastEditingCell,
         activeCell,
         editing,
         columns,
@@ -143,7 +143,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
             }
 
             if (clickOnActiveCell && !rightClick) {
-                lastEditingCellRef.current = activeCell;
+                setLastEditingCell(activeCell);
             }
 
             setEditing(Boolean(clickOnActiveCell && !rightClick));
@@ -212,7 +212,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
                 }
             }
         },
-        [innerRef, contextMenu, editing, activeCell, columns, getCursorIndex, isCellDisabled, disableContextMenu, hasStickyRightColumn, selection, data.length, setEditing, startSelection, closeContextMenu, setExpandingSelectionFromRowIndex, setContextMenu, setActiveCell, lastEditingCellRef, setSelectionCell, selectionCell]
+        [innerRef, contextMenu, editing, activeCell, columns, getCursorIndex, isCellDisabled, disableContextMenu, hasStickyRightColumn, selection, data.length, setEditing, closeContextMenu, setExpandingSelectionFromRowIndex, setContextMenu, setActiveCell, setLastEditingCell, startSelection, setSelectionCell, selectionCell]
     );
 
     return onMouseDown;

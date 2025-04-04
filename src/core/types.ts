@@ -1,21 +1,28 @@
 import React, { RefObject } from 'react';
 
-export type Cell = {
+export interface Cell {
   readonly col: number
   readonly row: number
 }
 
-export type ScrollBehavior = {
+export interface ScrollBehavior {
   readonly doNotScrollX?: boolean
   readonly doNotScrollY?: boolean
 }
 
-export type Selection = { readonly min: Cell; readonly max: Cell }
+export interface Selection {
+  readonly min: Cell;
+  readonly max: Cell
+}
 
 export type RowData = Record<string, any>;
-export type RowSize = { height: number; top: number }
 
-export type CellProps<T, C> = {
+export interface RowSize {
+  readonly height: number;
+  readonly top: number
+}
+
+export interface CellProps<T, C> {
   readonly rowData: T
   readonly rowIndex: number
   readonly columnIndex: number
@@ -31,10 +38,9 @@ export type CellProps<T, C> = {
 }
 
 export type CellComponent<T, C> = React.ComponentType<CellProps<T, C>>;
-
 export type CellClassName<TValue> = string | ((opt: { rowData: TValue; rowIndex: number; columnId?: string }) => string | undefined);
 
-export type Column<TValue, C, PasteValue> = {
+export interface Column<TValue, C, PasteValue> {
   readonly id?: string
   readonly headerClassName?: string
   readonly title?: React.ReactNode
@@ -58,7 +64,7 @@ export type Column<TValue, C, PasteValue> = {
   readonly isCellEmpty: (opt: { rowData: TValue; rowIndex: number }) => boolean
 }
 
-export type SelectionContextType = {
+export interface SelectionContextType {
   readonly outerRef: RefObject<HTMLDivElement>;
   readonly columnRights?: number[]
   readonly columnWidths?: number[]
@@ -93,27 +99,21 @@ export type ContextMenuItem =
     readonly toRow: number
   }
 
-export type ContextMenuComponentProps = {
+export interface ContextMenuComponentProps {
   readonly clientX: number
   readonly clientY: number
   readonly cursorIndex: Cell
   readonly close: () => void
 }
 
-export type Operation = {
+export interface Operation {
   readonly type: 'UPDATE' | 'DELETE' | 'CREATE'
   readonly fromRowIndex: number
   readonly toRowIndex: number
 }
 
-export type DataSheetGridProps<T extends RowData = RowData> = {
+export interface DataSheetGridProps<T extends RowData = RowData> {
   readonly data?: T[]
-  readonly style?: React.CSSProperties
-  readonly className?: string
-  readonly rowClassName?:
-  | string
-  | ((opt: { rowData: T; rowIndex: number }) => string | undefined)
-  readonly cellClassName?: CellClassName<T>
   readonly onChange?: (value: T[], operations: Operation[]) => void
   readonly columns?: Partial<Column<T, any, any>>[]
   readonly gutterColumn?: SimpleColumn<T, any> | false
@@ -122,7 +122,6 @@ export type DataSheetGridProps<T extends RowData = RowData> = {
   readonly maxHeight?: number
   readonly rowHeight?: number | ((opt: { rowData: T; rowIndex: number }) => number)
   readonly headerRowHeight?: number
-  readonly addRowsComponent?: React.ComponentType;
   readonly createRow?: () => T
   readonly duplicateRow?: (opts: { rowData: T; rowIndex: number }) => T
   readonly autoAddRow?: boolean
@@ -130,39 +129,35 @@ export type DataSheetGridProps<T extends RowData = RowData> = {
   readonly disableContextMenu?: boolean
   readonly disableExpandSelection?: boolean
   readonly disableSmartDelete?: boolean
-  readonly contextMenuComponent?: (
-    props: ContextMenuComponentProps
-  ) => React.ReactElement | null
   readonly onFocus?: (opts: { cell: CellWithId }) => void
   readonly onBlur?: (opts: { cell: CellWithId }) => void
   readonly onActiveCellChange?: (opts: { cell: CellWithId | null }) => void
   readonly onSelectionChange?: (opts: { selection: SelectionWithId | null }) => void
-  readonly onScroll?: React.UIEventHandler<HTMLDivElement> | undefined
 }
 
-type CellWithIdInput = {
+interface CellWithIdInput {
   readonly col: number | string
   readonly row: number
 }
 
 type SelectionWithIdInput = { readonly min: CellWithIdInput; readonly max: CellWithIdInput }
 
-export type CellWithId = {
+export interface CellWithId {
   readonly colId?: string
   readonly col: number
   readonly row: number
 }
 
-export type SelectionWithId = { readonly min: CellWithId; readonly max: CellWithId }
+export interface SelectionWithId { readonly min: CellWithId; readonly max: CellWithId }
 
-export type DataSheetGridRef = {
+export interface DataSheetGridRef {
   readonly activeCell: CellWithId | null
   readonly selection: SelectionWithId | null
   readonly setActiveCell: (activeCell: CellWithIdInput | null) => void
   readonly setSelection: (selection: SelectionWithIdInput | null) => void
 }
 
-export type SelectionMode = {
+export interface SelectionMode {
   readonly columns: boolean;
   readonly rows: boolean;
   readonly active: boolean;

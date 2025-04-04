@@ -13,7 +13,6 @@ export interface GridProps {
 // ===== Main Component =====
 export function Grid<TRow extends RowData = RowData>() {
     const {
-        propsRef,
         outerRef,
         innerRef,
         displayHeight,
@@ -30,13 +29,10 @@ export function Grid<TRow extends RowData = RowData>() {
         hasStickyRightColumn
     } = useDatagridContext<TRow>();
 
-    const { onScroll } = propsRef.current;
-
     return (
         <div
             ref={outerRef}
             className="dsg-container"
-            onScroll={onScroll}
             style={{ height: displayHeight }}
         >
             <TabIndexBefore />
