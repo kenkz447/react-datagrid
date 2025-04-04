@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import cx from 'classnames';
-import { useEdges, useSelectionRects, useDatagridContext } from '../../../browser';
+import { useSelectionRects, useDatagridContext } from '../../../browser';
 
 // ===== Utility Functions =====
 const buildSquare = (
@@ -35,17 +35,6 @@ const buildClipPath = (
 };
 
 // ===== Interfaces =====
-interface ScrollableViewProps {
-    readonly headerRowHeight: number;
-    readonly columnWidths: number[];
-    readonly height: number | undefined;
-    readonly width: number | undefined;
-    readonly contentWidth: number | undefined;
-    readonly edges: { readonly top: boolean; readonly right: boolean; readonly bottom: boolean; readonly left: boolean };
-    readonly data: any[];
-    readonly getRowSize: (row: number) => { readonly top: number; readonly height: number };
-    readonly hasStickyRightColumn: boolean;
-}
 
 interface RectType {
     readonly width: number;
@@ -89,47 +78,6 @@ interface ExpandRowsProps {
         readonly transform: string;
     };
     readonly selectionIsDisabled: boolean;
-}
-
-// ===== Sub-Components =====
-function ScrollableView({
-    headerRowHeight,
-    columnWidths,
-    height,
-    width,
-    contentWidth,
-    edges,
-    data,
-    getRowSize,
-    hasStickyRightColumn
-}: ScrollableViewProps) {
-    return (
-        <div
-            className="dsg-scrollable-view-container"
-            style={{
-                height: getRowSize(data.length - 1).top + getRowSize(data.length - 1).height + headerRowHeight,
-                width: contentWidth ? contentWidth : '100%',
-            }}
-        >
-            <div
-                className={cx({
-                    'dsg-scrollable-view': true,
-                    'dsg-scrollable-view-t': !edges.top,
-                    'dsg-scrollable-view-r': !edges.right,
-                    'dsg-scrollable-view-b': !edges.bottom,
-                    'dsg-scrollable-view-l': !edges.left,
-                })}
-                style={{
-                    top: headerRowHeight,
-                    left: columnWidths[0],
-                    height: height ? height - headerRowHeight : 0,
-                    width: contentWidth && width
-                        ? width - columnWidths[0] - (hasStickyRightColumn ? columnWidths[columnWidths.length - 1] : 0)
-                        : `calc(100% - ${columnWidths[0] + (hasStickyRightColumn ? columnWidths[columnWidths.length - 1] : 0)}px)`,
-                }}
-            />
-        </div>
-    );
 }
 
 function SelectionColumnMarker({ rect, data, headerRowHeight, getRowSize, selectionIsDisabled }: SelectionColumnMarkerProps) {
@@ -235,16 +183,12 @@ function SelectionRectImpl() {
         editing,
         expandSelection,
         getRowSize,
-        outerRef,
         columnWidths,
         columnRights,
-        width,
-        height,
         contentWidth
     } = useDatagridContext();
 
     const activeCellIsDisabled = activeCell ? isCellDisabled(activeCell) : false;
-    const edges = useEdges(outerRef, width, height);
 
     const selectionIsDisabled = useMemo(() => {
         if (!selection) {
@@ -285,18 +229,6 @@ function SelectionRectImpl() {
 
     return (
         <>
-            <ScrollableView
-                headerRowHeight={headerRowHeight}
-                columnWidths={columnWidths}
-                height={height}
-                width={width}
-                contentWidth={contentWidth}
-                edges={edges}
-                data={data}
-                getRowSize={getRowSize}
-                hasStickyRightColumn={hasStickyRightColumn}
-            />
-            
             {(selectionRect || activeCellRect) && (
                 <SelectionColumnMarker
                     rect={selectionRect || activeCellRect}

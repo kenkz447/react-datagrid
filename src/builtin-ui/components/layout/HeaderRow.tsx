@@ -1,27 +1,25 @@
 import cx from 'classnames';
 import { HeaderCell } from './HeaderCell';
+import { useDatagridContext } from '../../../browser';
+import React from 'react';
 
-export interface HeaderRowProps {
-    readonly headerRowHeight: number;
-    readonly colVirtualizer: any;
-    readonly columns: any[];
-    readonly isFullWidth?: boolean;
-    readonly hasStickyRightColumn: boolean;
-    readonly selectionColMin?: number;
-    readonly selectionColMax?: number;
-}
 
-export function HeaderRow({
-    headerRowHeight,
-    colVirtualizer,
-    columns,
-    isFullWidth,
-    hasStickyRightColumn,
-    selectionColMin,
-    selectionColMax
-}: HeaderRowProps) {
+function HeaderRowImpl() {
+    const {
+        headerRowHeight,
+        columns,
+        isFullWidth,
+        hasStickyRightColumn,
+        selection,
+        activeCell,
+        colVirtualizer
+    } = useDatagridContext();
+
+    const selectionColMin = selection?.min.col ?? activeCell?.col;
+    const selectionColMax = selection?.max.col ?? activeCell?.col;
+
     if (headerRowHeight <= 0) return null;
-    
+
     return (
         <div
             className={cx('dsg-row', 'dsg-row-header')}
@@ -43,3 +41,5 @@ export function HeaderRow({
         </div>
     );
 }
+
+export const HeaderRow = React.memo(HeaderRowImpl);

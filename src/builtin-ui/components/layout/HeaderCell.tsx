@@ -1,13 +1,9 @@
 import cx from 'classnames';
 import { Cell } from './Cell';
+import { VirtualItem } from '@tanstack/react-virtual';
 
 export interface HeaderCellProps {
-    readonly col: {
-        readonly index: number;
-        readonly key: string | number;
-        readonly size: number;
-        readonly start: number;
-    };
+    readonly col: VirtualItem;
     readonly columns: any[];
     readonly hasStickyRightColumn: boolean;
     readonly selectionColMin?: number;

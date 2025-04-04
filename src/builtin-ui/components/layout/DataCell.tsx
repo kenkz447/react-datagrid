@@ -1,54 +1,35 @@
-import cx from 'classnames';
 import { Cell } from './Cell';
-import { CellClassName, RowData } from '../../../core';
+import { RowData } from '../../../core';
+import { useDatagridContext } from '../../../browser';
+import { memo } from 'react';
+import { VirtualItem } from '@tanstack/react-virtual';
 
-export interface DataCellProps<TRow extends RowData = RowData> {
-    readonly col: {
-        readonly index: number;
-        readonly key: string | number;
-        readonly size: number;
-        readonly start: number;
-    };
-    readonly row: {
-        readonly index: number;
-        readonly key: string | number;
-        readonly size: number;
-        readonly start: number;
-    };
-    readonly columns: any[];
-    readonly data: TRow[];
-    readonly cellClassName?: CellClassName<TRow>;
-    readonly columnCellClassName?: CellClassName<any>;
-    readonly hasStickyRightColumn: boolean;
-    readonly activeCell: { readonly row: number; readonly col: number } | null;
-    readonly editing: boolean;
+export interface DataCellProps {
+    readonly col: VirtualItem;
+    readonly row: VirtualItem;
     readonly disabled: boolean;
-    readonly deleteRow: () => void;
-    readonly duplicateRow: () => void;
-    readonly insertRowBelow: () => void;
-    readonly stopEditing: () => void;
-    readonly setRowData: (data: Partial<TRow>) => void;
     readonly rowActive: boolean;
 }
 
-export function DataCell<TRow extends RowData = RowData>({
+function DataCellImpl<TRow extends RowData = RowData>({
     col,
     row,
-    columns,
-    data,
-    cellClassName,
-    columnCellClassName,
-    hasStickyRightColumn,
-    activeCell,
-    editing,
     disabled,
-    deleteRow,
-    duplicateRow,
-    insertRowBelow,
-    stopEditing,
-    setRowData,
-    rowActive
-}: DataCellProps<TRow>) {
+    rowActive,
+}: DataCellProps) {
+    const {
+        columns,
+        data,
+        editing,
+        hasStickyRightColumn,
+        activeCell,
+        stopEditing,
+        deleteGivenRow,
+        duplicateGivenRow,
+        insertAfterGivenRow,
+        setGivenRowData
+    } = useDatagridContext<TRow>();
+
     const Component = columns[col.index].component;
     const cellIsActive = activeCell?.row === row.index && activeCell.col === col.index - 1;
 
@@ -59,22 +40,6 @@ export function DataCell<TRow extends RowData = RowData>({
             stickyRight={hasStickyRightColumn && col.index === columns.length - 1}
             active={col.index === 0 && rowActive}
             disabled={disabled}
-            className={cx(
-                typeof columnCellClassName === 'function'
-                    ? columnCellClassName({
-                        rowData: data[row.index],
-                        rowIndex: row.index,
-                        columnId: columns[col.index].id,
-                    })
-                    : columnCellClassName,
-                typeof cellClassName === 'function'
-                    ? cellClassName({
-                        rowData: data[row.index],
-                        rowIndex: row.index,
-                        columnId: columns[col.index].id,
-                    })
-                    : cellClassName
-            )}
             width={col.size}
             left={col.start}
         >
@@ -85,13 +50,15 @@ export function DataCell<TRow extends RowData = RowData>({
                 columnIndex={col.index - 1}
                 rowIndex={row.index}
                 focus={cellIsActive && editing}
-                deleteRow={deleteRow}
-                duplicateRow={duplicateRow}
+                deleteRow={deleteGivenRow(row.index)}
+                duplicateRow={duplicateGivenRow(row.index)}
+                insertRowBelow={insertAfterGivenRow(row.index)}
+                setRowData={setGivenRowData(row.index)}
                 stopEditing={stopEditing}
-                insertRowBelow={insertRowBelow}
-                setRowData={setRowData}
                 columnData={columns[col.index].columnData}
             />
         </Cell>
     );
 }
+
+export const DataCell = memo(DataCellImpl);

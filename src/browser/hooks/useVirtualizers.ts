@@ -1,4 +1,4 @@
-import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual';
+import { defaultRangeExtractor, useVirtualizer, Virtualizer } from '@tanstack/react-virtual';
 import { RefObject, useEffect } from 'react';
 import { RowData } from '../../core';
 
@@ -14,8 +14,8 @@ export interface UseVirtualizersProps {
 }
 
 export interface UseVirtualizersResult {
-    readonly rowVirtualizer: any;
-    readonly colVirtualizer: any;
+    readonly rowVirtualizer: Virtualizer<HTMLDivElement, Element>;
+    readonly colVirtualizer: Virtualizer<HTMLDivElement, Element>;
 }
 
 export function useVirtualizers<TRow extends RowData = RowData>({

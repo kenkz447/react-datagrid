@@ -9,6 +9,7 @@ import { useCutHandler } from './useCut';
 import { usePasteHandler } from './usePaste';
 import { useCallbacks } from './useCallbacks';
 import { useContextMenuItems } from './useContextMenuItems';
+import { useVirtualizers } from './useVirtualizers';
 
 export type UseDatagridReturn<TRow extends RowData = RowData> = ReturnType<typeof useDatagrid<TRow>>;
 
@@ -24,9 +25,9 @@ export function useDatagrid<TRow extends RowData>({
     maxHeight = DEFAULT_MAX_HEIGHT,
     rowHeight = DEFAULT_ROW_HEIGHT,
     headerRowHeight = typeof rowHeight === 'number' ? rowHeight : DEFAULT_ROW_HEIGHT,
-    disableContextMenu,
     ...props
 }: Partial<DataSheetGridProps<TRow>>) {
+    const { rowKey, disableContextMenu } = props;
 
     const coreContext = useDatagridCore<TRow>({
         data,
@@ -41,7 +42,9 @@ export function useDatagrid<TRow extends RowData>({
         activeCell,
         selectionCell,
         columns,
-        getRowTotalSize
+        getRowSize,
+        getRowTotalSize,
+        hasStickyRightColumn
     } = coreContext;
 
     const outerRef = useRef<HTMLDivElement>(null);
@@ -106,6 +109,17 @@ export function useDatagrid<TRow extends RowData>({
 
     const contextMenuItems = useContextMenuItems(coreContext, { cut, copy, close: closeContextMenu });
 
+    const { rowVirtualizer, colVirtualizer } = useVirtualizers({
+        data,
+        outerRef,
+        headerRowHeight,
+        columnWidths,
+        getRowSize,
+        columns,
+        hasStickyRightColumn,
+        rowKey
+    });
+
     useCallbacks(coreContext);
 
     // Scroll to the selectionCell cell when it changes
@@ -133,6 +147,7 @@ export function useDatagrid<TRow extends RowData>({
 
     return {
         ...coreContext,
+        rowKey,
         outerRef,
         innerRef,
         beforeTabIndexRef,
@@ -155,6 +170,8 @@ export function useDatagrid<TRow extends RowData>({
         copy,
         paste,
         contextMenuItems,
-        closeContextMenu
+        closeContextMenu,
+        rowVirtualizer, 
+        colVirtualizer
     };
 };
