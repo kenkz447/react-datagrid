@@ -1,28 +1,15 @@
-import React, { RefObject } from 'react';
-import type { RowData } from '../../core';
-import { useDatagridContext, useMemoizedIndexCallback } from '../../core';
-import { useVirtualizers } from '../hooks/useVirtualizers';
+import { PropsWithChildren } from 'react';
+import type { RowData } from '../../../core';
+import { useMemoizedIndexCallback } from '../../../core';
+import { useVirtualizers, useDatagridContext } from '../../../browser';
 import { HeaderRow } from './HeaderRow';
 import { DataRow } from './DataRow';
 
 export interface GridProps {
-    readonly children?: React.ReactNode;
-    readonly outerRef: RefObject<HTMLDivElement>;
-    readonly innerRef: RefObject<HTMLDivElement>;
-    readonly columnWidths?: number[];
-    readonly displayHeight: number;
-    readonly isFullWidth?: boolean;
 }
 
 // ===== Main Component =====
-export function Grid<TRow extends RowData = RowData>({
-    children,
-    outerRef,
-    innerRef,
-    columnWidths,
-    displayHeight,
-    isFullWidth,
-}: GridProps) {
+export function Grid<TRow extends RowData = RowData>({ children }: PropsWithChildren<GridProps>) {
     const {
         propsRef,
         data,
@@ -38,6 +25,11 @@ export function Grid<TRow extends RowData = RowData>({
         duplicateRows,
         insertRowAfter,
         stopEditing,
+        outerRef,
+        innerRef,
+        columnWidths,
+        displayHeight,
+        isFullWidth,
     } = useDatagridContext<TRow>();
 
     const {
@@ -91,7 +83,7 @@ export function Grid<TRow extends RowData = RowData>({
                     selectionColMin={selectionColMin}
                     selectionColMax={selectionColMax}
                 />
-                
+
                 {rowVirtualizer.getVirtualItems().map((row) => (
                     <DataRow
                         key={row.key}
@@ -114,7 +106,7 @@ export function Grid<TRow extends RowData = RowData>({
                         stopEditing={stopEditing}
                     />
                 ))}
-                
+
                 {children}
             </div>
         </div>

@@ -1,16 +1,10 @@
 import { useCallback } from 'react';
 import { isPrintableUnicode } from '../../utils/copyPasting';
-import { Cell, useDatagridContext } from '../../../core';
+import { Cell, RowData } from '../../../core';
+import { UseDatagridReturn } from '../useDatagrid';
+import { getAllTabbableElements } from '../../utils/tab';
 
-interface UseKeydownHandlerProps {
-    scrollTo,
-    onFocusOutside?: (direction: 'top' | 'bottom') => void;
-};
-
-export const useKeydownHandler = ({
-    scrollTo,
-    onFocusOutside
-}: UseKeydownHandlerProps) => {
+export const useKeydownHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const {
         lastEditingCellRef,
         activeCell,
@@ -27,11 +21,26 @@ export const useKeydownHandler = ({
         stopEditing,
         selection,
         deleteSelection,
-        duplicateRows
-    } = useDatagridContext();
+        duplicateRows,
+        scrollTo,
+        beforeTabIndexRef,
+        afterTabIndexRef
+    } = datagrid;
 
     const onKeyDown = useCallback(
         (event: KeyboardEvent) => {
+            const onFocusOutside = (direction) => {
+                if (direction === 'top') {
+                    const allElements = getAllTabbableElements();
+                    const index = allElements.indexOf(beforeTabIndexRef.current);
+                    allElements[(index - 1 + allElements.length) % allElements.length].focus();
+                } else {
+                    const allElements = getAllTabbableElements();
+                    const index = allElements.indexOf(afterTabIndexRef.current);
+                    allElements[(index + 1) % allElements.length].focus();
+                }
+            };
+
             if (!activeCell) {
                 return;
             }

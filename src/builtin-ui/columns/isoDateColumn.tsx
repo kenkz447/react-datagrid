@@ -1,5 +1,5 @@
-import { Column } from '../../../core';
-import { IsoDateCell } from '../../components/cells/IsoDateCell';
+import { Column } from '../../core';
+import { IsoDateCell } from '../components/cells/IsoDateCell';
 
 export const isoDateColumn: Partial<Column<string | null, any, string>> = {
     component: IsoDateCell,

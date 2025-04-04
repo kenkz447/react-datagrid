@@ -28,15 +28,13 @@ export const generateCopyData = (
     return copyData;
 };
 
-type CopyHandlerProps =  Pick<UseDatagridCoreReturn, 'editing' | 'activeCell' | 'selection' | 'columns' | 'data'>;
-
 export const useCopyHandler = ({
     editing,
     activeCell,
     selection,
     columns,
     data,
-}: CopyHandlerProps) => {
+}: UseDatagridCoreReturn) => {
     
     const onCopy = useCallback(
         async (event?: ClipboardEvent) => {

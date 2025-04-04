@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ContextMenuItem } from '../../core';
+import { ContextMenuItem, UseDatagridCoreReturn } from '../../core';
 import { readClipboard } from '../utils/clipboard';
 
 // Types for hook parameters
@@ -14,8 +14,8 @@ export interface Selection {
 }
 
 export interface ContextMenuOptions {
-    onCut: () => void;
-    onCopy: () => void;
+    cut: () => void;
+    copy: () => void;
     applyPasteDataToDatasheet: (data: string[][]) => void;
     duplicateRows: (fromRow: number, toRow?: number) => void;
     deleteRows: (fromRow: number, toRow?: number) => void;
@@ -32,20 +32,20 @@ export const createCopyPasteItems = (
         return [];
     }
 
-    const { onCopy, onCut, applyPasteDataToDatasheet, close } = options;
+    const { copy, cut, applyPasteDataToDatasheet, close } = options;
 
     return [
         {
             type: 'COPY',
             action: (): void => {
-                onCopy();
+                copy();
                 close(null);
             },
         },
         {
             type: 'CUT',
             action: (): void => {
-                onCut();
+                cut();
                 close(null);
             },
         },
@@ -167,19 +167,28 @@ export const createDeleteRowItems = (
 };
 
 interface UseContextMenuItemsProps {
-    activeCell: CellPosition | null;
-    selection: Selection | null;
-    options: ContextMenuOptions;
+    cut: () => void;
+    copy: () => void;
+    close: (event?: React.MouseEvent | null) => void;
 }
 
 // Main hook that uses the pure functions
-export const useContextMenuItems = ({
-    activeCell,
-    selection,
-    options
-}: UseContextMenuItemsProps) => {
+export const useContextMenuItems = (coreContext: UseDatagridCoreReturn, props: UseContextMenuItemsProps) => {
+
+    const { activeCell, selection, applyPasteDataToDatasheet, duplicateRows, deleteRows, insertRowAfter } = coreContext;
+    const { cut, copy, close } = props;
+
+    const options: ContextMenuOptions = React.useMemo(() => ({
+        cut,
+        copy,
+        applyPasteDataToDatasheet,
+        duplicateRows,
+        deleteRows,
+        insertRowAfter,
+        close
+    }), [applyPasteDataToDatasheet, close, copy, cut, deleteRows, duplicateRows, insertRowAfter]);
+
     const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
-    const { close } = options;
 
     React.useEffect(() => {
         const copyPasteItems = createCopyPasteItems(activeCell, options);

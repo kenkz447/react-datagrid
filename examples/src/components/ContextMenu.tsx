@@ -1,4 +1,4 @@
-import { ContextMenuItem, useDatagridContext } from '../../core';
+import { ContextMenuItem, useDatagridContext } from '@basestacks/react-datagrid';
 
 function ContextMenuItemComponent({ item }: { item: ContextMenuItem; }) {
     if (item.type === 'CUT') {
@@ -50,6 +50,10 @@ export function ContextMenu() {
         contextMenuItems,
         contextMenuRef,
     } = useDatagridContext();
+
+    if (!contextMenu) {
+        return null;
+    }
 
     return (
         <div

@@ -1,7 +1,6 @@
-import React from 'react';
 import cx from 'classnames';
 import { Cell } from './Cell';
-import { CellClassName, RowData } from '../../core';
+import { CellClassName, RowData } from '../../../core';
 
 export interface DataCellProps<TRow extends RowData = RowData> {
     readonly col: {

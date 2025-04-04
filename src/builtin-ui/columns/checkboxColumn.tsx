@@ -1,5 +1,5 @@
-import { Column } from '../../../core';
-import { CheckboxCell } from '../../components/cells/CheckboxCell';
+import { Column } from '../../core';
+import { CheckboxCell } from '../components/cells/CheckboxCell';
 
 // Those values are used when pasting values, all those values will be considered false, any other true
 const FALSY = [

@@ -1,6 +1,5 @@
-import React from 'react';
 import cx from 'classnames';
-import { DataSheetGridProps, RowData } from '../../core';
+import { DataSheetGridProps, RowData } from '../../../core';
 import { DataCell } from './DataCell';
 
 export interface DataRowProps<TRow extends RowData = RowData> {
@@ -74,14 +73,12 @@ export function DataRow<TRow extends RowData = RowData>({
             {colVirtualizer.getVirtualItems().map((col) => {
                 const columnCellClassName = columns[col.index].cellClassName;
                 const disabled = columns[col.index].disabled;
-                const cellDisabled =
-                    disabled === true ||
-                    (typeof disabled === 'function' &&
-                        disabled({
-                            rowData: data[row.index],
-                            rowIndex: row.index,
-                        }));
-                        
+                const cellDisabled = disabled === true || (typeof disabled === 'function' &&
+                    disabled({
+                        rowData: data[row.index],
+                        rowIndex: row.index,
+                    }));
+
                 return (
                     <DataCell
                         key={col.key}

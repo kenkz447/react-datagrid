@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import cx from 'classnames';
-import { useDatagridContext, type SelectionContextType } from '../../core';
-import { useEdges } from '../hooks/useEdges';
-import { useSelectionRects } from '../hooks/useSelectionRects';
+import { useEdges, useSelectionRects, useDatagridContext } from '../../../browser';
 
 // ===== Utility Functions =====
 const buildSquare = (
@@ -40,8 +38,8 @@ const buildClipPath = (
 interface ScrollableViewProps {
     readonly headerRowHeight: number;
     readonly columnWidths: number[];
-    readonly viewHeight: number | undefined;
-    readonly viewWidth: number | undefined;
+    readonly height: number | undefined;
+    readonly width: number | undefined;
     readonly contentWidth: number | undefined;
     readonly edges: { readonly top: boolean; readonly right: boolean; readonly bottom: boolean; readonly left: boolean };
     readonly data: any[];
@@ -97,8 +95,8 @@ interface ExpandRowsProps {
 function ScrollableView({
     headerRowHeight,
     columnWidths,
-    viewHeight,
-    viewWidth,
+    height,
+    width,
     contentWidth,
     edges,
     data,
@@ -124,9 +122,9 @@ function ScrollableView({
                 style={{
                     top: headerRowHeight,
                     left: columnWidths[0],
-                    height: viewHeight ? viewHeight - headerRowHeight : 0,
-                    width: contentWidth && viewWidth
-                        ? viewWidth - columnWidths[0] - (hasStickyRightColumn ? columnWidths[columnWidths.length - 1] : 0)
+                    height: height ? height - headerRowHeight : 0,
+                    width: contentWidth && width
+                        ? width - columnWidths[0] - (hasStickyRightColumn ? columnWidths[columnWidths.length - 1] : 0)
                         : `calc(100% - ${columnWidths[0] + (hasStickyRightColumn ? columnWidths[columnWidths.length - 1] : 0)}px)`,
                 }}
             />
@@ -226,16 +224,7 @@ function ExpandRows({ rect, indicator, selectionIsDisabled }: ExpandRowsProps) {
 }
 
 // ===== Main Component =====
-function SelectionRectImpl(props: SelectionContextType) {
-    const {
-        outerRef,
-        columnWidths,
-        columnRights,
-        viewWidth,
-        viewHeight,
-        contentWidth
-    } = props;
-
+function SelectionRectImpl() {
     const {
         data,
         headerRowHeight,
@@ -245,11 +234,17 @@ function SelectionRectImpl(props: SelectionContextType) {
         isCellDisabled,
         editing,
         expandSelection,
-        getRowSize
+        getRowSize,
+        outerRef,
+        columnWidths,
+        columnRights,
+        width,
+        height,
+        contentWidth
     } = useDatagridContext();
 
     const activeCellIsDisabled = activeCell ? isCellDisabled(activeCell) : false;
-    const edges = useEdges(outerRef, viewWidth, viewHeight);
+    const edges = useEdges(outerRef, width, height);
 
     const selectionIsDisabled = useMemo(() => {
         if (!selection) {
@@ -293,8 +288,8 @@ function SelectionRectImpl(props: SelectionContextType) {
             <ScrollableView
                 headerRowHeight={headerRowHeight}
                 columnWidths={columnWidths}
-                viewHeight={viewHeight}
-                viewWidth={viewWidth}
+                height={height}
+                width={width}
                 contentWidth={contentWidth}
                 edges={edges}
                 data={data}
@@ -346,4 +341,4 @@ function SelectionRectImpl(props: SelectionContextType) {
     );
 }
 
-export const SelectionRect = React.memo<SelectionContextType>(SelectionRectImpl);
+export const SelectionRect = React.memo(SelectionRectImpl);

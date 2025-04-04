@@ -1,15 +1,15 @@
 import { useCallback } from 'react';
-import { useDatagridContext, UseDatagridCoreReturn } from '../../../core';
+import { RowData } from '../../../core';
+import { UseDatagridReturn } from '../useDatagrid';
 
 
-export const useContextMenuHandler = () => {
-
+export const useContextMenuHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const {
         innerRef,
         getCursorIndex,
         activeCell,
         editing
-    } = useDatagridContext();
+    } = datagrid;
 
     const onContextMenu = useCallback(
         (event: MouseEvent) => {

@@ -24,7 +24,7 @@ export function TextCell({
         parseUserInput,
         continuousUpdates,
     },
-}: CellProps<string, TextColumnData<string>>) {
+}: CellProps<string | number, TextColumnData<string | number>>) {
     const ref = useRef<HTMLInputElement>(null);
     const firstRender = useFirstRender();
 

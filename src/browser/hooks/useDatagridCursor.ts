@@ -1,27 +1,28 @@
 import { useCallback } from 'react';
-import { Cell } from '../../core';
+import { Cell, UseDatagridCoreReturn } from '../../core';
 
 interface UseDatagridCursorProps {
     columnRights: number[] | null;
     columnWidths: number[] | null;
     getInnerBoundingClientRect: (force?: boolean) => DOMRect | null;
     getOuterBoundingClientRect: (force?: boolean) => DOMRect | null;
-    headerRowHeight: number;
-    hasStickyRightColumn: boolean;
-    getRowIndex: (y: number) => number;
-    dataLength: number;
 }
 
-export const useDatagridCursor = ({
+export const useDatagridCursor = (coreContext: UseDatagridCoreReturn, {
     columnRights,
     columnWidths,
     getInnerBoundingClientRect,
     getOuterBoundingClientRect,
-    headerRowHeight,
-    hasStickyRightColumn,
-    getRowIndex,
-    dataLength,
 }: UseDatagridCursorProps) => {
+    const {
+        data,
+        headerRowHeight,
+        hasStickyRightColumn,
+        getRowIndex,
+    } = coreContext;
+
+    const dataLength = data.length;
+
     return useCallback(
         (event: MouseEvent, force: boolean = false, includeSticky: boolean = false): Cell | null => {
             const innerBoundingClientRect = getInnerBoundingClientRect(force);

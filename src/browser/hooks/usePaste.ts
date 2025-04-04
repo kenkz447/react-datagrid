@@ -2,13 +2,11 @@ import { useCallback } from 'react';
 import { parseTextHtmlData, parseTextPlainData } from '../utils/copyPasting';
 import { UseDatagridCoreReturn } from '../../core';
 
-type UsePasteHandlerProps =  Pick<UseDatagridCoreReturn, 'editing' | 'activeCell' | 'applyPasteDataToDatasheet'>;
-
 export const usePasteHandler = ({
     activeCell,
     editing,
     applyPasteDataToDatasheet,
-}: UsePasteHandlerProps) => {
+}: UseDatagridCoreReturn) => {
     
     const onPaste = useCallback(
         (event: ClipboardEvent) => {

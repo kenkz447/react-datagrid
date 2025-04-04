@@ -31,7 +31,7 @@ export type CellProps<T, C> = {
   readonly deleteRow: () => void
 }
 
-export type CellComponent<T, C> = (props: CellProps<T, C>) => React.JSX.Element
+export type CellComponent<T, C> = React.ComponentType<CellProps<T, C>>;
 
 export type CellClassName<TValue> = string | ((opt: { rowData: TValue; rowIndex: number; columnId?: string }) => string | undefined);
 

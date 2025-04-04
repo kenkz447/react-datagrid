@@ -1,9 +1,7 @@
-import React from 'react';
 import cx from 'classnames';
 import { Cell } from './Cell';
-import { RowData } from '../../core';
 
-export interface HeaderCellProps<TRow extends RowData = RowData> {
+export interface HeaderCellProps {
     readonly col: {
         readonly index: number;
         readonly key: string | number;
@@ -16,13 +14,13 @@ export interface HeaderCellProps<TRow extends RowData = RowData> {
     readonly selectionColMax?: number;
 }
 
-export function HeaderCell<TRow extends RowData = RowData>({ 
+export function HeaderCell({
     col,
     columns,
     hasStickyRightColumn,
     selectionColMin,
     selectionColMax
-}: HeaderCellProps<TRow>) {
+}: HeaderCellProps) {
     return (
         <Cell
             key={col.key}

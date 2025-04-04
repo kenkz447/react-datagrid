@@ -1,24 +1,24 @@
 import { useCallback } from 'react';
-import { UseDatagridCoreReturn } from '../../core';
+import { RowData, UseDatagridCoreReturn } from '../../core';
 
-type UseCutHandlerProps = Pick<UseDatagridCoreReturn, 'activeCell' | 'editing' | 'deleteSelection'> & {
-    readonly onCopy: (e: ClipboardEvent) => void;
+type UseCutHandlerProps = {
+    readonly copy: (e: ClipboardEvent) => void;
 };
 
-export const useCutHandler = ({ 
-    activeCell,
-    editing,
-    deleteSelection,
-    onCopy 
-}: UseCutHandlerProps) => {
+export const useCutHandler = <TRow extends RowData = RowData>(
+    coreContext: UseDatagridCoreReturn<TRow>,
+    { copy }: UseCutHandlerProps
+) => {
+    const { activeCell, editing, deleteSelection } = coreContext;
+
     const onCut = useCallback(
         (event?: ClipboardEvent) => {
             if (!editing && activeCell) {
-                onCopy(event);
+                copy(event);
                 deleteSelection(false);
             }
         },
-        [activeCell, deleteSelection, editing, onCopy]
+        [activeCell, deleteSelection, editing, copy]
     );
 
     return onCut;

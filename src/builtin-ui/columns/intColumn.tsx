@@ -1,6 +1,7 @@
-import { createEditableColumn } from '../createEditableColumn';
+import { createEditableColumn } from '../../core';
+import { TextCell } from '../components/cells/TextCell';
 
-export const intColumn = createEditableColumn<number | null>({
+export const intColumn = createEditableColumn<number>(TextCell, {
     alignRight: true,
     formatBlurredInput: (value) =>
         typeof value === 'number' ? new Intl.NumberFormat().format(value) : '',

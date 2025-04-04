@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { Cell, useDatagridContext } from '../../../core';
+import { Cell, RowData, UseDatagridCoreReturn } from '../../../core';
 
-export const useMouseUpHandler = () => {
+export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseDatagridCoreReturn<TRow>) => {
     const {
         propsRef,
         columns,
@@ -16,7 +16,7 @@ export const useMouseUpHandler = () => {
         setActiveCell,
         setExpandingSelectionFromRowIndex,
         setSelectionMode
-    } = useDatagridContext();
+    } = props;
 
     const { onChange } = propsRef.current;
 

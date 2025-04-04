@@ -1,5 +1,5 @@
 import { Column, RowData } from '../../core';
-import { CellWrapper } from '../components/cells/CellWrapper';
+import { CellWrapper } from '../components/CellWrapper';
 
 type ColumnData = { key: string; original: Partial<Column<any, any, any>> }
 

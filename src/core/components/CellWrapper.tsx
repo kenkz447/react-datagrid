@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { CellProps, RowData } from '../../../core';
+import { CellProps, RowData } from '../types';
 
 export function CellWrapper({ columnData: { key, original }, rowData, setRowData, ...rest }: CellProps<RowData, any>) {
     // We use a ref so useCallback does not produce a new setKeyData function every time the rowData changes

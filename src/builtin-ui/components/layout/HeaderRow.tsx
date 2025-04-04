@@ -1,9 +1,7 @@
-import React from 'react';
 import cx from 'classnames';
-import { RowData } from '../../core';
 import { HeaderCell } from './HeaderCell';
 
-export interface HeaderRowProps<TRow extends RowData = RowData> {
+export interface HeaderRowProps {
     readonly headerRowHeight: number;
     readonly colVirtualizer: any;
     readonly columns: any[];
@@ -13,7 +11,7 @@ export interface HeaderRowProps<TRow extends RowData = RowData> {
     readonly selectionColMax?: number;
 }
 
-export function HeaderRow<TRow extends RowData = RowData>({
+export function HeaderRow({
     headerRowHeight,
     colVirtualizer,
     columns,
@@ -21,7 +19,7 @@ export function HeaderRow<TRow extends RowData = RowData>({
     hasStickyRightColumn,
     selectionColMin,
     selectionColMax
-}: HeaderRowProps<TRow>) {
+}: HeaderRowProps) {
     if (headerRowHeight <= 0) return null;
     
     return (

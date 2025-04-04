@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useDatagridContext } from '../../core';
+import { useDatagridContext } from '@basestacks/react-datagrid';
 
 export function AddRows() {
     const { insertRowAfter, data } = useDatagridContext();

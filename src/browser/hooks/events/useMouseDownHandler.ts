@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { Cell, RowData, useDatagridContext } from '../../../core';
+import { Cell, RowData } from '../../../core';
+import { UseDatagridReturn } from '../useDatagrid';
 
-export const useMouseDownHandler = <TRow extends RowData>() => {
+export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const {
         contextMenu,
         setContextMenu,
@@ -21,19 +22,21 @@ export const useMouseDownHandler = <TRow extends RowData>() => {
         selectionCell,
         isCellDisabled,
         selection,
-        setExpandingSelectionFromRowIndex
-    } = useDatagridContext<TRow>();
+        setExpandingSelectionFromRowIndex,
+        closeContextMenu
+    } = datagrid;
 
     const onMouseDown = useCallback(
         (event: MouseEvent) => {
+            const clickInside = innerRef.current?.contains(event.target as Node) || false;
+
             if (contextMenu) {
+                closeContextMenu();
                 return;
             }
 
             const rightClick =
                 event.button === 2 || (event.button === 0 && event.ctrlKey);
-            const clickInside =
-                innerRef.current?.contains(event.target as Node) || false;
 
             if (
                 !clickInside &&
@@ -48,9 +51,7 @@ export const useMouseDownHandler = <TRow extends RowData>() => {
                 event.target instanceof HTMLElement &&
                 event.target.className.includes('dsg-expand-rows-indicator')
             ) {
-                setExpandingSelectionFromRowIndex(
-                    Math.max(activeCell?.row ?? 0, selection?.max.row ?? 0)
-                );
+                setExpandingSelectionFromRowIndex(Math.max(activeCell?.row ?? 0, selection?.max.row ?? 0));
                 return;
             }
 

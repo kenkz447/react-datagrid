@@ -1,9 +1,10 @@
-import { createEditableColumn } from '../createEditableColumn';
+import { createEditableColumn } from '../../core';
+import { TextCell } from '../components/cells/TextCell';
 
 const TEN_TO_THE_12 = 1000000000000;
 const TEN_TO_THE_10 = 10000000000;
 
-export const percentColumn = createEditableColumn<number>({
+export const percentColumn = createEditableColumn<number>(TextCell, {
     alignRight: true,
     formatBlurredInput: (value) =>
         typeof value === 'number'

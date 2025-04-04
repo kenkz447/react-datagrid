@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
 import { useGetBoundingClientRect } from './useGetBoundingClientRect';
 import { useColumnWidths, useDebounceState, RowData, Cell, useDatagridCore, DataSheetGridProps, Column } from '../../core';
@@ -38,22 +38,10 @@ export function useDatagrid<TRow extends RowData>({
     });
 
     const {
-        hasStickyRightColumn,
-        getRowSize,
-        getRowTotalSize,
-        getRowIndex,
         activeCell,
         selectionCell,
         columns,
-        editing,
-        selection,
-        deleteSelection,
-        applyPasteDataToDatasheet,
-        lastEditingCellRef,
-        propsRef,
-        duplicateRows,
-        deleteRows,
-        insertRowAfter,
+        getRowTotalSize
     } = coreContext;
 
     const outerRef = useRef<HTMLDivElement>(null);
@@ -70,10 +58,10 @@ export function useDatagrid<TRow extends RowData>({
     const [heightDiff, setHeightDiff] = useDebounceState(BORDER_WIDTH, 100);
 
     // Height of the list (including scrollbars and borders) to display
-    const displayHeight = Math.min(
+    const displayHeight = useMemo(() => Math.min(
         maxHeight,
         headerRowHeight + getRowTotalSize(maxHeight) + heightDiff
-    );
+    ), [maxHeight, headerRowHeight, getRowTotalSize, heightDiff]);
 
     setHeightDiff(height ? displayHeight - height : 0);
 
@@ -87,82 +75,38 @@ export function useDatagrid<TRow extends RowData>({
     const innerRef = useRef<HTMLDivElement>(null);
     const getInnerBoundingClientRect = useGetBoundingClientRect(innerRef);
 
-    const scrollTo = useDatagridScroll({
+    const scrollTo = useDatagridScroll(coreContext, {
         height,
         width,
-        headerRowHeight,
         columnRights,
         columnWidths,
-        getRowSize,
-        hasStickyRightColumn,
         outerRef
     });
 
-    const getCursorIndex = useDatagridCursor({
+    const getCursorIndex = useDatagridCursor(coreContext, {
         columnRights,
         columnWidths,
         getInnerBoundingClientRect,
-        getOuterBoundingClientRect,
-        headerRowHeight,
-        hasStickyRightColumn,
-        getRowIndex,
-        dataLength: data.length,
+        getOuterBoundingClientRect
     });
 
     const beforeTabIndexRef = useRef<HTMLDivElement>(null);
     const afterTabIndexRef = useRef<HTMLDivElement>(null);
 
-    const paste = usePasteHandler({
-        activeCell,
-        editing,
-        applyPasteDataToDatasheet,
-    });
-
-    const copy = useCopyHandler({
-        editing,
-        activeCell,
-        selection,
-        columns,
-        data,
-    });
-
-    const cut = useCutHandler({
-        activeCell,
-        editing,
-        deleteSelection,
-        onCopy: copy
-    });
+    const paste = usePasteHandler(coreContext);
+    const copy = useCopyHandler(coreContext);
+    const cut = useCutHandler(coreContext, { copy });
 
     const contextMenuRef = useRef<HTMLDivElement>(null);
-
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, cursorIndex: Cell } | null>(null);
 
     const closeContextMenu = useCallback(() => {
         setContextMenu(null);
     }, [setContextMenu]);
-    
-    const contextMenuItems = useContextMenuItems({
-        activeCell,
-        selection,
-        options: {
-            onCut: cut,
-            onCopy: copy,
-            applyPasteDataToDatasheet,
-            duplicateRows,
-            deleteRows,
-            insertRowAfter,
-            close: closeContextMenu,
-        }
-    });
 
-    useCallbacks({
-        propsRef,
-        activeCell,
-        columns,
-        editing,
-        selection,
-        lastEditingCellRef
-    });
+    const contextMenuItems = useContextMenuItems(coreContext, { cut, copy, close: closeContextMenu });
+
+    useCallbacks(coreContext);
 
     // Scroll to the selectionCell cell when it changes
     useEffect(() => {
@@ -178,14 +122,14 @@ export function useDatagrid<TRow extends RowData>({
         }
     }, [activeCell, scrollTo]);
 
-    // Blur any element on focusing the grid
+    const haveActiveCell = activeCell !== null;
     useEffect(() => {
-        if (activeCell !== null) {
+        if (haveActiveCell) {
+            // Blur any element on focusing the grid
             (document.activeElement as HTMLElement).blur();
             window.getSelection()?.removeAllRanges();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeCell !== null]);
+    }, [haveActiveCell]);
 
     return {
         ...coreContext,

@@ -1,5 +1,6 @@
-import { Column } from '../../../core';
-import { DateCell } from '../../components/cells/DateCell';
+import { Column } from '../../core';
+import { DateCell } from '../components/cells/DateCell';
+
 
 export const dateColumn: Partial<Column<Date | null, any, string>> = {
     component: DateCell,

@@ -1,29 +1,25 @@
 import { useCallback } from 'react';
-import { Cell, ScrollBehavior } from '../../core';
+import { Cell, ScrollBehavior, UseDatagridCoreReturn } from '../../core';
 
 const BORDER_WIDTH = 1;
 
 interface UseDatagridScrollProps {
     height: number | undefined;
     width: number | undefined;
-    headerRowHeight: number;
     columnRights: number[] | null;
     columnWidths: number[] | null;
-    getRowSize: (index: number) => { top: number; height: number };
-    hasStickyRightColumn: boolean;
     outerRef: React.RefObject<HTMLDivElement>;
 }
 
-export const useDatagridScroll = ({
+export const useDatagridScroll = (coreContext: UseDatagridCoreReturn, {
     height,
     width,
-    headerRowHeight,
     columnRights,
     columnWidths,
-    getRowSize,
-    hasStickyRightColumn,
     outerRef
 }: UseDatagridScrollProps) => {
+    const { hasStickyRightColumn, headerRowHeight, getRowSize } = coreContext;
+
     return useCallback(
         (cell: Cell & ScrollBehavior) => {
             if (!height || !width || cell.doNotScrollY) {

@@ -1,4 +1,4 @@
-import { TextCell } from '../components/cells/TextCell';
+import { CellProps, Column } from '../types';
 
 type CreateEditableColumnOptions<TCell> = {
     placeholder?: string;
@@ -19,7 +19,10 @@ type CreateEditableColumnOptions<TCell> = {
     parsePastedValue?: (value: string) => TCell;
 }
 
-export function createEditableColumn<TCell>(options: CreateEditableColumnOptions<TCell> = {}) {
+export function createEditableColumn<TCell>(
+    Component: React.ComponentType<CellProps<TCell, any>>,
+    options: CreateEditableColumnOptions<TCell> = {}
+): Partial<Column<TCell, any, any>> {
     const {
         placeholder,
         alignRight = false,
@@ -29,11 +32,11 @@ export function createEditableColumn<TCell>(options: CreateEditableColumnOptions
         formatBlurredInput = (value) => String(value ?? ''),
         formatInputOnFocus = (value) => String(value ?? ''),
         formatForCopy = (value) => String(value ?? ''),
-        parsePastedValue = (value) => (value.replace(/[\n\r]+/g, ' ').trim() || (null as unknown)),
+        parsePastedValue = (value) => (value.replace(/[\n\r]+/g, ' ').trim() || (null)),
     } = options;
 
     return {
-        component: TextCell,
+        component: Component,
         columnData: {
             placeholder,
             alignRight,
@@ -44,7 +47,7 @@ export function createEditableColumn<TCell>(options: CreateEditableColumnOptions
         },
         deleteValue: () => deletedValue,
         copyValue: ({ rowData }) => formatForCopy(rowData),
-        pasteValue: ({ value }) => parsePastedValue(value),
+        pasteValue: ({ value }) => parsePastedValue(value) as any,
         isCellEmpty: ({ rowData }) => rowData === null || rowData === undefined,
     };
 }
