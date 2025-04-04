@@ -1,10 +1,20 @@
 import cx from 'classnames';
 import { HeaderCell } from './HeaderCell';
-import { useDatagridContext } from '../../../browser';
+import { UseDatagridReturn } from '../../../browser';
 import React from 'react';
 
+type HeaderRowProps = Pick<UseDatagridReturn,
+    | 'headerRowHeight'
+    | 'columns'
+    | 'isFullWidth'
+    | 'hasStickyRightColumn'
+    | 'selection'
+    | 'activeCell'
+    | 'colVirtualizer'
+>;
 
-function HeaderRowImpl() {
+
+function HeaderRowImpl(props: HeaderRowProps) {
     const {
         headerRowHeight,
         columns,
@@ -13,7 +23,7 @@ function HeaderRowImpl() {
         selection,
         activeCell,
         colVirtualizer
-    } = useDatagridContext();
+    } = props;
 
     const selectionColMin = selection?.min.col ?? activeCell?.col;
     const selectionColMax = selection?.max.col ?? activeCell?.col;

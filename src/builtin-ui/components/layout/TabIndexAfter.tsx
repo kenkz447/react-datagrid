@@ -1,8 +1,15 @@
 import React from 'react';
-import { useDatagridContext } from '../../../browser';
+import { UseDatagridReturn } from '../../../browser';
 
-export function TabIndexAfterImpl() {
-    const { afterTabIndexRef, columns, data, setActiveCell, hasStickyRightColumn } = useDatagridContext();
+type TabIndexAfterProps = Pick<UseDatagridReturn,
+    | 'afterTabIndexRef'
+    | 'columns'
+    | 'data'
+    | 'setActiveCell'
+    | 'hasStickyRightColumn'>;
+
+export function TabIndexAfterImpl(props: TabIndexAfterProps) {
+    const { afterTabIndexRef, columns, data, setActiveCell, hasStickyRightColumn } = props;
 
     return (
         <div

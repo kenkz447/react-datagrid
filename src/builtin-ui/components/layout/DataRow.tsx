@@ -1,24 +1,23 @@
 import cx from 'classnames';
 import { RowData } from '../../../core';
 import { DataCell } from './DataCell';
-import { useDatagridContext } from '../../../browser';
 import { memo } from 'react';
 import { VirtualItem } from '@tanstack/react-virtual';
+import { UseDatagridReturn } from '../../../browser';
 
-export interface DataRowProps {
+export type DataRowProps<TRow extends RowData> = Pick<UseDatagridReturn<TRow>, 'columns' | 'data' | 'isFullWidth' | 'selection' | 'activeCell' | 'colVirtualizer'> & {
     readonly row: VirtualItem;
 }
 
-function DataRowImpl<TRow extends RowData = RowData>({ row }: DataRowProps) {
-    const {
-        columns,
-        data,
-        isFullWidth,
-        selection,
-        activeCell,
-        colVirtualizer,
-    } = useDatagridContext<TRow>();
-
+function DataRowImpl<TRow extends RowData = RowData>({
+    columns,
+    data,
+    isFullWidth,
+    selection,
+    activeCell,
+    colVirtualizer,
+    row
+}: DataRowProps<TRow>) {
     const selectionMinRow = selection?.min.row ?? activeCell?.row;
     const selectionMaxRow = selection?.max.row ?? activeCell?.row;
 

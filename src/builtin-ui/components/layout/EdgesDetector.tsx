@@ -1,7 +1,6 @@
 import cx from 'classnames';
 import { UseDatagridReturn, useEdges } from '../../../browser';
 import React from 'react';
-import { useWhatChanged } from '../../../core';
 
 type EdgesDetectorProps = Pick<UseDatagridReturn,
     | 'outerRef'
@@ -17,15 +16,10 @@ type EdgesDetectorProps = Pick<UseDatagridReturn,
 };
 
 /**
- * A component that detects edges of a scrollable container and applies appropriate CSS classes.
+ * A component that detects edges in a scrollable data grid and provides visual indicators
+ * for scroll boundaries.
  * 
- * The EdgesDetectorImpl renders a scrollable view with visual indicators for when content has
- * reached the edges of its container. It dynamically applies CSS classes based on the detection
- * of top, right, bottom, and left edges.
- * 
- * @param props - The properties for the EdgesDetector component
- * 
- * @returns A div containing a scrollable view with appropriate edge detection classes
+ * @returns A scrollable container with edge detection visual indicators
  */
 export function EdgesDetectorImpl({
     outerRef,
@@ -41,7 +35,12 @@ export function EdgesDetectorImpl({
 
     const edges = useEdges(outerRef, width, height);
 
-    const scrollableViewStyle = React.useMemo(() => ({
+    const containerStyle = React.useMemo(() => ({
+        height: getRowSize(dataLength - 1).top + getRowSize(dataLength - 1).height + headerRowHeight,
+        width: contentWidth ? contentWidth : '100%',
+    }), [dataLength, getRowSize, headerRowHeight, contentWidth]);
+
+    const viewPortStyle = React.useMemo(() => ({
         top: headerRowHeight,
         left: columnWidths?.[0] ?? 0,
         height: height ? height - headerRowHeight : 0,
@@ -53,10 +52,7 @@ export function EdgesDetectorImpl({
     return (
         <div
             className="dsg-scrollable-view-container"
-            style={{
-                height: getRowSize(dataLength - 1).top + getRowSize(dataLength - 1).height + headerRowHeight,
-                width: contentWidth ? contentWidth : '100%',
-            }}
+            style={containerStyle}
         >
             <div
                 className={cx({
@@ -66,7 +62,7 @@ export function EdgesDetectorImpl({
                     'dsg-scrollable-view-b': !edges.bottom,
                     'dsg-scrollable-view-l': !edges.left,
                 })}
-                style={scrollableViewStyle}
+                style={viewPortStyle}
             />
         </div>
     );

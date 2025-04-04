@@ -1,8 +1,14 @@
 import React from 'react';
-import { useDatagridContext } from '../../../browser';
+import { UseDatagridReturn } from '../../../browser';
 
-function TabIndexBeforeImp() {
-    const { beforeTabIndexRef, columns, data, setActiveCell } = useDatagridContext();
+type TabIndexBeforeProps = Pick<UseDatagridReturn,
+    | 'beforeTabIndexRef'
+    | 'columns'
+    | 'data'
+    | 'setActiveCell'>;
+
+function TabIndexBeforeImp(props: TabIndexBeforeProps) {
+    const { beforeTabIndexRef, columns, data, setActiveCell } = props;
 
     return (
         <div
