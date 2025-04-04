@@ -17,7 +17,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
         hasStickyRightColumn,
         setActiveCell,
         setEditing,
-        setSelectionMode,
+        startSelection,
         setSelectionCell,
         selectionCell,
         isCellDisabled,
@@ -113,10 +113,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
                 cursorIndex.row >= selection.min.row &&
                 cursorIndex.row <= selection.max.row;
 
-            if (
-                (!(event.shiftKey && activeCell) || rightClick) &&
-                data.length > 0
-            ) {
+            if ((!(event.shiftKey && activeCell) || rightClick) && data.length > 0) {
                 setActiveCell(
                     cursorIndex && {
                         col: (rightClickInSelection || rightClickOnSelectedHeaders) &&
@@ -150,19 +147,14 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
             }
 
             setEditing(Boolean(clickOnActiveCell && !rightClick));
-            setSelectionMode(
-                cursorIndex && !rightClick
-                    ? {
-                        columns: (cursorIndex.col !== -1 && !clickOnStickyRightColumn) || Boolean(event.shiftKey && activeCell),
-                        rows: cursorIndex.row !== -1 || Boolean(event.shiftKey && activeCell),
-                        active: true,
-                    }
-                    : {
-                        columns: false,
-                        rows: false,
-                        active: false,
-                    }
-            );
+
+            // Start user selection
+            if (cursorIndex && !rightClick) {
+                startSelection({
+                    columns: (cursorIndex.col !== -1 && !clickOnStickyRightColumn) || Boolean(event.shiftKey && activeCell),
+                    rows: cursorIndex.row !== -1 || Boolean(event.shiftKey && activeCell),
+                });
+            };
 
             if (event.shiftKey && activeCell && !rightClick) {
                 setSelectionCell(
@@ -220,22 +212,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
                 }
             }
         },
-        [
-            contextMenu,
-            getCursorIndex,
-            editing,
-            activeCell,
-            columns,
-            isCellDisabled,
-            selection,
-            hasStickyRightColumn,
-            disableContextMenu,
-            setSelectionMode,
-            setActiveCell,
-            setSelectionCell,
-            selectionCell,
-            data.length,
-        ]
+        [innerRef, contextMenu, editing, activeCell, columns, getCursorIndex, isCellDisabled, disableContextMenu, hasStickyRightColumn, selection, data.length, setEditing, startSelection, closeContextMenu, setExpandingSelectionFromRowIndex, setContextMenu, setActiveCell, lastEditingCellRef, setSelectionCell, selectionCell]
     );
 
     return onMouseDown;

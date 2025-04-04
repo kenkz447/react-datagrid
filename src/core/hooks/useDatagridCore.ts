@@ -1,11 +1,11 @@
 import {
     useCallback,
-    useMemo,
     useRef,
     useState,
 } from 'react';
 import {
     Cell,
+    ScrollBehavior,
     DataSheetGridProps,
     RowData
 } from '../types';
@@ -13,7 +13,6 @@ import { useColumns } from './internal/useColumns';
 import { useCell } from './useCell';
 import { useRowController } from './useRowController';
 import { useRowHeights } from './internal/useRowHeights';
-import { useMemoizedIndexCallback } from './internal/useMemoizedIndexCallback';
 
 export type UseDatagridCoreReturn<TRow extends RowData = RowData> = ReturnType<typeof useDatagridCore<TRow>>;
 
@@ -50,8 +49,13 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         setSelectionCell,
         selection,
         selectionMode,
-        setSelectionMode
+        startSelection,
+        endSelection,
+        selectionRef,
     } = useCell();
+
+    const activeCellRef = useRef<(Cell & ScrollBehavior) | null>(activeCell);
+    activeCellRef.current = activeCell;
 
     const hasStickyRightColumn = Boolean(stickyRightColumn);
 
@@ -97,11 +101,15 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         insertRowAfter,
         setRowData,
         stopEditing,
+        setGivenRowData,
+        deleteGivenRow,
+        duplicateGivenRow,
+        insertAfterGivenRow,
     } = useRowController({
         dataRef,
         columns,
         data,
-        activeCell,
+        activeCellRef,
         selection,
         setActiveCell,
         setSelectionCell,
@@ -118,18 +126,15 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
     });
 
     const { getRowSize, getRowTotalSize, getRowIndex } = useRowHeights({
-        data,
+        dataRef,
         rowHeight,
     });
 
-    const setGivenRowData = useMemoizedIndexCallback(setRowData, 1);
-    const deleteGivenRow = useMemoizedIndexCallback(deleteRows, 0);
-    const duplicateGivenRow = useMemoizedIndexCallback(duplicateRows, 0);
-    const insertAfterGivenRow = useMemoizedIndexCallback(insertRowAfter, 0);
-
-    return useMemo(() => ({
+    return {
         propsRef,
         lastEditingCellRef,
+        activeCellRef,
+        selectionRef,
 
         data,
         columns,
@@ -140,9 +145,12 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         activeCell, setActiveCell,
         selectionCell, setSelectionCell,
         editing, setEditing,
-        selectionMode, setSelectionMode,
         expandingSelectionFromRowIndex, setExpandingSelectionFromRowIndex,
         expandSelectionRowsCount, setExpandSelectionRowsCount,
+
+        selectionMode,
+        startSelection,
+        endSelection,
 
         maxHeight,
         headerRowHeight,
@@ -166,16 +174,5 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         deleteGivenRow,
         duplicateGivenRow,
         insertAfterGivenRow,
-
-    }), [
-        activeCell, columns, data, editing, expandSelection, expandSelectionRowsCount, expandingSelectionFromRowIndex, hasStickyRightColumn, isCellDisabled, selection, selectionCell, selectionMode, setActiveCell, setExpandingSelectionFromRowIndex, setSelectionCell, setSelectionMode, applyPasteDataToDatasheet,
-        maxHeight, headerRowHeight,
-        getRowSize, getRowTotalSize, getRowIndex,
-        deleteSelection, duplicateRows, deleteRows, insertRowAfter, setRowData, stopEditing,
-        setGivenRowData,
-        deleteGivenRow,
-        duplicateGivenRow,
-        insertAfterGivenRow,
-    ]
-    );
+    };
 };

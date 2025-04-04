@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useDeepEqualState } from './internal/useDeepEqualState';
-import { Cell, Selection, ScrollBehavior } from '../types';
+import { Cell, Selection, ScrollBehavior, SelectionMode } from '../types';
 
 export const useCell = () => {
     // When not null, represents the index of the row from which we are expanding
@@ -32,8 +32,11 @@ export const useCell = () => {
         [activeCell, selectionCell]
     );
 
+    const selectionRef = useRef(selection);
+    selectionRef.current = selection;
+
     // Behavior of the selection when the user drags the mouse around
-    const [selectionMode, setSelectionMode] = useDeepEqualState({
+    const [selectionMode, setSelectionMode] = useDeepEqualState<SelectionMode>({
         // True when the position of the cursor should impact the columns of the selection
         columns: false,
         // True when the position of the cursor should impact the rows of the selection
@@ -41,17 +44,35 @@ export const useCell = () => {
         // True when the user is dragging the mouse around to select
         active: false,
     });
-    
+
+    const startSelection = useCallback((selectionMode: Omit<SelectionMode, 'active'>) => {
+        setSelectionMode({
+            ...selectionMode,
+            active: true,
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const endSelection = useCallback(() => {
+        setSelectionMode({
+            columns: false,
+            rows: false,
+            active: false,
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return {
+        activeCell,
+        setActiveCell,
         expandingSelectionFromRowIndex,
         setExpandingSelectionFromRowIndex,
-        activeCell, 
-        setActiveCell,
-        selectionCell, 
+        selectionCell,
         setSelectionCell,
         selection,
-        selectionMode, 
-        setSelectionMode
+        selectionMode,
+        startSelection,
+        endSelection,
+        selectionRef
     };
 };

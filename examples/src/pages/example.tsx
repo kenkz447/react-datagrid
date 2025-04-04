@@ -1,4 +1,4 @@
-import { checkboxColumn, DatagridProvider, Datagrid, keyColumn, textColumn, useDatagrid } from '@basestacks/react-datagrid';
+import { checkboxColumn, DatagridProvider, keyColumn, textColumn, useDatagrid, Grid } from '@basestacks/react-datagrid';
 import { useState } from 'react';
 import { ContextMenu } from '../components/ContextMenu';
 import { AddRows } from '../components/AddRows';
@@ -26,7 +26,7 @@ export default function Example() {
         <div>
             <h1>Index</h1>
             <DatagridProvider {...datagrid}>
-                <Datagrid />
+                <Grid />
                 <AddRows />
                 <ContextMenu />
             </DatagridProvider>

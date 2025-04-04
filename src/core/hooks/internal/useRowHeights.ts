@@ -1,17 +1,23 @@
 import { DataSheetGridProps, RowData, RowSize } from '../../types';
-import { useMemo, useRef } from 'react';
+import { useCallback, useRef } from 'react';
+
+type UseRowHeightProps<TRow> = Pick<DataSheetGridProps<TRow>, 'rowHeight'> & {
+    readonly dataRef?: React.RefObject<TRow[]>;
+};
 
 export const useRowHeights = <TRow extends RowData>({
-    data,
+    dataRef,
     rowHeight,
-}: Required<Pick<DataSheetGridProps<TRow>, 'data' | 'rowHeight'>>) => {
+}: UseRowHeightProps<TRow>) => {
     const calculatedHeights = useRef<RowSize[]>([]);
 
-    return useMemo(() => {
-        const getRowIndex = (top: number): number => {
+    const dataLength = dataRef.current.length;
+
+    const getRowIndex = useCallback(
+        (top: number): number => {
             if (typeof rowHeight === 'number') {
                 return Math.min(
-                    data.length - 1,
+                    dataLength - 1,
                     Math.max(-1, Math.floor(top / rowHeight))
                 );
             }
@@ -33,7 +39,7 @@ export const useRowHeights = <TRow extends RowData>({
 
             if (
                 r === calculatedHeights.current.length - 1 &&
-                data.length > calculatedHeights.current.length &&
+                dataLength > calculatedHeights.current.length &&
                 (!calculatedHeights.current.length ||
                     top >=
                     calculatedHeights.current[r].top +
@@ -47,7 +53,7 @@ export const useRowHeights = <TRow extends RowData>({
 
                 do {
                     r++;
-                    const height = rowHeight({ rowIndex: r, rowData: data[r] });
+                    const height = rowHeight({ rowIndex: r, rowData: dataRef.current[r] });
                     calculatedHeights.current.push({
                         height,
                         top: lastBottom,
@@ -57,47 +63,63 @@ export const useRowHeights = <TRow extends RowData>({
             }
 
             return r;
-        };
+        },
+        // Disabling exhaustive-deps here because of the dataRef dependency
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [rowHeight, dataLength]
+    );
 
-        return {
-            getRowSize: (index: number): RowSize => {
-                if (typeof rowHeight === 'number') {
-                    return { height: rowHeight, top: rowHeight * index };
-                }
+    const getRowSize = useCallback(
+        (index: number): RowSize => {
+            if (typeof rowHeight === 'number') {
+                return { height: rowHeight, top: rowHeight * index };
+            }
 
-                if (index >= data.length) {
-                    return { height: 0, top: 0 };
-                }
+            if (index >= dataLength) {
+                return { height: 0, top: 0 };
+            }
 
-                if (index < calculatedHeights.current.length) {
-                    return calculatedHeights.current[index];
-                }
-
-                let lastBottom =
-                    calculatedHeights.current[calculatedHeights.current.length - 1].top +
-                    calculatedHeights.current[calculatedHeights.current.length - 1].height;
-
-                for (let i = calculatedHeights.current.length; i <= index; i++) {
-                    const height = rowHeight({ rowIndex: i, rowData: data[i] });
-
-                    calculatedHeights.current.push({ height, top: lastBottom });
-                    lastBottom += height;
-                }
-
+            if (index < calculatedHeights.current.length) {
                 return calculatedHeights.current[index];
-            },
-            getRowIndex,
-            getRowTotalSize: (maxHeight: number) => {
-                if (typeof rowHeight === 'number') {
-                    return data.length * rowHeight;
-                }
+            }
 
-                const index = getRowIndex(maxHeight);
+            let lastBottom =
+                calculatedHeights.current[calculatedHeights.current.length - 1].top +
+                calculatedHeights.current[calculatedHeights.current.length - 1].height;
 
-                return (
-                    calculatedHeights.current[index].top + calculatedHeights.current[index].height
-                );
-            },
-        };
-    }, [rowHeight, data]);
+            for (let i = calculatedHeights.current.length; i <= index; i++) {
+                const height = rowHeight({ rowIndex: i, rowData: dataRef.current[i] });
+
+                calculatedHeights.current.push({ height, top: lastBottom });
+                lastBottom += height;
+            }
+
+            return calculatedHeights.current[index];
+        },
+        // Disabling exhaustive-deps here because of the dataRef dependency
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [rowHeight, dataLength]
+    );
+
+    const getRowTotalSize = useCallback(
+        (maxHeight: number): number => {
+            if (typeof rowHeight === 'number') {
+                return dataLength * rowHeight;
+            }
+
+            const index = getRowIndex(maxHeight);
+
+            return (
+                calculatedHeights.current[index].top +
+                calculatedHeights.current[index].height
+            );
+        },
+        [rowHeight, dataLength, getRowIndex]
+    );
+
+    return {
+        getRowIndex,
+        getRowSize,
+        getRowTotalSize
+    };
 };

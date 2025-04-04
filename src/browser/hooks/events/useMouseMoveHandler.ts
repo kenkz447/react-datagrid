@@ -54,18 +54,7 @@ export const useMouseMoveHandler = <TRow extends RowData = RowData>(datagrid: Us
                 setEditing(false);
             }
         },
-        [
-            scrollTo,
-            selectionMode.active,
-            selectionMode.columns,
-            selectionMode.rows,
-            getCursorIndex,
-            columns.length,
-            hasStickyRightColumn,
-            setSelectionCell,
-            data.length,
-            expandingSelectionFromRowIndex,
-        ]
+        [expandingSelectionFromRowIndex, selectionMode.active, selectionMode.columns, selectionMode.rows, getCursorIndex, setExpandSelectionRowsCount, scrollTo, columns.length, hasStickyRightColumn, setSelectionCell, data.length, setEditing]
     );
 
     return onMouseMove;

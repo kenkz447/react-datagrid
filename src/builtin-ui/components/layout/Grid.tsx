@@ -3,7 +3,7 @@ import { useDatagridContext } from '../../../browser';
 import { HeaderRow } from './HeaderRow';
 import { DataRow } from './DataRow';
 import { SelectionRect } from './SelectionRect';
-import { ViewPort } from './ViewPort';
+import { EdgesDetector } from './EdgesDetector';
 import { TabIndexBefore } from './TabIndexBefore';
 import { TabIndexAfter } from './TabIndexAfter';
 
@@ -20,6 +20,14 @@ export function Grid<TRow extends RowData = RowData>() {
         isFullWidth,
         colVirtualizer,
         rowVirtualizer,
+        headerRowHeight,
+        columnWidths,
+        height,
+        width,
+        contentWidth,
+        data,
+        getRowSize,
+        hasStickyRightColumn
     } = useDatagridContext<TRow>();
 
     const { onScroll } = propsRef.current;
@@ -43,7 +51,17 @@ export function Grid<TRow extends RowData = RowData>() {
                 {rowVirtualizer.getVirtualItems().map((row) => (
                     <DataRow key={row.key} row={row} />
                 ))}
-                <ViewPort />
+                <EdgesDetector
+                    dataLength={data.length}
+                    outerRef={outerRef}
+                    headerRowHeight={headerRowHeight}
+                    columnWidths={columnWidths}
+                    height={height}
+                    width={width}
+                    contentWidth={contentWidth}
+                    getRowSize={getRowSize}
+                    hasStickyRightColumn={hasStickyRightColumn}
+                />
                 <SelectionRect />
             </div>
             <TabIndexAfter />

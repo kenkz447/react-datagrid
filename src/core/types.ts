@@ -5,7 +5,6 @@ export type Cell = {
   readonly row: number
 }
 
-
 export type ScrollBehavior = {
   readonly doNotScrollX?: boolean
   readonly doNotScrollY?: boolean
@@ -168,14 +167,3 @@ export type SelectionMode = {
   readonly rows: boolean;
   readonly active: boolean;
 }
-
-export interface UseRowControllerReturn<TRow extends RowData> {
-  readonly duplicateRows: (rowMin: number, rowMax?: number) => void;
-  readonly applyPasteDataToDatasheet: (pasteData: string[][]) => Promise<void>;
-  readonly deleteSelection: (_smartDelete?: boolean) => void;
-  readonly deleteRows: (rowMin: number, rowMax?: number) => void;
-  readonly insertRowAfter: (row: number, count?: number) => void;
-  readonly setRowData: (rowIndex: number, item: TRow) => void;
-  readonly stopEditing: (options?: { nextRow?: boolean }) => void;
-}
-

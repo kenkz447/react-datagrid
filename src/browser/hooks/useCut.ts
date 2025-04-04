@@ -9,16 +9,16 @@ export const useCutHandler = <TRow extends RowData = RowData>(
     coreContext: UseDatagridCoreReturn<TRow>,
     { copy }: UseCutHandlerProps
 ) => {
-    const { activeCell, editing, deleteSelection } = coreContext;
+    const { activeCellRef, editing, deleteSelection } = coreContext;
 
     const onCut = useCallback(
         (event?: ClipboardEvent) => {
-            if (!editing && activeCell) {
+            if (!editing && activeCellRef.current) {
                 copy(event);
                 deleteSelection(false);
             }
         },
-        [activeCell, deleteSelection, editing, copy]
+        [activeCellRef, deleteSelection, editing, copy]
     );
 
     return onCut;

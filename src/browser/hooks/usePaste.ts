@@ -3,14 +3,14 @@ import { parseTextHtmlData, parseTextPlainData } from '../utils/copyPasting';
 import { UseDatagridCoreReturn } from '../../core';
 
 export const usePasteHandler = ({
-    activeCell,
+    activeCellRef,
     editing,
     applyPasteDataToDatasheet,
 }: UseDatagridCoreReturn) => {
     
     const onPaste = useCallback(
         (event: ClipboardEvent) => {
-            if (activeCell && !editing) {
+            if (activeCellRef.current && !editing) {
                 let pasteData = [['']];
                 if (event.clipboardData?.types.includes('text/html')) {
                     pasteData = parseTextHtmlData(
@@ -29,7 +29,7 @@ export const usePasteHandler = ({
                 event.preventDefault();
             }
         },
-        [activeCell, applyPasteDataToDatasheet, editing]
+        [activeCellRef, applyPasteDataToDatasheet, editing]
     );
 
     return onPaste;

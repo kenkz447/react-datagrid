@@ -8,6 +8,7 @@ export * from './hooks/internal/useDeepEqualState';
 export * from './hooks/internal/useColumnWidths';
 export * from './hooks/internal/useRowHeights';
 export * from './hooks/internal/useDebounceState';
+export * from './hooks/debug/useWhatChanged';
 
 export * from './utils/typeCheck';
 

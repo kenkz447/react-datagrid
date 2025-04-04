@@ -1,17 +1,7 @@
 import * as React from 'react';
-import { ContextMenuItem, UseDatagridCoreReturn } from '../../core';
+import { Cell, ContextMenuItem, UseDatagridCoreReturn, Selection } from '../../core';
 import { readClipboard } from '../utils/clipboard';
 
-// Types for hook parameters
-export interface CellPosition {
-    row?: number;
-    col?: number;
-}
-
-export interface Selection {
-    min: CellPosition;
-    max: CellPosition;
-}
 
 export interface ContextMenuOptions {
     cut: () => void;
@@ -25,9 +15,11 @@ export interface ContextMenuOptions {
 
 // Pure function to create copy/cut/paste items
 export const createCopyPasteItems = (
-    activeCell: CellPosition | null,
+    activeCellRef: React.RefObject<Cell>,
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
+    const activeCell = activeCellRef.current;
+
     if (activeCell?.row === undefined) {
         return [];
     }
@@ -66,12 +58,15 @@ export const createCopyPasteItems = (
 
 // Pure function to create insert row items
 export const createInsertRowItems = (
-    activeCell: CellPosition | null,
-    selection: Selection | null,
+    activeCellRef: React.RefObject<Cell>,
+    selectionRef: React.RefObject<Selection>,
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { insertRowAfter, close } = options;
     const items: ContextMenuItem[] = [];
+
+    const activeCell = activeCellRef.current;
+    const selection = selectionRef.current;
 
     if (selection?.max.row !== undefined) {
         items.push({
@@ -96,12 +91,15 @@ export const createInsertRowItems = (
 
 // Pure function to create duplicate row items
 export const createDuplicateRowItems = (
-    activeCell: CellPosition | null,
-    selection: Selection | null,
+    activeCellRef: React.RefObject<Cell>,
+    selectionRef: React.RefObject<Selection>,
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { duplicateRows, close } = options;
     const items: ContextMenuItem[] = [];
+
+    const activeCell = activeCellRef.current;
+    const selection = selectionRef.current;
 
     if (
         selection?.min.row !== undefined &&
@@ -132,12 +130,15 @@ export const createDuplicateRowItems = (
 
 // Pure function to create delete row items
 export const createDeleteRowItems = (
-    activeCell: CellPosition | null,
-    selection: Selection | null,
+    activeCellRef: React.RefObject<Cell>,
+    selectionRef: React.RefObject<Selection>,
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { deleteRows, close } = options;
     const items: ContextMenuItem[] = [];
+
+    const activeCell = activeCellRef.current;
+    const selection = selectionRef.current;
 
     if (
         selection?.min.row !== undefined &&
@@ -190,11 +191,17 @@ export const useContextMenuItems = (coreContext: UseDatagridCoreReturn, props: U
 
     const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
 
+    const selectionRef = React.useRef<Selection>(selection);
+    selectionRef.current = selection;
+
+    const activeCellRef = React.useRef<Cell>(activeCell);
+    activeCellRef.current = activeCell;
+
     React.useEffect(() => {
-        const copyPasteItems = createCopyPasteItems(activeCell, options);
-        const insertRowItems = createInsertRowItems(activeCell, selection, options);
-        const duplicateRowItems = createDuplicateRowItems(activeCell, selection, options);
-        const deleteRowItems = createDeleteRowItems(activeCell, selection, options);
+        const copyPasteItems = createCopyPasteItems(activeCellRef, options);
+        const insertRowItems = createInsertRowItems(activeCellRef, selectionRef, options);
+        const duplicateRowItems = createDuplicateRowItems(activeCellRef, selectionRef, options);
+        const deleteRowItems = createDeleteRowItems(activeCellRef, selectionRef, options);
 
         const items: ContextMenuItem[] = [
             ...copyPasteItems,
@@ -209,8 +216,6 @@ export const useContextMenuItems = (coreContext: UseDatagridCoreReturn, props: U
             close(null);
         }
     }, [
-        selection,
-        activeCell,
         options,
         close
     ]);

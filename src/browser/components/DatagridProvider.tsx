@@ -8,6 +8,7 @@ import { useMouseMoveHandler } from '../hooks/events/useMouseMoveHandler';
 import { useKeydownHandler } from '../hooks/events/useKeydownHandler';
 import { useContextMenuHandler } from '../hooks/events/useContextMenuHandler';
 import { useDocumentEventListener } from '../hooks/useDocumentEventListener';
+import { useWhatChanged } from '../../core';
 
 export function DatagridProvider<TRow extends RowData>({ children, ...datagrid }: PropsWithChildren<UseDatagridReturn<TRow>>) {
     const onMouseDown = useMouseDownHandler(datagrid);
@@ -24,6 +25,9 @@ export function DatagridProvider<TRow extends RowData>({ children, ...datagrid }
     useDocumentEventListener('mousemove', onMouseMove);
     useDocumentEventListener('keydown', onKeyDown);
     useDocumentEventListener('contextmenu', onContextMenu);
+
+
+    useWhatChanged(datagrid);
 
     return (
         <DatagridContext.Provider value={datagrid}>

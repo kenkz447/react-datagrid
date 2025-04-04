@@ -1,19 +1,20 @@
 import {
     useCallback,
+    useRef,
 } from 'react';
 import {
     Cell,
     Operation,
     RowData,
-    UseRowControllerReturn,
 } from '../types';
 import deepEqual from 'fast-deep-equal';
+import { useMemoizedIndexCallback } from './internal/useMemoizedIndexCallback';
 
 interface UseRowControllerProps<TRow extends RowData> {
     dataRef,
     columns,
     data,
-    activeCell,
+    activeCellRef,
     selection,
     setActiveCell,
     setSelectionCell,
@@ -30,12 +31,12 @@ interface UseRowControllerProps<TRow extends RowData> {
 }
 
 
-export const useRowController = <TRow extends RowData>(props: UseRowControllerProps<TRow>): UseRowControllerReturn<TRow> => {
+export const useRowController = <TRow extends RowData>(props: UseRowControllerProps<TRow>) => {
     const {
         dataRef,
         columns,
         data,
-        activeCell,
+        activeCellRef,
         selection,
         setActiveCell,
         setSelectionCell,
@@ -50,6 +51,8 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
         setEditing,
         autoAddRow
     } = props;
+
+    const selectionRef = useRef(selection);
 
     const duplicateRows = useCallback(
         (rowMin: number, rowMax: number = rowMin) => {
@@ -81,22 +84,14 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
             });
             setEditing(false);
         },
-        [
-            columns.length,
-            duplicateRow,
-            lockRows,
-            onChange,
-            setActiveCell,
-            setSelectionCell,
-            hasStickyRightColumn,
-        ]
+        [lockRows, onChange, dataRef, setActiveCell, setSelectionCell, columns.length, hasStickyRightColumn, setEditing, duplicateRow]
     );
 
     const applyPasteDataToDatasheet = useCallback(
         async (pasteData: string[][]) => {
-            if (!editing && activeCell) {
-                const min: Cell = selection?.min || activeCell;
-                const max: Cell = selection?.max || activeCell;
+            if (!editing && activeCellRef.current) {
+                const min: Cell = selectionRef.current?.min || activeCellRef.current;
+                const max: Cell = selectionRef.current?.max || activeCellRef.current;
 
                 const results = await Promise.all(
                     pasteData[0].map((_, columnIndex) => {
@@ -239,21 +234,7 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 }
             }
         },
-        [
-            activeCell,
-            columns,
-            createRow,
-            data,
-            editing,
-            hasStickyRightColumn,
-            isCellDisabled,
-            lockRows,
-            onChange,
-            selection?.max,
-            selection?.min,
-            setActiveCell,
-            setSelectionCell,
-        ]
+        [activeCellRef, columns, createRow, data, editing, hasStickyRightColumn, isCellDisabled, lockRows, onChange, setActiveCell, setSelectionCell]
     );
 
     const deleteRows = useCallback(
@@ -290,18 +271,18 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 ]
             );
         },
-        [lockRows, onChange, setActiveCell, setSelectionCell]
+        [dataRef, lockRows, onChange, setActiveCell, setEditing, setSelectionCell]
     );
 
     const deleteSelection = useCallback(
         (_smartDelete = true) => {
             const smartDelete = _smartDelete && !disableSmartDelete;
-            if (!activeCell) {
+            if (!activeCellRef.current) {
                 return;
             }
 
-            const min: Cell = selection?.min || activeCell;
-            const max: Cell = selection?.max || activeCell;
+            const min: Cell = selectionRef.current?.min || activeCellRef.current;
+            const max: Cell = selectionRef.current?.max || activeCellRef.current;
 
             if (
                 data?.slice(min.row, max.row + 1).every((rowData, i) =>
@@ -349,20 +330,7 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 },
             ]);
         },
-        [
-            disableSmartDelete,
-            activeCell,
-            columns,
-            data,
-            deleteRows,
-            isCellDisabled,
-            onChange,
-            selection?.max,
-            selection?.min,
-            setActiveCell,
-            setSelectionCell,
-            hasStickyRightColumn,
-        ]
+        [disableSmartDelete, activeCellRef, data, onChange, columns, deleteRows, isCellDisabled, setActiveCell, setSelectionCell, hasStickyRightColumn]
     );
 
     const insertRowAfter = useCallback(
@@ -394,7 +362,7 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 doNotScrollX: true,
             }));
         },
-        [createRow, lockRows, onChange, setActiveCell, setSelectionCell]
+        [createRow, dataRef, lockRows, onChange, setActiveCell, setEditing, setSelectionCell]
     );
 
     const setRowData = useCallback(
@@ -414,14 +382,14 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 ]
             );
         },
-        [onChange]
+        [dataRef, onChange]
     );
 
     const stopEditing = useCallback(
         ({ nextRow = true } = {}) => {
-            if (activeCell?.row === dataRef.current.length - 1) {
+            if (activeCellRef.current?.row === dataRef.current.length - 1) {
                 if (nextRow && autoAddRow) {
-                    insertRowAfter(activeCell.row);
+                    insertRowAfter(activeCellRef.current.row);
                 } else {
                     setEditing(false);
                 }
@@ -433,8 +401,14 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 }
             }
         },
-        [activeCell?.row, autoAddRow, insertRowAfter, setActiveCell]
+        [activeCellRef, autoAddRow, dataRef, insertRowAfter, setActiveCell, setEditing]
     );
+
+    // Row Modifiers (but performed on a given index)
+    const setGivenRowData = useMemoizedIndexCallback(setRowData, 1);
+    const deleteGivenRow = useMemoizedIndexCallback(deleteRows, 0);
+    const duplicateGivenRow = useMemoizedIndexCallback(duplicateRows, 0);
+    const insertAfterGivenRow = useMemoizedIndexCallback(insertRowAfter, 0);
 
     return {
         duplicateRows,
@@ -444,5 +418,9 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
         insertRowAfter,
         setRowData,
         stopEditing,
+        setGivenRowData,
+        deleteGivenRow,
+        duplicateGivenRow,
+        insertAfterGivenRow,
     };
 };

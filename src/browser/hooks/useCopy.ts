@@ -29,17 +29,17 @@ export const generateCopyData = (
 };
 
 export const useCopyHandler = ({
+    activeCellRef,
     editing,
-    activeCell,
-    selection,
+    selectionRef,
     columns,
     data,
 }: UseDatagridCoreReturn) => {
     
     const onCopy = useCallback(
         async (event?: ClipboardEvent) => {
-            if (!editing && activeCell) {
-                const copyData = generateCopyData(activeCell, selection, columns, data);
+            if (!editing && activeCellRef.current) {
+                const copyData = generateCopyData(activeCellRef.current, selectionRef.current, columns, data);
                 const { textPlain, textHtml } = formatCopyData(copyData);
                 
                 const success = await writeToClipboard(textPlain, textHtml, event);
@@ -51,7 +51,7 @@ export const useCopyHandler = ({
                 }
             }
         },
-        [activeCell, columns, data, editing, selection]
+        [activeCellRef, columns, data, editing, selectionRef]
     );
 
     return onCopy;
