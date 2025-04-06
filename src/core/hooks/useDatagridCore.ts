@@ -12,6 +12,7 @@ import { useColumns } from './internal/useColumns';
 import { useCell } from './useCell';
 import { useRowController } from './useRowController';
 import { useRowHeights } from './internal/useRowHeights';
+import { useCellNavigation } from './useCellNavigation';
 
 export type UseDatagridCoreReturn<TRow extends RowData = RowData> = ReturnType<typeof useDatagridCore<TRow>>;
 
@@ -126,6 +127,19 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         rowHeight,
     });
 
+    const navigation = useCellNavigation({
+        data,
+        columns,
+        editing,
+        selection,
+        selectionCell,
+        activeCell,
+        hasStickyRightColumn,
+        setActiveCell,
+        setEditing,
+        setSelectionCell
+    });
+
     return {
         propsRef,
         data,
@@ -151,6 +165,8 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         applyPasteDataToDatasheet,
         deleteSelection,
         stopEditing,
+
+        navigation,
 
         // Calculators
         getRowSize,

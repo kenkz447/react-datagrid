@@ -14,7 +14,6 @@ export function DatagridProvider<TRow extends RowData>({ children, ...datagrid }
     const onMouseDown = useMouseDownHandler(datagrid);
     const onMouseUp = useMouseUpHandler(datagrid);
     const onMouseMove = useMouseMoveHandler(datagrid);
-    const onKeyDown = useKeydownHandler(datagrid);
     const onContextMenu = useContextMenuHandler(datagrid);
 
     useDocumentEventListener('paste', datagrid.paste);
@@ -23,9 +22,9 @@ export function DatagridProvider<TRow extends RowData>({ children, ...datagrid }
     useDocumentEventListener('mouseup', onMouseUp);
     useDocumentEventListener('mousedown', onMouseDown);
     useDocumentEventListener('mousemove', onMouseMove);
-    useDocumentEventListener('keydown', onKeyDown);
     useDocumentEventListener('contextmenu', onContextMenu);
 
+    useKeydownHandler(datagrid);
 
     useWhatChanged(datagrid);
 
