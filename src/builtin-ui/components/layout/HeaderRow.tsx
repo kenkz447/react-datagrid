@@ -25,8 +25,8 @@ function HeaderRowImpl(props: HeaderRowProps) {
         colVirtualizer
     } = props;
 
-    const selectionColMin = selection?.min.col ?? activeCell?.col;
-    const selectionColMax = selection?.max.col ?? activeCell?.col;
+    const selectionColMin = selection.range?.min.col ?? activeCell?.col;
+    const selectionColMax = selection.range?.max.col ?? activeCell?.col;
 
     if (headerRowHeight <= 0) return null;
 

@@ -2,17 +2,18 @@ import { useCallback, useRef } from 'react';
 import { Cell, UseDatagridCoreReturn } from '../../core';
 import { formatCopyData } from '../utils/copyPasting';
 import { writeToClipboard } from '../utils/clipboard';
+import { UseSelectionReturn } from '../../core/hooks/useSelection';
 
 // Generate 2D array of data to be copied
 export const generateCopyData = (
     activeCell: Cell,
-    selection: { min: Cell; max: Cell } | null,
+    selectionRange: UseSelectionReturn['range'] | null,
     columns: any[],
     data: any[]
 ): Array<Array<number | string | null>> => {
     const copyData: Array<Array<number | string | null>> = [];
-    const min: Cell = selection?.min || activeCell;
-    const max: Cell = selection?.max || activeCell;
+    const min: Cell = selectionRange?.min || activeCell;
+    const max: Cell = selectionRange?.max || activeCell;
 
     for (let row = min.row; row <= max.row; ++row) {
         copyData.push([]);
@@ -45,7 +46,7 @@ export const useCopyHandler = ({
     const onCopy = useCallback(
         async (event?: ClipboardEvent) => {
             if (!editing && activeCellRef.current) {
-                const copyData = generateCopyData(activeCellRef.current, selectionRef.current, columns, data);
+                const copyData = generateCopyData(activeCellRef.current, selectionRef.current.range, columns, data);
                 const { textPlain, textHtml } = formatCopyData(copyData);
 
                 const success = await writeToClipboard(textPlain, textHtml, event);

@@ -39,8 +39,8 @@ export function useDatagrid<TRow extends RowData>({
     });
 
     const {
+        selection,
         activeCell,
-        selectionCell,
         columns,
         getRowSize,
         getRowTotalSize,
@@ -124,10 +124,10 @@ export function useDatagrid<TRow extends RowData>({
 
     // Scroll to the selectionCell cell when it changes
     useEffect(() => {
-        if (selectionCell) {
-            scrollTo(selectionCell);
+        if (selection.cell) {
+            scrollTo(selection.cell);
         }
-    }, [selectionCell, scrollTo]);
+    }, [selection.cell, scrollTo]);
 
     // Scroll to the active cell when it changes
     useEffect(() => {

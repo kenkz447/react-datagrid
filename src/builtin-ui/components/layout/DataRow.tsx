@@ -18,8 +18,8 @@ function DataRowImpl<TRow extends RowData = RowData>({
     colVirtualizer,
     row
 }: DataRowProps<TRow>) {
-    const selectionMinRow = selection?.min.row ?? activeCell?.row;
-    const selectionMaxRow = selection?.max.row ?? activeCell?.row;
+    const selectionMinRow = selection.range?.min.row ?? activeCell?.row;
+    const selectionMaxRow = selection.range?.max.row ?? activeCell?.row;
 
     const rowActive = Boolean(
         row.index >= (selectionMinRow ?? Infinity) &&

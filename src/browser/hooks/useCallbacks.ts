@@ -53,7 +53,7 @@ export const useCallbacks = <TRow extends RowData>({
     useEffect(() => {
         callbacksRef.current.onSelectionChange?.({
             selection: getSelectionWithId(
-                selection ??
+                selection.range ??
                 (activeCell ? { min: activeCell, max: activeCell } : null),
                 columns
             ),
@@ -61,13 +61,13 @@ export const useCallbacks = <TRow extends RowData>({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.min.col ?? activeCell?.col,
+        selection.range?.min.col ?? activeCell?.col,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.min.row ?? activeCell?.row,
+        selection.range?.min.row ?? activeCell?.row,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.max.col ?? activeCell?.col,
+        selection.range?.max.col ?? activeCell?.col,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        selection?.max.row ?? activeCell?.row,
+        selection.range?.max.row ?? activeCell?.row,
         activeCell?.col,
         activeCell?.row,
         columns,

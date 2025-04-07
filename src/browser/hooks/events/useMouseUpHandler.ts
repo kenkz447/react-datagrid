@@ -6,7 +6,6 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseData
         propsRef,
         columns,
         data,
-        setSelectionCell,
         expandingSelectionFromRowIndex,
         expandSelectionRowsCount,
         setExpandSelectionRowsCount,
@@ -14,19 +13,19 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseData
         selection,
         isCellDisabled,
         setActiveCell,
-        setExpandingSelectionFromRowIndex,
-        endSelection
+        setExpandingSelectionFromRowIndex
     } = props;
 
     const { onChange } = propsRef.current;
+    const { setSelectionCell, stopDragging } = selection;
 
     const onMouseUp = useCallback(() => {
         if (expandingSelectionFromRowIndex !== null) {
             if (expandSelectionRowsCount > 0 && activeCell) {
                 let copyData: Array<Array<string>> = [];
 
-                const min: Cell = selection?.min || activeCell;
-                const max: Cell = selection?.max || activeCell;
+                const min: Cell = selection.range?.min || activeCell;
+                const max: Cell = selection.range?.max || activeCell;
 
                 for (let row = min.row; row <= max.row; ++row) {
                     copyData.push([]);
@@ -100,19 +99,19 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseData
                 setActiveCell({
                     col: Math.min(
                         activeCell?.col ?? Infinity,
-                        selection?.min.col ?? Infinity
+                        selection.range?.min.col ?? Infinity
                     ),
                     row: Math.min(
                         activeCell?.row ?? Infinity,
-                        selection?.min.row ?? Infinity
+                        selection.range?.min.row ?? Infinity
                     ),
                     doNotScrollX: true,
                     doNotScrollY: true,
                 });
                 setSelectionCell({
-                    col: Math.max(activeCell?.col ?? 0, selection?.max.col ?? 0),
+                    col: Math.max(activeCell?.col ?? 0, selection.range?.max.col ?? 0),
                     row:
-                        Math.max(activeCell?.row ?? 0, selection?.max.row ?? 0) +
+                        Math.max(activeCell?.row ?? 0, selection.range?.max.row ?? 0) +
                         expandSelectionRowsCount,
                 });
             }
@@ -120,8 +119,8 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseData
         }
 
         // End user selection
-        endSelection();
-    }, [expandingSelectionFromRowIndex, endSelection, expandSelectionRowsCount, activeCell, setExpandingSelectionFromRowIndex, selection?.min, selection?.max, setExpandSelectionRowsCount, setActiveCell, setSelectionCell, columns, data, onChange, isCellDisabled]);
+        stopDragging();
+    }, [expandingSelectionFromRowIndex, stopDragging, expandSelectionRowsCount, activeCell, setExpandingSelectionFromRowIndex, selection.range?.min, selection.range?.max, setExpandSelectionRowsCount, setActiveCell, setSelectionCell, columns, data, onChange, isCellDisabled]);
 
     return onMouseUp;
 };

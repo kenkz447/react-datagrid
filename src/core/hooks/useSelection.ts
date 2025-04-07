@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { Cell, Column, ScrollBehavior, Selection } from '../types';
+import React, { useMemo, useRef } from 'react';
+import { Cell, Column, ScrollBehavior, Selection, SelectionMode } from '../types';
+import { useDeepEqualState } from './internal/useDeepEqualState';
 
 
 const add = ({
@@ -32,35 +33,29 @@ interface UseCellNavigationProps {
     data: unknown[];
     columns: Column<any, any, any>[];
     editing: boolean;
-    selection: Selection;
-    selectionCell: Cell | null;
     activeCell: Cell | null;
     hasStickyRightColumn: boolean;
     setEditing: (editing: boolean) => void;
     setActiveCell: React.Dispatch<React.SetStateAction<Cell & ScrollBehavior>>;
-    setSelectionCell: React.Dispatch<React.SetStateAction<Cell & ScrollBehavior>>;
 }
 
-export const useCellNavigation = (props: UseCellNavigationProps) => {
+export type UseSelectionReturn = ReturnType<typeof useSelection>;
+
+export const useSelection = (props: UseCellNavigationProps) => {
     const {
         data,
         columns,
         editing,
-        selection,
-        selectionCell,
         activeCell,
         hasStickyRightColumn,
         setActiveCell,
         setEditing,
-        setSelectionCell
     } = props;
 
     const refsValue = {
         data,
         columns,
         editing,
-        selection,
-        selectionCell,
         activeCell,
         hasStickyRightColumn,
     };
@@ -68,7 +63,37 @@ export const useCellNavigation = (props: UseCellNavigationProps) => {
     const refs = useRef(refsValue);
     refs.current = refsValue;
 
-    const navigation = React.useMemo(() => ({
+    // The selection cell and the active cell are the two corners of the selection, null when nothing is selected
+    const [selectionCell, setSelectionCell] = useDeepEqualState<(Cell & ScrollBehavior) | null>(null);
+
+    // Min and max of the current selection (rectangle defined by the active cell and the selection cell), null when nothing is selected
+    const range = useMemo<Selection | null>(
+        () =>
+            activeCell &&
+            selectionCell && {
+                min: {
+                    col: Math.min(activeCell.col, selectionCell.col),
+                    row: Math.min(activeCell.row, selectionCell.row),
+                },
+                max: {
+                    col: Math.max(activeCell.col, selectionCell.col),
+                    row: Math.max(activeCell.row, selectionCell.row),
+                },
+            },
+        [activeCell, selectionCell]
+    );
+
+    // Behavior of the selection when the user drags the mouse around
+    const [dragging, setDragging] = useDeepEqualState<SelectionMode>({
+        // True when the position of the cursor should impact the columns of the selection
+        columns: false,
+        // True when the position of the cursor should impact the rows of the selection
+        rows: false,
+        // True when the user is dragging the mouse around to select
+        active: false,
+    });
+
+    const navigation = useRef({
         existFocus: () => {
             setEditing(false);
             setActiveCell(null);
@@ -77,7 +102,7 @@ export const useCellNavigation = (props: UseCellNavigationProps) => {
         goPrevRow: () => {
             setEditing(false);
             setActiveCell((cell) => ({
-                col: refs.current.columns.length - (hasStickyRightColumn ? 3 : 2),
+                col: refs.current.columns.length - (refs.current.hasStickyRightColumn ? 3 : 2),
                 row: (cell?.row ?? 1) - 1,
             }));
             setSelectionCell(null);
@@ -224,8 +249,42 @@ export const useCellNavigation = (props: UseCellNavigationProps) => {
                 offset: direction,
                 cell: cell || refs.current.activeCell
             }));
+        },
+        selectAll: () => {
+            setEditing(false);
+            setActiveCell({
+                col: 0,
+                row: 0,
+                doNotScrollY: true,
+                doNotScrollX: true,
+            });
+            setSelectionCell({
+                col: refs.current.columns.length - (refs.current.hasStickyRightColumn ? 3 : 2),
+                row: refs.current.data.length - 1,
+                doNotScrollY: true,
+                doNotScrollX: true,
+            });
+        },
+        startDragging: (dragSelect: Omit<SelectionMode, 'active'>) => {
+            setDragging({
+                ...dragSelect,
+                active: true,
+            });
+        },
+        stopDragging: () => {
+            setDragging({
+                columns: false,
+                rows: false,
+                active: false,
+            });
         }
-    }), [hasStickyRightColumn, setActiveCell, setEditing, setSelectionCell]);
+    });
 
-    return navigation;
+    return {
+        ...navigation.current,
+        range,
+        dragging,
+        cell: selectionCell,
+        setSelectionCell
+    };
 };

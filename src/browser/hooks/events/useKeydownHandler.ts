@@ -59,13 +59,11 @@ export const useKeydownHandler = <TRow extends RowData>(
 ) => {
     const {
         editing,
-        selection,
-        selectionCell,
         activeCell,
         columns,
         data,
         hasStickyRightColumn,
-        navigation,
+        selection,
         beforeTabIndexRef,
         afterTabIndexRef,
         setLastEditingCell,
@@ -73,24 +71,22 @@ export const useKeydownHandler = <TRow extends RowData>(
         isCellDisabled,
         setActiveCell,
         setEditing,
-        setSelectionCell,
         stopEditing,
         deleteSelection,
         duplicateRows,
         scrollTo
     } = datagrid;
 
-    const refs = {
+    const refsValue = {
         editing,
         selection,
-        selectionCell,
         activeCell,
         columns,
         data,
         hasStickyRightColumn,
     };
-    const datagridRefs = useRef(refs);
-    datagridRefs.current = refs;
+    const refs = useRef(refsValue);
+    refs.current = refsValue;
 
     // Merge default and custom shortcuts
     const shortcuts = React.useMemo(() => ({
@@ -113,30 +109,14 @@ export const useKeydownHandler = <TRow extends RowData>(
         }
     }, [beforeTabIndexRef, afterTabIndexRef]);
 
-    const selectAll = useCallback(() => {
-        setEditing(false);
-        setActiveCell({
-            col: 0,
-            row: 0,
-            doNotScrollY: true,
-            doNotScrollX: true,
-        });
-        setSelectionCell({
-            col: datagridRefs.current.columns.length - (datagridRefs.current.hasStickyRightColumn ? 3 : 2),
-            row: datagridRefs.current.data.length - 1,
-            doNotScrollY: true,
-            doNotScrollX: true,
-        });
-    }, [setEditing, setActiveCell, setSelectionCell]);
-
     // Define handler for preprocessing events
     const preProcessEvent = useCallback((event: KeyboardEvent): boolean => {
-        if (!datagridRefs.current.activeCell || event.isComposing) return false;
+        if (!refs.current.activeCell || event.isComposing) return false;
 
-        const disableKeys = datagridRefs.current.columns[datagridRefs.current.activeCell.col + 1]?.disableKeys;
+        const disableKeys = refs.current.columns[refs.current.activeCell.col + 1]?.disableKeys;
         if (disableKeys) return false;
 
-        if (datagridRefs.current.editing && event.key.startsWith('Arrow')) {
+        if (refs.current.editing && event.key.startsWith('Arrow')) {
             if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
                 return false;
             }
@@ -150,171 +130,171 @@ export const useKeydownHandler = <TRow extends RowData>(
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        const isLastCell = datagridRefs.current.activeCell.col === datagridRefs.current.columns.length - (datagridRefs.current.hasStickyRightColumn ? 3 : 2);
+        const isLastCell = refs.current.activeCell.col === refs.current.columns.length - (refs.current.hasStickyRightColumn ? 3 : 2);
         if (isLastCell) {
-            const isLastRow = datagridRefs.current.activeCell.row === datagridRefs.current.data.length - 1;
+            const isLastRow = refs.current.activeCell.row === refs.current.data.length - 1;
             if (isLastRow) {
-                navigation.existFocus();
+                refs.current.selection.existFocus();
                 focusOutside('bottom');
                 return;
             }
-            navigation.goNextRow();
+            refs.current.selection.goNextRow();
             return;
         }
 
-        navigation.goRight();
-    }, [preProcessEvent, navigation, focusOutside]);
+        refs.current.selection.goRight();
+    }, [preProcessEvent, focusOutside]);
 
     const handleTabPrevious = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        const isFirstCell = datagridRefs.current.activeCell.col === 0;
+        const isFirstCell = refs.current.activeCell.col === 0;
         if (isFirstCell) {
-            const isFirstRow = datagridRefs.current.activeCell.row === 0;
+            const isFirstRow = refs.current.activeCell.row === 0;
             if (isFirstRow) {
-                navigation.existFocus();
+                refs.current.selection.existFocus();
                 focusOutside('top');
                 return;
             }
-            navigation.goPrevRow();
+            refs.current.selection.goPrevRow();
             return;
         }
 
-        navigation.goLeft();
-    }, [preProcessEvent, navigation, focusOutside]);
+        refs.current.selection.goLeft();
+    }, [preProcessEvent, focusOutside]);
 
     const handleArrowDown = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        navigation.goDown();
-    }, [preProcessEvent, navigation]);
+        refs.current.selection.goDown();
+    }, [preProcessEvent]);
 
     const handleArrowUp = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
         setEditing(false);
 
-        navigation.goUp();
-    }, [preProcessEvent, setEditing, navigation]);
+        refs.current.selection.goUp();
+    }, [preProcessEvent, setEditing]);
 
     const handleArrowLeft = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        navigation.goLeft();
-    }, [preProcessEvent, navigation]);
+        refs.current.selection.goLeft();
+    }, [preProcessEvent]);
 
     const handleArrowRight = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
         setEditing(false);
 
-        navigation.goRight();
-    }, [preProcessEvent, setEditing, navigation]);
+        refs.current.selection.goRight();
+    }, [preProcessEvent, setEditing]);
 
     const handleJumpBottom = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
-        navigation.jumpDown();
-    }, [preProcessEvent, navigation]);
+        refs.current.selection.jumpDown();
+    }, [preProcessEvent]);
 
     const handleJumpTop = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
-        navigation.jumpUp();
-    }, [preProcessEvent, navigation]);
+        refs.current.selection.jumpUp();
+    }, [preProcessEvent]);
 
     const handleJumpLeft = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
-        navigation.jumpLeft();
-    }, [preProcessEvent, navigation]);
+        refs.current.selection.jumpLeft();
+    }, [preProcessEvent]);
 
     const handleJumpRight = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
-        navigation.jumpRight();
-    }, [preProcessEvent, navigation]);
+        refs.current.selection.jumpRight();
+    }, [preProcessEvent]);
 
     const handleSelectRight = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        navigation.selectRight();
+        refs.current.selection.selectRight();
         setEditing(false);
-    }, [preProcessEvent, navigation, setEditing]);
+    }, [preProcessEvent, setEditing]);
 
     const handleSelectLeft = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        navigation.selectLeft();
+        refs.current.selection.selectLeft();
         setEditing(false);
-    }, [preProcessEvent, navigation, setEditing]);
+    }, [preProcessEvent, setEditing]);
 
     const handleSelectDown = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        navigation.selectDown();
+        refs.current.selection.selectDown();
         setEditing(false);
-    }, [preProcessEvent, navigation, setEditing]);
+    }, [preProcessEvent, setEditing]);
 
     const handleSelectUp = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        navigation.selectUp();
+        refs.current.selection.selectUp();
         setEditing(false);
-    }, [preProcessEvent, navigation, setEditing]);
+    }, [preProcessEvent, setEditing]);
 
     const handleEscape = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
         event.preventDefault();
 
-        if (!datagridRefs.current.editing && !datagridRefs.current.selection) {
+        if (!refs.current.editing && !refs.current.selection) {
             setActiveCell(null);
         }
 
-        setSelectionCell(null);
-    }, [preProcessEvent, setActiveCell, setSelectionCell]);
+        refs.current.selection.setSelectionCell(null);
+    }, [preProcessEvent, setActiveCell]);
 
     const handleEdit = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
 
         event.preventDefault();
-        setSelectionCell(null);
+        refs.current.selection.setSelectionCell(null);
 
-        if (datagridRefs.current) {
+        if (refs.current) {
             stopEditing();
             return;
         }
 
-        if (!isCellDisabled(datagridRefs.current.activeCell)) {
-            setLastEditingCell(datagridRefs.current.activeCell);
+        if (!isCellDisabled(refs.current.activeCell)) {
+            setLastEditingCell(refs.current.activeCell);
             setEditing(true);
-            scrollTo(datagridRefs.current.activeCell);
+            scrollTo(refs.current.activeCell);
         }
-    }, [preProcessEvent, isCellDisabled, setLastEditingCell, setEditing, setSelectionCell, stopEditing, scrollTo]);
+    }, [preProcessEvent, isCellDisabled, setLastEditingCell, setEditing, stopEditing, scrollTo]);
 
     const handleInsertRow = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
 
-        insertRowAfter(datagridRefs.current.selection?.max.row ?? datagridRefs.current.activeCell.row);
+        insertRowAfter(refs.current.selection.range?.max.row ?? refs.current.activeCell.row);
     }, [preProcessEvent, insertRowAfter]);
 
     const handleDuplicateRow = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
 
         event.preventDefault();
-        duplicateRows(datagridRefs.current.selection?.min.row ?? datagridRefs.current.activeCell.row, datagridRefs.current.selection?.max.row);
+        duplicateRows(refs.current.selection.range?.min.row ?? refs.current.activeCell.row, refs.current.selection.range?.max.row);
     }, [preProcessEvent, duplicateRows]);
 
     const handleDelete = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
-        if (datagridRefs.current.editing) return;
+        if (refs.current.editing) return;
 
         event.preventDefault();
         deleteSelection();
@@ -322,30 +302,30 @@ export const useKeydownHandler = <TRow extends RowData>(
 
     const handleSelectAll = useCallback((event: KeyboardEvent) => {
         if (!preProcessEvent(event)) return;
-        if (datagridRefs.current.editing) return;
+        if (refs.current.editing) return;
 
         event.preventDefault();
-        selectAll();
-    }, [preProcessEvent, selectAll]);
+        refs.current.selection.selectAll();
+    }, [preProcessEvent]);
 
     // Handle printable character input
     const handleKeydown = useCallback((event: KeyboardEvent) => {
-        if (!datagridRefs.current.activeCell || datagridRefs.current) return;
+        if (!refs.current.activeCell || refs.current) return;
 
         const isPureInput = (isPrintableUnicode(event.key) || event.code.match(/Key[A-Z]$/)) &&
             !event.ctrlKey && !event.metaKey && !event.altKey;
-        const canInput = !isCellDisabled(datagridRefs.current.activeCell);
+        const canInput = !isCellDisabled(refs.current.activeCell);
 
         if (isPureInput && canInput) {
-            setLastEditingCell(datagridRefs.current.activeCell);
+            setLastEditingCell(refs.current.activeCell);
             setEditing(true);
-            scrollTo(datagridRefs.current.activeCell);
+            scrollTo(refs.current.activeCell);
         } else if (isPureInput && !canInput) {
-            setLastEditingCell(datagridRefs.current.activeCell);
-            navigation.existFocus();
-            scrollTo(datagridRefs.current.activeCell);
+            setLastEditingCell(refs.current.activeCell);
+            refs.current.selection.existFocus();
+            scrollTo(refs.current.activeCell);
         }
-    }, [isCellDisabled, setLastEditingCell, setEditing, scrollTo, navigation]);
+    }, [isCellDisabled, setLastEditingCell, setEditing, scrollTo]);
 
     useEffect(() => {
         // Define keybindings
@@ -400,24 +380,5 @@ export const useKeydownHandler = <TRow extends RowData>(
                 handlerRef.current = null;
             }
         };
-    }, [
-        shortcuts,
-        handleTabNext,
-        handleTabPrevious,
-        handleArrowDown,
-        handleArrowUp,
-        handleArrowLeft,
-        handleArrowRight,
-        handleJumpBottom,
-        handleJumpTop,
-        handleJumpLeft,
-        handleJumpRight,
-        handleEscape,
-        handleEdit,
-        handleInsertRow,
-        handleDuplicateRow,
-        handleDelete,
-        handleSelectAll,
-        handleKeydown
-    ]);
+    }, [shortcuts, handleTabNext, handleTabPrevious, handleArrowDown, handleArrowUp, handleArrowLeft, handleArrowRight, handleJumpBottom, handleJumpTop, handleJumpLeft, handleJumpRight, handleEscape, handleEdit, handleInsertRow, handleDuplicateRow, handleDelete, handleSelectAll, handleKeydown, handleSelectRight, handleSelectLeft, handleSelectDown, handleSelectUp]);
 };

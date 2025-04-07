@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Cell, ContextMenuItem, UseDatagridCoreReturn, Selection } from '../../core';
 import { readClipboard } from '../utils/clipboard';
+import { UseSelectionReturn } from '../../core/hooks/useSelection';
 
 
 export interface ContextMenuOptions {
@@ -59,21 +60,21 @@ export const createCopyPasteItems = (
 // Pure function to create insert row items
 export const createInsertRowItems = (
     activeCellRef: React.RefObject<Cell>,
-    selectionRef: React.RefObject<Selection>,
+    selectionRangeRef: React.RefObject<UseSelectionReturn['range']>,
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { insertRowAfter, close } = options;
     const items: ContextMenuItem[] = [];
 
     const activeCell = activeCellRef.current;
-    const selection = selectionRef.current;
+    const selectionRange = selectionRangeRef.current;
 
-    if (selection?.max.row !== undefined) {
+    if (selectionRange?.max.row !== undefined) {
         items.push({
             type: 'INSERT_ROW_BELLOW',
             action: () => {
                 close(null);
-                insertRowAfter(selection.max.row!);
+                insertRowAfter(selectionRange.max.row!);
             },
         });
     } else if (activeCell?.row !== undefined) {
@@ -92,27 +93,27 @@ export const createInsertRowItems = (
 // Pure function to create duplicate row items
 export const createDuplicateRowItems = (
     activeCellRef: React.RefObject<Cell>,
-    selectionRef: React.RefObject<Selection>,
+    selectionRangeRef: React.RefObject<UseSelectionReturn['range']>,
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { duplicateRows, close } = options;
     const items: ContextMenuItem[] = [];
 
     const activeCell = activeCellRef.current;
-    const selection = selectionRef.current;
+    const selectionRange = selectionRangeRef.current;
 
     if (
-        selection?.min.row !== undefined &&
-        selection.max.row !== undefined &&
-        selection.min.row !== selection.max.row
+        selectionRange?.min.row !== undefined &&
+        selectionRange?.max.row !== undefined &&
+        selectionRange?.min.row !== selectionRange?.max.row
     ) {
         items.push({
             type: 'DUPLICATE_ROWS',
-            fromRow: selection.min.row + 1,
-            toRow: selection.max.row + 1,
+            fromRow: selectionRange.min.row + 1,
+            toRow: selectionRange.max.row + 1,
             action: () => {
                 close(null);
-                duplicateRows(selection.min.row!, selection.max.row);
+                duplicateRows(selectionRange.min.row!, selectionRange.max.row);
             },
         });
     } else if (activeCell?.row !== undefined) {
@@ -131,27 +132,27 @@ export const createDuplicateRowItems = (
 // Pure function to create delete row items
 export const createDeleteRowItems = (
     activeCellRef: React.RefObject<Cell>,
-    selectionRef: React.RefObject<Selection>,
+    selectionRangeRef: React.RefObject<UseSelectionReturn['range']>,
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { deleteRows, close } = options;
     const items: ContextMenuItem[] = [];
 
     const activeCell = activeCellRef.current;
-    const selection = selectionRef.current;
+    const selectionRange = selectionRangeRef.current;
 
     if (
-        selection?.min.row !== undefined &&
-        selection.max.row !== undefined &&
-        selection.min.row !== selection.max.row
+        selectionRange?.min.row !== undefined &&
+        selectionRange?.max.row !== undefined &&
+        selectionRange?.min.row !== selectionRange.max.row
     ) {
         items.push({
             type: 'DELETE_ROWS',
-            fromRow: selection.min.row + 1,
-            toRow: selection.max.row + 1,
+            fromRow: selectionRange.min.row + 1,
+            toRow: selectionRange.max.row + 1,
             action: () => {
                 close(null);
-                deleteRows(selection.min.row!, selection.max.row);
+                deleteRows(selectionRange.min.row!, selectionRange.max.row);
             },
         });
     } else if (activeCell?.row !== undefined) {
@@ -191,17 +192,17 @@ export const useContextMenuItems = (coreContext: UseDatagridCoreReturn, props: U
 
     const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
 
-    const selectionRef = React.useRef<Selection>(selection);
-    selectionRef.current = selection;
+    const selectionRangeRef = React.useRef<Selection>(selection.range);
+    selectionRangeRef.current = selection.range;
 
     const activeCellRef = React.useRef<Cell>(activeCell);
     activeCellRef.current = activeCell;
 
     React.useEffect(() => {
         const copyPasteItems = createCopyPasteItems(activeCellRef, options);
-        const insertRowItems = createInsertRowItems(activeCellRef, selectionRef, options);
-        const duplicateRowItems = createDuplicateRowItems(activeCellRef, selectionRef, options);
-        const deleteRowItems = createDeleteRowItems(activeCellRef, selectionRef, options);
+        const insertRowItems = createInsertRowItems(activeCellRef, selectionRangeRef, options);
+        const duplicateRowItems = createDuplicateRowItems(activeCellRef, selectionRangeRef, options);
+        const deleteRowItems = createDeleteRowItems(activeCellRef, selectionRangeRef, options);
 
         const items: ContextMenuItem[] = [
             ...copyPasteItems,

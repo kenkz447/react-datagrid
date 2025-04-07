@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { UseSelectionReturn } from '../../core/hooks/useSelection';
 
 interface RectType {
     readonly width: number;
@@ -12,7 +13,7 @@ export interface UseSelectionRectsProps {
     readonly columnRights: number[];
     readonly headerRowHeight: number;
     readonly data: any[];
-    readonly selection: { readonly min: { readonly col: number; readonly row: number }; readonly max: { readonly col: number; readonly row: number } } | null;
+    readonly selection: UseSelectionReturn;
     readonly activeCell: { readonly col: number; readonly row: number } | null;
     readonly hasStickyRightColumn: boolean;
     readonly getRowSize: (row: number) => { readonly top: number; readonly height: number };
@@ -60,20 +61,22 @@ export function useSelectionRects(props: UseSelectionRectsProps): SelectionRects
             top: getRowSize(activeCell.row).top + headerRowHeight,
         } : null;
 
-        const selectionRect = selection ? {
-            width: columnWidths
-                .slice(selection.min.col + 1, selection.max.col + 2)
-                .reduce((a, b) => a + b) + extraPixelH(selection.max.col),
-            height: getRowSize(selection.max.row).top +
-                getRowSize(selection.max.row).height -
-                getRowSize(selection.min.row).top +
-                extraPixelV(selection.max.row),
-            left: columnRights[selection.min.col],
-            top: getRowSize(selection.min.row).top + headerRowHeight,
-        } : null;
+        const selectionRect = selection?.range
+            ? {
+                width: columnWidths
+                    .slice(selection.range?.min.col + 1, selection.range?.max.col + 2)
+                    .reduce((a, b) => a + b) + extraPixelH(selection.range?.max.col),
+                height: getRowSize(selection.range?.max.row).top +
+                    getRowSize(selection.range?.max.row).height -
+                    getRowSize(selection.range?.min.row).top +
+                    extraPixelV(selection.range?.max.row),
+                left: columnRights[selection.range?.min.col],
+                top: getRowSize(selection.range?.min.row).top + headerRowHeight,
+            }
+            : null;
 
-        const minSelection = selection?.min || activeCell;
-        const maxSelection = selection?.max || activeCell;
+        const minSelection = selection.range?.min || activeCell;
+        const maxSelection = selection.range?.max || activeCell;
 
         const expandRowsIndicator = maxSelection && expandSelection !== null ? {
             left: columnRights[maxSelection.col] + columnWidths[maxSelection.col + 1],

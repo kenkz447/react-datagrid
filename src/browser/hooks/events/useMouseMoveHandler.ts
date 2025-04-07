@@ -7,14 +7,18 @@ export const useMouseMoveHandler = <TRow extends RowData = RowData>(datagrid: Us
         columns,
         data,
         hasStickyRightColumn,
-        setEditing,
-        setSelectionCell,
         expandingSelectionFromRowIndex,
+        selection,
+        setEditing,
         setExpandSelectionRowsCount,
-        selectionMode,
         getCursorIndex,
         scrollTo
     } = datagrid;
+
+    const {
+        dragging,
+        setSelectionCell,
+    } = selection;
 
     const onMouseMove = useCallback(
         (event: MouseEvent) => {
@@ -33,7 +37,7 @@ export const useMouseMoveHandler = <TRow extends RowData = RowData>(datagrid: Us
                 }
             }
 
-            if (selectionMode.active) {
+            if (dragging.active) {
                 const cursorIndex = getCursorIndex(event);
 
                 const lastColumnIndex =
@@ -41,20 +45,20 @@ export const useMouseMoveHandler = <TRow extends RowData = RowData>(datagrid: Us
 
                 setSelectionCell(
                     cursorIndex && {
-                        col: selectionMode.columns
+                        col: dragging.columns
                             ? Math.max(0, Math.min(lastColumnIndex, cursorIndex.col))
                             : lastColumnIndex,
-                        row: selectionMode.rows
+                        row: dragging.rows
                             ? Math.max(0, cursorIndex.row)
                             : data.length - 1,
-                        doNotScrollX: !selectionMode.columns,
-                        doNotScrollY: !selectionMode.rows,
+                        doNotScrollX: !dragging.columns,
+                        doNotScrollY: !dragging.rows,
                     }
                 );
                 setEditing(false);
             }
         },
-        [expandingSelectionFromRowIndex, selectionMode.active, selectionMode.columns, selectionMode.rows, getCursorIndex, setExpandSelectionRowsCount, scrollTo, columns.length, hasStickyRightColumn, setSelectionCell, data.length, setEditing]
+        [expandingSelectionFromRowIndex, dragging.active, dragging.columns, dragging.rows, getCursorIndex, setExpandSelectionRowsCount, scrollTo, columns.length, hasStickyRightColumn, setSelectionCell, data.length, setEditing]
     );
 
     return onMouseMove;

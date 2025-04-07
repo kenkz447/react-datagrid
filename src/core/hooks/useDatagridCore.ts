@@ -6,13 +6,14 @@ import {
 import {
     Cell,
     DataSheetGridProps,
+    ScrollBehavior,
     RowData
 } from '../types';
 import { useColumns } from './internal/useColumns';
-import { useCell } from './useCell';
 import { useRowController } from './useRowController';
 import { useRowHeights } from './internal/useRowHeights';
-import { useCellNavigation } from './useCellNavigation';
+import { useSelection } from './useSelection';
+import { useDeepEqualState } from './internal/useDeepEqualState';
 
 export type UseDatagridCoreReturn<TRow extends RowData = RowData> = ReturnType<typeof useDatagridCore<TRow>>;
 
@@ -33,6 +34,13 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         onChange
     } = props;
 
+    // When not null, represents the index of the row from which we are expanding
+    const [
+        expandingSelectionFromRowIndex,
+        setExpandingSelectionFromRowIndex,
+    ] = useState<number | null>(null);
+    // Highlighted cell, null when not focused
+    const [activeCell, setActiveCell] = useDeepEqualState<(Cell & ScrollBehavior) | null>(null);
     const [lastEditingCell, setLastEditingCell] = useState<Cell | null>(null);
 
     const propsRef = useRef(props);
@@ -40,19 +48,6 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
     dataRef.current = data;
 
     const [editing, setEditing] = useState(false);
-
-    const {
-        expandingSelectionFromRowIndex,
-        setExpandingSelectionFromRowIndex,
-        activeCell,
-        setActiveCell,
-        selectionCell,
-        setSelectionCell,
-        selection,
-        selectionMode,
-        startSelection,
-        endSelection
-    } = useCell();
 
     const hasStickyRightColumn = Boolean(stickyRightColumn);
 
@@ -62,18 +57,28 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
     // Number of rows the user is expanding the selection by, always a number, even when not expanding selection
     const [expandSelectionRowsCount, setExpandSelectionRowsCount] = useState<number>(0);
 
+    const selection = useSelection({
+        data,
+        columns,
+        editing,
+        activeCell,
+        hasStickyRightColumn,
+        setActiveCell,
+        setEditing,
+    });
+
     // Same as expandSelectionRowsCount but is null when we should not be able to expand the selection
     const expandSelection =
         disableExpandSelection ||
             editing ||
-            selectionMode.active ||
+            selection.dragging.active ||
             activeCell?.row === data?.length - 1 ||
-            selection?.max.row === data?.length - 1 ||
+            selection.range?.max.row === data?.length - 1 ||
             (activeCell &&
                 columns
                     .slice(
-                        (selection?.min.col ?? activeCell.col) + 1,
-                        (selection?.max.col ?? activeCell.col) + 2
+                        (selection.range?.min.col ?? activeCell.col) + 1,
+                        (selection.range?.max.col ?? activeCell.col) + 2
                     )
                     .every((column) => column.disabled === true))
             ? null
@@ -109,7 +114,6 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         selection,
         activeCell,
         setActiveCell,
-        setSelectionCell,
         editing,
         isCellDisabled,
         lockRows,
@@ -127,37 +131,18 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         rowHeight,
     });
 
-    const navigation = useCellNavigation({
-        data,
-        columns,
-        editing,
-        selection,
-        selectionCell,
-        activeCell,
-        hasStickyRightColumn,
-        setActiveCell,
-        setEditing,
-        setSelectionCell
-    });
-
     return {
         propsRef,
         data,
         columns,
         hasStickyRightColumn,
-        selection,
         isCellDisabled,
         expandSelection,
         activeCell, setActiveCell,
-        selectionCell, setSelectionCell,
         editing, setEditing,
         expandingSelectionFromRowIndex, setExpandingSelectionFromRowIndex,
         expandSelectionRowsCount, setExpandSelectionRowsCount,
         lastEditingCell, setLastEditingCell,
-
-        selectionMode,
-        startSelection,
-        endSelection,
 
         maxHeight,
         headerRowHeight,
@@ -166,7 +151,7 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         deleteSelection,
         stopEditing,
 
-        navigation,
+        selection,
 
         // Calculators
         getRowSize,

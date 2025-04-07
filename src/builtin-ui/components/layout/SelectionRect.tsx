@@ -191,12 +191,12 @@ function SelectionRectImpl() {
     const activeCellIsDisabled = activeCell ? isCellDisabled(activeCell) : false;
 
     const selectionIsDisabled = useMemo(() => {
-        if (!selection) {
+        if (!selection.range) {
             return activeCellIsDisabled;
         }
 
-        for (let col = selection.min.col; col <= selection.max.col; ++col) {
-            for (let row = selection.min.row; row <= selection.max.row; ++row) {
+        for (let col = selection.range?.min.col; col <= selection.range?.max.col; ++col) {
+            for (let row = selection.range?.min.row; row <= selection.range?.max.row; ++row) {
                 if (!isCellDisabled({ col, row })) {
                     return false;
                 }

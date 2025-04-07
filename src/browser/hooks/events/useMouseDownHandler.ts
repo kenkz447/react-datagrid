@@ -17,14 +17,18 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
         hasStickyRightColumn,
         setActiveCell,
         setEditing,
-        startSelection,
-        setSelectionCell,
-        selectionCell,
         isCellDisabled,
         selection,
         setExpandingSelectionFromRowIndex,
         closeContextMenu
     } = datagrid;
+
+    const {
+        startDragging,
+        setSelectionCell,
+        cell: selectionCell,
+        range: selectionRange,
+    } = selection;
 
     const onMouseDown = useCallback(
         (event: MouseEvent) => {
@@ -51,7 +55,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
                 event.target instanceof HTMLElement &&
                 event.target.className.includes('dsg-expand-rows-indicator')
             ) {
-                setExpandingSelectionFromRowIndex(Math.max(activeCell?.row ?? 0, selection?.max.row ?? 0));
+                setExpandingSelectionFromRowIndex(Math.max(activeCell?.row ?? 0, selectionRange?.max.row ?? 0));
                 return;
             }
 
@@ -85,33 +89,33 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
                 rightClick &&
                 selection &&
                 cursorIndex &&
-                cursorIndex.row >= selection.min.row &&
-                cursorIndex.row <= selection.max.row &&
-                cursorIndex.col >= selection.min.col &&
-                cursorIndex.col <= selection.max.col;
+                cursorIndex.row >= selectionRange?.min.row &&
+                cursorIndex.row <= selectionRange?.max.row &&
+                cursorIndex.col >= selectionRange?.min.col &&
+                cursorIndex.col <= selectionRange?.max.col;
 
             const rightClickOnSelectedHeaders =
                 rightClick &&
                 selection &&
                 cursorIndex &&
                 cursorIndex.row === -1 &&
-                cursorIndex.col >= selection.min.col &&
-                cursorIndex.col <= selection.max.col;
+                cursorIndex.col >= selectionRange?.min.col &&
+                cursorIndex.col <= selectionRange?.max.col;
 
             const rightClickOnSelectedGutter =
                 rightClick &&
                 selection &&
                 cursorIndex &&
-                cursorIndex.row >= selection.min.row &&
-                cursorIndex.row <= selection.max.row &&
+                cursorIndex.row >= selectionRange?.min.row &&
+                cursorIndex.row <= selectionRange?.max.row &&
                 cursorIndex.col === -1;
 
             const clickOnSelectedStickyRightColumn =
                 clickOnStickyRightColumn &&
                 selection &&
                 cursorIndex &&
-                cursorIndex.row >= selection.min.row &&
-                cursorIndex.row <= selection.max.row;
+                cursorIndex.row >= selectionRange?.min.row &&
+                cursorIndex.row <= selectionRange?.max.row;
 
             if ((!(event.shiftKey && activeCell) || rightClick) && data.length > 0) {
                 setActiveCell(
@@ -150,7 +154,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
 
             // Start user selection
             if (cursorIndex && !rightClick) {
-                startSelection({
+                startDragging({
                     columns: (cursorIndex.col !== -1 && !clickOnStickyRightColumn) || Boolean(event.shiftKey && activeCell),
                     rows: cursorIndex.row !== -1 || Boolean(event.shiftKey && activeCell),
                 });
@@ -212,7 +216,7 @@ export const useMouseDownHandler = <TRow extends RowData>(datagrid: UseDatagridR
                 }
             }
         },
-        [innerRef, contextMenu, editing, activeCell, columns, getCursorIndex, isCellDisabled, disableContextMenu, hasStickyRightColumn, selection, data.length, setEditing, closeContextMenu, setExpandingSelectionFromRowIndex, setContextMenu, setActiveCell, setLastEditingCell, startSelection, setSelectionCell, selectionCell]
+        [innerRef, contextMenu, editing, activeCell, columns, getCursorIndex, isCellDisabled, disableContextMenu, hasStickyRightColumn, selection, selectionRange?.min.row, selectionRange?.min.col, selectionRange?.max.row, selectionRange?.max.col, data.length, setEditing, closeContextMenu, setExpandingSelectionFromRowIndex, setContextMenu, setActiveCell, setLastEditingCell, startDragging, setSelectionCell, selectionCell]
     );
 
     return onMouseDown;
