@@ -17,7 +17,7 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseData
     } = props;
 
     const { onChange } = propsRef.current;
-    const { setSelectionCell, stopDragging } = selection;
+    const { setSelectionCell } = selection;
 
     const onMouseUp = useCallback(() => {
         if (expandingSelectionFromRowIndex !== null) {
@@ -118,9 +118,7 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseData
             setExpandingSelectionFromRowIndex(null);
         }
 
-        // End user selection
-        stopDragging();
-    }, [expandingSelectionFromRowIndex, stopDragging, expandSelectionRowsCount, activeCell, setExpandingSelectionFromRowIndex, selection.range?.min, selection.range?.max, setExpandSelectionRowsCount, setActiveCell, setSelectionCell, columns, data, onChange, isCellDisabled]);
+    }, [expandingSelectionFromRowIndex, expandSelectionRowsCount, activeCell, setExpandingSelectionFromRowIndex, selection.range?.min, selection.range?.max, setExpandSelectionRowsCount, setActiveCell, setSelectionCell, columns, data, onChange, isCellDisabled]);
 
     return onMouseUp;
 };

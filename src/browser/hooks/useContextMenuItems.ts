@@ -3,7 +3,6 @@ import { Cell, ContextMenuItem, UseDatagridCoreReturn, Selection } from '../../c
 import { readClipboard } from '../utils/clipboard';
 import { UseSelectionReturn } from '../../core/hooks/useSelection';
 
-
 export interface ContextMenuOptions {
     cut: () => void;
     copy: () => void;
@@ -15,16 +14,7 @@ export interface ContextMenuOptions {
 }
 
 // Pure function to create copy/cut/paste items
-export const createCopyPasteItems = (
-    activeCellRef: React.RefObject<Cell>,
-    options: ContextMenuOptions
-): ContextMenuItem[] => {
-    const activeCell = activeCellRef.current;
-
-    if (activeCell?.row === undefined) {
-        return [];
-    }
-
+export const createCopyPasteItems = (options: ContextMenuOptions): ContextMenuItem[] => {
     const { copy, cut, applyPasteDataToDatasheet, close } = options;
 
     return [
@@ -64,30 +54,22 @@ export const createInsertRowItems = (
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { insertRowAfter, close } = options;
-    const items: ContextMenuItem[] = [];
 
-    const activeCell = activeCellRef.current;
-    const selectionRange = selectionRangeRef.current;
-
-    if (selectionRange?.max.row !== undefined) {
-        items.push({
+    return [
+        {
             type: 'INSERT_ROW_BELLOW',
             action: () => {
-                close(null);
-                insertRowAfter(selectionRange.max.row!);
-            },
-        });
-    } else if (activeCell?.row !== undefined) {
-        items.push({
-            type: 'INSERT_ROW_BELLOW',
-            action: () => {
-                close(null);
-                insertRowAfter(activeCell.row!);
-            },
-        });
-    }
+                if (selectionRangeRef?.current.min.row !== undefined) {
+                    insertRowAfter(selectionRangeRef.current.max.row!);
+                }
+                else if (activeCellRef.current) {
+                    insertRowAfter(activeCellRef.current.row);
+                }
 
-    return items;
+                close(null);
+            }
+        }
+    ];
 };
 
 // Pure function to create duplicate row items
@@ -97,36 +79,35 @@ export const createDuplicateRowItems = (
     options: ContextMenuOptions
 ): ContextMenuItem[] => {
     const { duplicateRows, close } = options;
-    const items: ContextMenuItem[] = [];
 
-    const activeCell = activeCellRef.current;
-    const selectionRange = selectionRangeRef.current;
+    return [{
+        type: 'DUPLICATE_ROWS',
+        fromRow: selectionRangeRef.current?.min.row + 1,
+        toRow: selectionRangeRef.current?.max.row + 1,
+        action: () => {
+            if (!(selectionRangeRef.current?.min.row !== undefined &&
+                selectionRangeRef.current?.max.row !== undefined &&
+                selectionRangeRef.current?.min.row !== selectionRangeRef.current?.max.row)) {
+                return;
+            }
 
-    if (
-        selectionRange?.min.row !== undefined &&
-        selectionRange?.max.row !== undefined &&
-        selectionRange?.min.row !== selectionRange?.max.row
-    ) {
-        items.push({
-            type: 'DUPLICATE_ROWS',
-            fromRow: selectionRange.min.row + 1,
-            toRow: selectionRange.max.row + 1,
-            action: () => {
-                close(null);
-                duplicateRows(selectionRange.min.row!, selectionRange.max.row);
-            },
-        });
-    } else if (activeCell?.row !== undefined) {
-        items.push({
-            type: 'DUPLICATE_ROW',
-            action: () => {
-                close(null);
-                duplicateRows(activeCell.row!);
-            },
-        });
-    }
-
-    return items;
+            close(null);
+            duplicateRows(selectionRangeRef.current.min.row!, selectionRangeRef.current.max.row);
+        },
+    }, {
+        type: 'DUPLICATE_ROW',
+        action: () => {
+            if (!(
+                selectionRangeRef.current?.min.row !== undefined &&
+                selectionRangeRef.current?.max.row !== undefined &&
+                selectionRangeRef.current?.min.row !== selectionRangeRef.current?.max.row
+            )) {
+                return;
+            }
+            close(null);
+            duplicateRows(activeCellRef.current.row!);
+        },
+    }];
 };
 
 // Pure function to create delete row items
@@ -199,7 +180,7 @@ export const useContextMenuItems = (coreContext: UseDatagridCoreReturn, props: U
     activeCellRef.current = activeCell;
 
     React.useEffect(() => {
-        const copyPasteItems = createCopyPasteItems(activeCellRef, options);
+        const copyPasteItems = createCopyPasteItems(options);
         const insertRowItems = createInsertRowItems(activeCellRef, selectionRangeRef, options);
         const duplicateRowItems = createDuplicateRowItems(activeCellRef, selectionRangeRef, options);
         const deleteRowItems = createDeleteRowItems(activeCellRef, selectionRangeRef, options);

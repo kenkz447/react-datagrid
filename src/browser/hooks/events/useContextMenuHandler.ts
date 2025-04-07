@@ -1,28 +1,23 @@
 import { useCallback } from 'react';
-import { RowData } from '../../../core';
+import { Cell, RowData } from '../../../core';
 import { UseDatagridReturn } from '../useDatagrid';
+import { useDocumentEventListener } from '../useDocumentEventListener';
 
 export const useContextMenuHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const {
         innerRef,
+        contextMenu,
         getCursorIndex,
         activeCell,
-        editing
+        editing,
+        setContextMenu,
+        closeContextMenu,
+        disableContextMenu
     } = datagrid;
 
-    /**
-     * Prevents the default context menu behavior based on click position.
-     * 
-     * This handler determines whether to allow or prevent the browser's default context menu
-     * by checking if the click:
-     * 1. Occurred inside the component's boundaries
-     * 2. Was not on an active cell that is currently being edited
-     * 
-     * If both conditions are met, the default context menu behavior is prevented.
-     */
     const tryPreventContextMenu = useCallback((event: MouseEvent) => {
         const clickInside = innerRef.current?.contains(event.target as Node) || false;
-        if(!clickInside) {
+        if (!clickInside) {
             return;
         }
 
@@ -35,19 +30,41 @@ export const useContextMenuHandler = <TRow extends RowData>(datagrid: UseDatagri
             activeCell.row === cursorIndex.row &&
             editing;
 
-        if (clickOnActiveCell) {
+        if (clickOnActiveCell || disableContextMenu) {
             return;
         }
 
         event.preventDefault();
-    }, [innerRef, getCursorIndex, activeCell, editing]);
+    }, [innerRef, getCursorIndex, activeCell, editing, disableContextMenu]);
 
-    const contextMenuHandler = useCallback(
+    const tryOpenContextMenu = useCallback(
         (event: MouseEvent) => {
-            tryPreventContextMenu(event);
+            if (contextMenu) {
+                return closeContextMenu();
+            }
+
+            const clickInside = innerRef.current?.contains(event.target as Node) || false;
+            if (!clickInside) {
+                return;
+            }
+
+            const cursorIndex = getCursorIndex(event, true, true);
+            const rightClick = event.button === 2 || (event.button === 0 && event.ctrlKey);
+            if (!rightClick) {
+                return;
+            }
+
+            setContextMenu({
+                x: event.clientX,
+                y: event.clientY,
+                cursorIndex: cursorIndex as Cell,
+            });
+
+            event.preventDefault();
         },
-        [tryPreventContextMenu]
+        [closeContextMenu, contextMenu, getCursorIndex, innerRef, setContextMenu]
     );
 
-    return contextMenuHandler;
+    useDocumentEventListener('contextmenu', tryPreventContextMenu);
+    useDocumentEventListener('mousedown', tryOpenContextMenu);
 };
