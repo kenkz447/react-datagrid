@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-import { useGetBoundingClientRect } from './useGetBoundingClientRect';
 import { useColumnWidths, useDebounceState, RowData, Cell, useDatagridCore, DataSheetGridProps, Column } from '../../core';
 import { useDatagridScroll } from './useDatagridScroll';
 import { useDatagridCursor } from './useDatagridCursor';
@@ -9,7 +8,6 @@ import { useCutHandler } from './useCut';
 import { usePasteHandler } from './usePaste';
 import { useCallbacks } from './useCallbacks';
 import { useContextMenuItems } from './useContextMenuItems';
-import { useVirtualizers } from './useVirtualizers';
 
 export type UseDatagridReturn<TRow extends RowData = RowData> = ReturnType<typeof useDatagrid<TRow>>;
 
@@ -42,14 +40,11 @@ export function useDatagrid<TRow extends RowData>({
         selection,
         activeCell,
         columns,
-        getRowSize,
-        getRowTotalSize,
-        hasStickyRightColumn
+        getRowTotalSize
     } = coreContext;
 
     const outerRef = useRef<HTMLDivElement>(null);
-
-    const getOuterBoundingClientRect = useGetBoundingClientRect(outerRef);
+    const innerRef = useRef<HTMLDivElement>(null);
 
     // Width and height of the scrollable area
     const { width, height } = useResizeDetector({
@@ -75,32 +70,25 @@ export function useDatagrid<TRow extends RowData>({
         columnRights,
     } = useColumnWidths(columns, width);
 
-    const innerRef = useRef<HTMLDivElement>(null);
-    const getInnerBoundingClientRect = useGetBoundingClientRect(innerRef);
-
     const scrollTo = useDatagridScroll(coreContext, {
+        outerRef,
         height,
         width,
         columnRights,
         columnWidths,
-        outerRef
     });
 
     const getCursorIndex = useDatagridCursor(coreContext, {
+        outerRef,
+        innerRef,
         columnRights,
-        columnWidths,
-        getInnerBoundingClientRect,
-        getOuterBoundingClientRect
+        columnWidths
     });
-
-    const beforeTabIndexRef = useRef<HTMLDivElement>(null);
-    const afterTabIndexRef = useRef<HTMLDivElement>(null);
 
     const paste = usePasteHandler(coreContext);
     const copy = useCopyHandler(coreContext);
     const cut = useCutHandler(coreContext, { copy });
 
-    const contextMenuRef = useRef<HTMLDivElement>(null);
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, cursorIndex: Cell } | null>(null);
 
     const closeContextMenu = useCallback(() => {
@@ -108,17 +96,6 @@ export function useDatagrid<TRow extends RowData>({
     }, [setContextMenu]);
 
     const contextMenuItems = useContextMenuItems(coreContext, { cut, copy, close: closeContextMenu });
-
-    const { rowVirtualizer, colVirtualizer } = useVirtualizers({
-        data,
-        outerRef,
-        headerRowHeight,
-        columnWidths,
-        getRowSize,
-        columns,
-        hasStickyRightColumn,
-        rowKey
-    });
 
     useCallbacks(coreContext);
 
@@ -145,6 +122,9 @@ export function useDatagrid<TRow extends RowData>({
         }
     }, [haveActiveCell]);
 
+    const beforeTabIndexRef = useRef<HTMLDivElement>(null);
+    const afterTabIndexRef = useRef<HTMLDivElement>(null);
+
     return {
         ...coreContext,
         rowKey,
@@ -152,7 +132,6 @@ export function useDatagrid<TRow extends RowData>({
         innerRef,
         beforeTabIndexRef,
         afterTabIndexRef,
-        contextMenuRef,
         width,
         height,
         displayHeight,
@@ -170,8 +149,6 @@ export function useDatagrid<TRow extends RowData>({
         copy,
         paste,
         contextMenuItems,
-        closeContextMenu,
-        rowVirtualizer, 
-        colVirtualizer
+        closeContextMenu
     };
 };

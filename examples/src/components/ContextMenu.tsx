@@ -48,7 +48,6 @@ export function ContextMenu() {
     const {
         contextMenu,
         contextMenuItems,
-        contextMenuRef,
     } = useDatagridContext();
 
     if (!contextMenu) {
@@ -59,7 +58,6 @@ export function ContextMenu() {
         <div
             className="dsg-context-menu"
             style={{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }}
-            ref={contextMenuRef}
         >
             {contextMenuItems.map((item) => (
                 <div

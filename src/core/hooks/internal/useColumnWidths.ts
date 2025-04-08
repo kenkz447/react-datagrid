@@ -90,12 +90,7 @@ export const useColumnWidths = (
     columns: Column<any, any, any>[],
     width?: number
 ) => {
-    const columnsHash = columns
-        .map(({ basis, minWidth, maxWidth, grow, shrink }) =>
-            [basis, minWidth, maxWidth, grow, shrink].join(',')
-        )
-        .join('|');
-
+    const columnsHash = columns.map(({ basis, minWidth, maxWidth, grow, shrink }) => [basis, minWidth, maxWidth, grow, shrink].join(',')).join('|');
     return useMemo(() => {
         if (width === undefined) {
             return {

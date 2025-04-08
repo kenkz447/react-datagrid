@@ -17,8 +17,8 @@ export const useDeepEqualState = <T>(
                 return deepEqual(nextValue, prevValue) ? prevValue : nextValue;
             });
         },
-        [setValue]
+        []
     );
 
-    return [value, customSetValue];
+    return [value, customSetValue] as const;
 };

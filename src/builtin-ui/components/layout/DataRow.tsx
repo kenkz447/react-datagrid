@@ -2,11 +2,12 @@ import cx from 'classnames';
 import { RowData } from '../../../core';
 import { DataCell } from './DataCell';
 import { memo } from 'react';
-import { VirtualItem } from '@tanstack/react-virtual';
+import { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
 import { UseDatagridReturn } from '../../../browser';
 
-export type DataRowProps<TRow extends RowData> = Pick<UseDatagridReturn<TRow>, 'columns' | 'data' | 'isFullWidth' | 'selection' | 'activeCell' | 'colVirtualizer'> & {
+export type DataRowProps<TRow extends RowData> = Pick<UseDatagridReturn<TRow>, 'columns' | 'data' | 'isFullWidth' | 'selection' | 'activeCell'> & {
     readonly row: VirtualItem;
+    readonly colVirtualizer: Virtualizer<HTMLDivElement, Element>;
 }
 
 function DataRowImpl<TRow extends RowData = RowData>({

@@ -280,11 +280,11 @@ export const useSelection = (props: UseCellNavigationProps) => {
         }
     });
 
-    return {
+    return useMemo(() => ({
         ...navigation.current,
         range,
         dragging,
         cell: selectionCell,
         setSelectionCell
-    };
+    }), [range, dragging, selectionCell, setSelectionCell]);
 };

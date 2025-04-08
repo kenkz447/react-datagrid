@@ -1,12 +1,13 @@
+import React, { useMemo } from 'react';
 import type { RowData } from '../../../core';
 import { useDatagridContext } from '../../../browser';
+import { useVirtualizers } from '../../hooks/useVirtualizers';
 import { HeaderRow } from './HeaderRow';
 import { DataRow } from './DataRow';
 import { SelectionRect } from './SelectionRect';
 import { EdgesDetector } from './EdgesDetector';
 import { TabIndexBefore } from './TabIndexBefore';
 import { TabIndexAfter } from './TabIndexAfter';
-import React, { useMemo } from 'react';
 
 // ===== Main Component =====
 function DatagridImpl<TRow extends RowData = RowData>() {
@@ -17,8 +18,6 @@ function DatagridImpl<TRow extends RowData = RowData>() {
         afterTabIndexRef,
         displayHeight,
         isFullWidth,
-        colVirtualizer,
-        rowVirtualizer,
         headerRowHeight,
         columnWidths,
         height,
@@ -30,8 +29,20 @@ function DatagridImpl<TRow extends RowData = RowData>() {
         activeCell,
         setActiveCell,
         getRowSize,
-        hasStickyRightColumn
+        hasStickyRightColumn,
+        rowKey
     } = useDatagridContext<TRow>();
+
+    const { rowVirtualizer, colVirtualizer } = useVirtualizers({
+        data,
+        outerRef,
+        headerRowHeight,
+        columnWidths,
+        getRowSize,
+        columns,
+        hasStickyRightColumn,
+        rowKey
+    });
 
     const innerStyle = useMemo(() => ({
         width: isFullWidth ? '100%' : colVirtualizer.getTotalSize(),
@@ -50,10 +61,7 @@ function DatagridImpl<TRow extends RowData = RowData>() {
                 data={data}
                 setActiveCell={setActiveCell}
             />
-            <div
-                ref={innerRef}
-                style={innerStyle}
-            >
+            <div ref={innerRef} style={innerStyle}>
                 <HeaderRow
                     headerRowHeight={headerRowHeight}
                     columns={columns}

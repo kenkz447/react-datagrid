@@ -2,6 +2,7 @@ import cx from 'classnames';
 import { HeaderCell } from './HeaderCell';
 import { UseDatagridReturn } from '../../../browser';
 import React from 'react';
+import { Virtualizer } from '@tanstack/react-virtual';
 
 type HeaderRowProps = Pick<UseDatagridReturn,
     | 'headerRowHeight'
@@ -10,8 +11,9 @@ type HeaderRowProps = Pick<UseDatagridReturn,
     | 'hasStickyRightColumn'
     | 'selection'
     | 'activeCell'
-    | 'colVirtualizer'
->;
+> & {
+    readonly colVirtualizer: Virtualizer<HTMLDivElement, Element>;
+};
 
 
 function HeaderRowImpl(props: HeaderRowProps) {

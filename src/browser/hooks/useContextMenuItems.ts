@@ -157,7 +157,6 @@ interface UseContextMenuItemsProps {
 
 // Main hook that uses the pure functions
 export const useContextMenuItems = (coreContext: UseDatagridCoreReturn, props: UseContextMenuItemsProps) => {
-
     const { activeCell, selection, applyPasteDataToDatasheet, duplicateRows, deleteRows, insertRowAfter } = coreContext;
     const { cut, copy, close } = props;
 
@@ -171,36 +170,21 @@ export const useContextMenuItems = (coreContext: UseDatagridCoreReturn, props: U
         close
     }), [applyPasteDataToDatasheet, close, copy, cut, deleteRows, duplicateRows, insertRowAfter]);
 
-    const [contextMenuItems, setContextMenuItems] = React.useState<ContextMenuItem[]>([]);
-
     const selectionRangeRef = React.useRef<Selection>(selection.range);
     selectionRangeRef.current = selection.range;
 
     const activeCellRef = React.useRef<Cell>(activeCell);
     activeCellRef.current = activeCell;
 
-    React.useEffect(() => {
+    const [contextMenuItems] = React.useState<ContextMenuItem[]>(() => {
         const copyPasteItems = createCopyPasteItems(options);
         const insertRowItems = createInsertRowItems(activeCellRef, selectionRangeRef, options);
         const duplicateRowItems = createDuplicateRowItems(activeCellRef, selectionRangeRef, options);
         const deleteRowItems = createDeleteRowItems(activeCellRef, selectionRangeRef, options);
 
-        const items: ContextMenuItem[] = [
-            ...copyPasteItems,
-            ...insertRowItems,
-            ...duplicateRowItems,
-            ...deleteRowItems
-        ];
+        return [...copyPasteItems, ...insertRowItems, ...duplicateRowItems, ...deleteRowItems];
+    });
 
-        setContextMenuItems(items);
-
-        if (!items.length) {
-            close(null);
-        }
-    }, [
-        options,
-        close
-    ]);
 
     return contextMenuItems;
 };
