@@ -2,17 +2,15 @@ import React from 'react';
 import { UseDatagridReturn } from '../../../browser';
 
 type TabIndexBeforeProps = Pick<UseDatagridReturn,
-    | 'beforeTabIndexRef'
     | 'columns'
     | 'data'
     | 'setActiveCell'>;
 
 function TabIndexBeforeImp(props: TabIndexBeforeProps) {
-    const { beforeTabIndexRef, columns, data, setActiveCell } = props;
+    const { columns, data, setActiveCell } = props;
 
     return (
         <div
-            ref={beforeTabIndexRef}
             tabIndex={columns.length && data.length ? 0 : undefined}
             onFocus={(e) => {
                 e.target.blur();

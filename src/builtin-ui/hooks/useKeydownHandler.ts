@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { tinykeys, type KeyBindingMap } from 'tinykeys';
-import { UseDatagridReturn, getAllTabbableElements, isPrintableUnicode, useDocumentEventListener } from '../../browser';
+import { UseDatagridReturn, isPrintableUnicode, useDocumentEventListener } from '../../browser';
 
 import { RowData } from '../../core';
 
@@ -67,8 +67,6 @@ export const useKeydownHandler = <TRow extends RowData>(
         data,
         hasStickyRightColumn,
         selection,
-        beforeTabIndexRef,
-        afterTabIndexRef,
         setLastEditingCell,
         insertRowAfter,
         isCellDisabled,
@@ -97,19 +95,6 @@ export const useKeydownHandler = <TRow extends RowData>(
         ...customShortcuts
     }), [customShortcuts]);
 
-    // Helper functions
-    const focusOutside = useRef((direction: 'top' | 'bottom') => {
-        if (direction === 'top') {
-            const allElements = getAllTabbableElements();
-            const index = allElements.indexOf(beforeTabIndexRef.current);
-            allElements[(index - 1 + allElements.length) % allElements.length].focus();
-        } else {
-            const allElements = getAllTabbableElements();
-            const index = allElements.indexOf(afterTabIndexRef.current);
-            allElements[(index + 1) % allElements.length].focus();
-        }
-    });
-
     // Define handler for preprocessing events
     const preProcessEvent = useRef((event: KeyboardEvent): boolean => {
         if (!refs.current.activeCell || event.isComposing) return false;
@@ -133,7 +118,6 @@ export const useKeydownHandler = <TRow extends RowData>(
             const isLastRow = refs.current.activeCell.row === refs.current.data.length - 1;
             if (isLastRow) {
                 refs.current.selection.existFocus();
-                focusOutside.current('bottom');
                 return;
             }
             refs.current.selection.goNextRow();
@@ -149,7 +133,6 @@ export const useKeydownHandler = <TRow extends RowData>(
             const isFirstRow = refs.current.activeCell.row === 0;
             if (isFirstRow) {
                 refs.current.selection.existFocus();
-                focusOutside.current('top');
                 return;
             }
             refs.current.selection.goPrevRow();

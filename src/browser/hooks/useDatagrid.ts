@@ -122,16 +122,11 @@ export function useDatagrid<TRow extends RowData>({
         }
     }, [haveActiveCell]);
 
-    const beforeTabIndexRef = useRef<HTMLDivElement>(null);
-    const afterTabIndexRef = useRef<HTMLDivElement>(null);
-
     return {
         ...coreContext,
         rowKey,
         outerRef,
         innerRef,
-        beforeTabIndexRef,
-        afterTabIndexRef,
         width,
         height,
         displayHeight,

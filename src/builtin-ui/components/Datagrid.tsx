@@ -7,7 +7,6 @@ import { DataRow } from './layout/DataRow';
 import { SelectionRect } from './layout/SelectionRect';
 import { EdgesDetector } from './layout/EdgesDetector';
 import { TabIndexBefore } from './layout/TabIndexBefore';
-import { TabIndexAfter } from './layout/TabIndexAfter';
 import { useContextMenuHandler } from '../hooks/useContextMenuHandler';
 import { useKeydownHandler } from '../hooks/useKeydownHandler';
 import { useDragSelectHandler } from '../hooks/useDragSelectHandler';
@@ -19,8 +18,6 @@ function DatagridImpl<TRow extends RowData = RowData>() {
     const {
         outerRef,
         innerRef,
-        beforeTabIndexRef,
-        afterTabIndexRef,
         displayHeight,
         isFullWidth,
         headerRowHeight,
@@ -65,7 +62,6 @@ function DatagridImpl<TRow extends RowData = RowData>() {
             style={{ height: displayHeight }}
         >
             <TabIndexBefore
-                beforeTabIndexRef={beforeTabIndexRef}
                 columns={columns}
                 data={data}
                 setActiveCell={setActiveCell}
@@ -105,13 +101,6 @@ function DatagridImpl<TRow extends RowData = RowData>() {
                 />
                 <SelectionRect />
             </div>
-            <TabIndexAfter
-                afterTabIndexRef={afterTabIndexRef}
-                columns={columns}
-                data={data}
-                setActiveCell={setActiveCell}
-                hasStickyRightColumn={hasStickyRightColumn}
-            />
         </div>
     );
 }
