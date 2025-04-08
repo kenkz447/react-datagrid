@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { createKeybindingsHandler, type KeyBindingMap } from 'tinykeys';
-import { UseDatagridReturn, getAllTabbableElements, isPrintableUnicode } from '../../browser';
+import React, { useEffect, useRef } from 'react';
+import { tinykeys, type KeyBindingMap } from 'tinykeys';
+import { UseDatagridReturn, getAllTabbableElements, isPrintableUnicode, useDocumentEventListener } from '../../browser';
 
 import { RowData } from '../../core';
 
 // Define keyboard action types
 export type KeyboardAction =
+    | 'tabNext'
+    | 'tabPrevious'
     | 'goBottom'
     | 'goUp'
     | 'goLeft'
@@ -30,10 +32,12 @@ export type KeyboardShortcutConfig = Partial<Record<KeyboardAction, string | str
 
 // Default keyboard shortcuts configuration
 const defaultShortcuts: KeyboardShortcutConfig = {
+    tabNext: 'Tab',
+    tabPrevious: 'Shift+Tab',
     goBottom: 'ArrowDown',
     goUp: 'ArrowUp',
-    goLeft: ['ArrowLeft', 'Shift+Tab'],
-    goRight: ['ArrowRight', 'Tab'],
+    goLeft: ['ArrowLeft'],
+    goRight: ['ArrowRight'],
     jumpBottom: '$mod+ArrowDown',
     jumpTop: '$mod+ArrowUp',
     jumpLeft: '$mod+ArrowLeft',
@@ -93,10 +97,8 @@ export const useKeydownHandler = <TRow extends RowData>(
         ...customShortcuts
     }), [customShortcuts]);
 
-    const handlerRef = useRef<(() => void) | null>(null);
-
     // Helper functions
-    const focusOutside = React.useCallback((direction: 'top' | 'bottom') => {
+    const focusOutside = useRef((direction: 'top' | 'bottom') => {
         if (direction === 'top') {
             const allElements = getAllTabbableElements();
             const index = allElements.indexOf(beforeTabIndexRef.current);
@@ -106,10 +108,10 @@ export const useKeydownHandler = <TRow extends RowData>(
             const index = allElements.indexOf(afterTabIndexRef.current);
             allElements[(index + 1) % allElements.length].focus();
         }
-    }, [beforeTabIndexRef, afterTabIndexRef]);
+    });
 
     // Define handler for preprocessing events
-    const preProcessEvent = useCallback((event: KeyboardEvent): boolean => {
+    const preProcessEvent = useRef((event: KeyboardEvent): boolean => {
         if (!refs.current.activeCell || event.isComposing) return false;
 
         const disableKeys = refs.current.columns[refs.current.activeCell.col + 1]?.disableKeys;
@@ -122,19 +124,16 @@ export const useKeydownHandler = <TRow extends RowData>(
         }
 
         return true;
-    }, []);
+    });
 
     // Define handler functions for each keyboard action
-    const handleTabNext = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleTabNext = useRef(() => {
         const isLastCell = refs.current.activeCell.col === refs.current.columns.length - (refs.current.hasStickyRightColumn ? 3 : 2);
         if (isLastCell) {
             const isLastRow = refs.current.activeCell.row === refs.current.data.length - 1;
             if (isLastRow) {
                 refs.current.selection.existFocus();
-                focusOutside('bottom');
+                focusOutside.current('bottom');
                 return;
             }
             refs.current.selection.goNextRow();
@@ -142,18 +141,15 @@ export const useKeydownHandler = <TRow extends RowData>(
         }
 
         refs.current.selection.goRight();
-    }, [preProcessEvent, focusOutside]);
+    });
 
-    const handleTabPrevious = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleTabPrevious = useRef(() => {
         const isFirstCell = refs.current.activeCell.col === 0;
         if (isFirstCell) {
             const isFirstRow = refs.current.activeCell.row === 0;
             if (isFirstRow) {
                 refs.current.selection.existFocus();
-                focusOutside('top');
+                focusOutside.current('top');
                 return;
             }
             refs.current.selection.goPrevRow();
@@ -161,112 +157,100 @@ export const useKeydownHandler = <TRow extends RowData>(
         }
 
         refs.current.selection.goLeft();
-    }, [preProcessEvent, focusOutside]);
+    });
 
-    const handleArrowDown = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleArrowDown = useRef(() => {
+        setEditing(false);
         refs.current.selection.goDown();
-    }, [preProcessEvent]);
+    });
 
-    const handleArrowUp = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
+    const handleArrowUp = useRef(() => {
         setEditing(false);
-
         refs.current.selection.goUp();
-    }, [preProcessEvent, setEditing]);
+    });
 
-    const handleArrowLeft = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleArrowLeft = useRef(() => {
         refs.current.selection.goLeft();
-    }, [preProcessEvent]);
+    });
 
-    const handleArrowRight = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
+    const handleArrowRight = useRef(() => {
         setEditing(false);
-
         refs.current.selection.goRight();
-    }, [preProcessEvent, setEditing]);
+    });
 
-    const handleJumpBottom = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
+    const handleJumpBottom = useRef(() => {
         refs.current.selection.jumpDown();
-    }, [preProcessEvent]);
+    });
 
-    const handleJumpTop = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
+    const handleJumpTop = useRef(() => {
         refs.current.selection.jumpUp();
-    }, [preProcessEvent]);
+    });
 
-    const handleJumpLeft = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
+    const handleJumpLeft = useRef(() => {
         refs.current.selection.jumpLeft();
-    }, [preProcessEvent]);
+    });
 
-    const handleJumpRight = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
+    const handleJumpRight = useRef(() => {
         refs.current.selection.jumpRight();
-    }, [preProcessEvent]);
+    });
 
-    const handleSelectRight = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleSelectRight = useRef(() => {
         refs.current.selection.selectRight();
         setEditing(false);
-    }, [preProcessEvent, setEditing]);
+    });
 
-    const handleSelectLeft = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleSelectLeft = useRef(() => {
         refs.current.selection.selectLeft();
         setEditing(false);
-    }, [preProcessEvent, setEditing]);
+    });
 
-    const handleSelectDown = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleSelectDown = useRef(() => {
         refs.current.selection.selectDown();
         setEditing(false);
-    }, [preProcessEvent, setEditing]);
+    });
 
-    const handleSelectUp = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleSelectUp = useRef(() => {
         refs.current.selection.selectUp();
         setEditing(false);
-    }, [preProcessEvent, setEditing]);
+    });
 
-    const handleEscape = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        event.preventDefault();
-
+    const handleEscape = useRef(() => {
         if (!refs.current.editing && !refs.current.selection) {
             setActiveCell(null);
         }
 
         refs.current.selection.setSelectionCell(null);
-    }, [preProcessEvent, setActiveCell]);
+    });
 
-    const handleEdit = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
+    const handleInsertRow = useRef(() => {
+        insertRowAfter(refs.current.selection.range?.max.row ?? refs.current.activeCell.row);
+    });
 
-        event.preventDefault();
+    const handleDuplicateRow = useRef(() => {
+        duplicateRows(
+            refs.current.selection.range?.min.row ?? refs.current.activeCell.row,
+            refs.current.selection.range?.max.row
+        );
+    });
+
+    const handleDelete = useRef(() => {
+        if (refs.current.editing) {
+            return false;
+        };
+        deleteSelection();
+    });
+
+    const handleSelectAll = useRef(() => {
+        if (refs.current.editing) {
+            return false;
+        };
+        refs.current.selection.selectAll();
+    });
+
+    const handleEdit = useRef(() => {
         refs.current.selection.setSelectionCell(null);
 
-        if (refs.current) {
+        if (refs.current.editing) {
             stopEditing();
             return;
         }
@@ -276,43 +260,13 @@ export const useKeydownHandler = <TRow extends RowData>(
             setEditing(true);
             scrollTo(refs.current.activeCell);
         }
-    }, [preProcessEvent, isCellDisabled, setLastEditingCell, setEditing, stopEditing, scrollTo]);
-
-    const handleInsertRow = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-
-        insertRowAfter(refs.current.selection.range?.max.row ?? refs.current.activeCell.row);
-    }, [preProcessEvent, insertRowAfter]);
-
-    const handleDuplicateRow = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-
-        event.preventDefault();
-        duplicateRows(refs.current.selection.range?.min.row ?? refs.current.activeCell.row, refs.current.selection.range?.max.row);
-    }, [preProcessEvent, duplicateRows]);
-
-    const handleDelete = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        if (refs.current.editing) return;
-
-        event.preventDefault();
-        deleteSelection();
-    }, [preProcessEvent, deleteSelection]);
-
-    const handleSelectAll = useCallback((event: KeyboardEvent) => {
-        if (!preProcessEvent(event)) return;
-        if (refs.current.editing) return;
-
-        event.preventDefault();
-        refs.current.selection.selectAll();
-    }, [preProcessEvent]);
+    });
 
     // Handle printable character input
-    const handleKeydown = useCallback((event: KeyboardEvent) => {
-        if (!refs.current.activeCell || refs.current) return;
+    const handleInput = useRef((event: KeyboardEvent) => {
+        if (!refs.current.activeCell || refs.current.editing) return;
 
-        const isPureInput = (isPrintableUnicode(event.key) || event.code.match(/Key[A-Z]$/)) &&
-            !event.ctrlKey && !event.metaKey && !event.altKey;
+        const isPureInput = (isPrintableUnicode(event.key) || event.code.match(/Key[A-Z]$/)) && !event.ctrlKey && !event.metaKey && !event.altKey;
         const canInput = !isCellDisabled(refs.current.activeCell);
 
         if (isPureInput && canInput) {
@@ -324,60 +278,63 @@ export const useKeydownHandler = <TRow extends RowData>(
             refs.current.selection.existFocus();
             scrollTo(refs.current.activeCell);
         }
-    }, [isCellDisabled, setLastEditingCell, setEditing, scrollTo]);
+    });
 
     useEffect(() => {
+        const handlers = {
+            tabNext: handleTabNext.current,
+            tabPrevious: handleTabPrevious.current,
+            goBottom: handleArrowDown.current,
+            goUp: handleArrowUp.current,
+            goLeft: handleArrowLeft.current,
+            goRight: handleArrowRight.current,
+            jumpBottom: handleJumpBottom.current,
+            jumpTop: handleJumpTop.current,
+            jumpLeft: handleJumpLeft.current,
+            jumpRight: handleJumpRight.current,
+            selectRight: handleSelectRight.current,
+            selectLeft: handleSelectLeft.current,
+            selectDown: handleSelectDown.current,
+            selectUp: handleSelectUp.current,
+            selectAll: handleSelectAll.current,
+            escape: handleEscape.current,
+            edit: handleEdit.current,
+            insertRow: handleInsertRow.current,
+            duplicateRow: handleDuplicateRow.current,
+            delete: handleDelete.current,
+        };
+
         // Define keybindings
         const keyBindings: KeyBindingMap = {};
 
         // Helper to add a keybinding for an action
-        const addKeybinding = (action: KeyboardAction, handler: (event: KeyboardEvent) => void) => {
+        const addKeybinding = (action: string, handler: (event: KeyboardEvent) => void | boolean) => {
             const shortcutKeys = shortcuts[action];
             if (!shortcutKeys) return;
 
             const keys = Array.isArray(shortcutKeys) ? shortcutKeys : [shortcutKeys];
             keys.forEach(key => {
-                keyBindings[key] = handler;
+                keyBindings[key] = (event => {
+                    if (!preProcessEvent.current(event)) return;
+                    const handled = handler(event);
+                    if (handled === false) {
+                        return;
+                    }
+                    event.preventDefault();
+                });
             });
         };
 
-        // Map actions to handlers
-        addKeybinding('goBottom', handleArrowDown);
-        addKeybinding('goUp', handleArrowUp);
-        addKeybinding('goLeft', handleArrowLeft);
-        addKeybinding('goRight', handleArrowRight);
-        addKeybinding('jumpBottom', handleJumpBottom);
-        addKeybinding('jumpTop', handleJumpTop);
-        addKeybinding('jumpLeft', handleJumpLeft);
-        addKeybinding('jumpRight', handleJumpRight);
-        addKeybinding('selectRight', handleSelectRight);
-        addKeybinding('selectLeft', handleSelectLeft);
-        addKeybinding('selectDown', handleSelectDown);
-        addKeybinding('selectUp', handleSelectUp);
-        addKeybinding('selectAll', handleSelectAll);
+        Object.entries(handlers).forEach(([action, handler]) => {
+            addKeybinding(action, handler);
+        });
 
-        addKeybinding('escape', handleEscape);
-
-        addKeybinding('edit', handleEdit);
-        addKeybinding('insertRow', handleInsertRow);
-        addKeybinding('duplicateRow', handleDuplicateRow);
-        addKeybinding('delete', handleDelete);
-
-        // Create and bind handlers
-        const keyHandler = createKeybindingsHandler(keyBindings);
-        document.addEventListener('keydown', keyHandler);
-        document.addEventListener('keydown', handleKeydown);
-
-        handlerRef.current = () => {
-            document.removeEventListener('keydown', keyHandler);
-            document.removeEventListener('keydown', handleKeydown);
-        };
+        const cleanKeyBindings = tinykeys(window, keyBindings);
 
         return () => {
-            if (handlerRef.current) {
-                handlerRef.current();
-                handlerRef.current = null;
-            }
+            cleanKeyBindings();
         };
-    }, [shortcuts, handleTabNext, handleTabPrevious, handleArrowDown, handleArrowUp, handleArrowLeft, handleArrowRight, handleJumpBottom, handleJumpTop, handleJumpLeft, handleJumpRight, handleEscape, handleEdit, handleInsertRow, handleDuplicateRow, handleDelete, handleSelectAll, handleKeydown, handleSelectRight, handleSelectLeft, handleSelectDown, handleSelectUp]);
+    }, [shortcuts]);
+
+    useDocumentEventListener('keydown', handleInput.current);
 };
