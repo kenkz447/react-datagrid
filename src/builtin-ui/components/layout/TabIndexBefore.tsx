@@ -1,10 +1,7 @@
 import React from 'react';
 import { UseDatagridReturn } from '../../../browser';
 
-type TabIndexBeforeProps = Pick<UseDatagridReturn,
-    | 'columns'
-    | 'data'
-    | 'setActiveCell'>;
+type TabIndexBeforeProps = Pick<UseDatagridReturn, 'columns' | 'data' | 'setActiveCell'>;
 
 function TabIndexBeforeImp(props: TabIndexBeforeProps) {
     const { columns, data, setActiveCell } = props;

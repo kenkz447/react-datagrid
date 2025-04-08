@@ -19,7 +19,6 @@ export function HeaderCell({
 }: HeaderCellProps) {
     return (
         <Cell
-            key={col.key}
             gutter={col.index === 0}
             stickyRight={hasStickyRightColumn && col.index === columns.length - 1}
             width={col.size}

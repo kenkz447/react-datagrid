@@ -56,7 +56,7 @@ const defaultShortcuts: KeyboardShortcutConfig = {
     selectAll: '$mod+a'
 };
 
-export const useKeydownHandler = <TRow extends RowData>(
+export const useKeyBindings = <TRow extends RowData>(
     datagrid: UseDatagridReturn<TRow>,
     customShortcuts?: KeyboardShortcutConfig
 ) => {

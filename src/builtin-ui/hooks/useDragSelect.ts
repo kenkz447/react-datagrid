@@ -4,7 +4,7 @@ import { RowData } from '../../core';
 
 const delay = 150; // ms
 
-export const useDragSelectHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
+export const useDragSelect = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const refs = useRef(datagrid);
     refs.current = datagrid;
 

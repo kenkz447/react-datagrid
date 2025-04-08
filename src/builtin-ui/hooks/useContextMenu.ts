@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { UseDatagridReturn, useDocumentEventListener } from '../../browser';
 import { RowData, Cell } from '../../core';
 
-export const useContextMenuHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
+export const useContextMenu = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const refs = useRef(datagrid);
     refs.current = datagrid;
 

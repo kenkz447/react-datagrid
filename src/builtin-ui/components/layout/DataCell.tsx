@@ -35,7 +35,6 @@ function DataCellImpl<TRow extends RowData = RowData>({
 
     return (
         <Cell
-            key={col.key}
             gutter={col.index === 0}
             stickyRight={hasStickyRightColumn && col.index === columns.length - 1}
             active={col.index === 0 && rowActive}

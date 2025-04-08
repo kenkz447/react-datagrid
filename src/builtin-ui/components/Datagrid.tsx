@@ -7,9 +7,9 @@ import { DataRow } from './layout/DataRow';
 import { SelectionRect } from './layout/SelectionRect';
 import { EdgesDetector } from './layout/EdgesDetector';
 import { TabIndexBefore } from './layout/TabIndexBefore';
-import { useContextMenuHandler } from '../hooks/useContextMenuHandler';
-import { useKeydownHandler } from '../hooks/useKeydownHandler';
-import { useDragSelectHandler } from '../hooks/useDragSelectHandler';
+import { useContextMenu } from '../hooks/useContextMenu';
+import { useKeyBindings } from '../hooks/useKeyBindings';
+import { useDragSelect } from '../hooks/useDragSelect';
 
 // ===== Main Component =====
 function DatagridImpl<TRow extends RowData = RowData>() {
@@ -35,9 +35,9 @@ function DatagridImpl<TRow extends RowData = RowData>() {
         rowKey
     } = datagrid;
 
-    useKeydownHandler(datagrid);
-    useContextMenuHandler(datagrid);
-    useDragSelectHandler(datagrid);
+    useKeyBindings(datagrid);
+    useContextMenu(datagrid);
+    useDragSelect(datagrid);
 
     const { rowVirtualizer, colVirtualizer } = useVirtualizers({
         data,

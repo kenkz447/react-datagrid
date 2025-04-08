@@ -18,16 +18,18 @@ export interface UseVirtualizersResult {
     readonly colVirtualizer: Virtualizer<HTMLDivElement, Element>;
 }
 
-export function useVirtualizers<TRow extends RowData = RowData>({
-    data,
-    outerRef,
-    headerRowHeight,
-    columnWidths,
-    getRowSize,
-    columns,
-    hasStickyRightColumn,
-    rowKey
-}: UseVirtualizersProps): UseVirtualizersResult {
+export function useVirtualizers<TRow extends RowData = RowData>(props: UseVirtualizersProps): UseVirtualizersResult {
+    const {
+        data,
+        outerRef,
+        headerRowHeight,
+        columnWidths,
+        getRowSize,
+        columns,
+        hasStickyRightColumn,
+        rowKey
+    } = props;
+
     const rowVirtualizer = useVirtualizer({
         count: data.length,
         getScrollElement: () => outerRef.current,
