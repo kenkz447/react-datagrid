@@ -1,7 +1,8 @@
-import { checkboxColumn, DatagridProvider, keyColumn, textColumn, useDatagrid, Datagrid } from '@basestacks/react-datagrid';
+import { checkboxColumn, DatagridProvider, keyColumn, textColumn, useDatagrid } from '@basestacks/react-datagrid';
 import { useState } from 'react';
 import { ContextMenu } from '../components/ContextMenu';
 import { AddRows } from '../components/AddRows';
+import { Datagrid } from '../components/Datagrid';
 
 
 const columns = [

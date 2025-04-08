@@ -1,4 +1,5 @@
 import { ContextMenuItem, useDatagridContext } from '@basestacks/react-datagrid';
+import { useContextMenuItems } from '../hooks/useContextMenuItems';
 
 function ContextMenuItemComponent({ item }: { item: ContextMenuItem; }) {
     if (item.type === 'CUT') {
@@ -45,19 +46,18 @@ function ContextMenuItemComponent({ item }: { item: ContextMenuItem; }) {
 }
 
 export function ContextMenu() {
-    const {
-        contextMenu,
-        contextMenuItems,
-    } = useDatagridContext();
+    const datagrid = useDatagridContext();
 
-    if (!contextMenu) {
+    const contextMenuItems = useContextMenuItems(datagrid);
+
+    if (!datagrid.contextMenu) {
         return null;
     }
 
     return (
         <div
             className="dsg-context-menu"
-            style={{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }}
+            style={{ left: datagrid.contextMenu.x + 'px', top: datagrid.contextMenu.y + 'px' }}
         >
             {contextMenuItems.map((item) => (
                 <div

@@ -7,7 +7,6 @@ import { useCopyHandler } from './useCopy';
 import { useCutHandler } from './useCut';
 import { usePasteHandler } from './usePaste';
 import { useCallbacks } from './useCallbacks';
-import { useContextMenuItems } from './useContextMenuItems';
 
 export type UseDatagridReturn<TRow extends RowData = RowData> = ReturnType<typeof useDatagrid<TRow>>;
 
@@ -95,8 +94,6 @@ export function useDatagrid<TRow extends RowData>({
         setContextMenu(null);
     }, [setContextMenu]);
 
-    const contextMenuItems = useContextMenuItems(coreContext, { cut, copy, close: closeContextMenu });
-
     useCallbacks(coreContext);
 
     // Scroll to the selectionCell cell when it changes
@@ -143,7 +140,6 @@ export function useDatagrid<TRow extends RowData>({
         cut,
         copy,
         paste,
-        contextMenuItems,
         closeContextMenu
     };
 };
