@@ -1,4 +1,4 @@
-export * from './components/layout/Datagrid';
+export * from './components/Datagrid';
 
 export * from './columns/textColumn';
 export * from './columns/checkboxColumn';

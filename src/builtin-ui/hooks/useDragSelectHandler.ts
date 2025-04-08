@@ -1,45 +1,71 @@
 import { useRef } from 'react';
-import { UseDatagridReturn } from '../useDatagrid';
-import { useDocumentEventListener } from '../useDocumentEventListener';
-import { RowData } from '../../../core';
+import { UseDatagridReturn, useDocumentEventListener } from '../../browser';
+import { RowData } from '../../core';
+
+const delay = 150; // ms
 
 export const useDragSelectHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const refs = useRef(datagrid);
     refs.current = datagrid;
 
-    const startDragSelect = useRef((event: MouseEvent) => {
+    const isDraggingRef = useRef(false);
+
+    const getDraggingCell = useRef((event: MouseEvent) => {
         const {
             innerRef,
             getCursorIndex,
             activeCell,
-            selection,
             hasStickyRightColumn,
             columns,
         } = refs.current;
-
-        const { startDragging } = selection;
 
         const clickInside = innerRef.current?.contains(event.target as Node) || false;
         if (!clickInside) {
             return;
         }
 
-        const rightClick = event.button === 2 || (event.button === 0 && event.ctrlKey);
         const cursorIndex = getCursorIndex(event, true, true);
-        if (!cursorIndex || rightClick) {
+        if (!cursorIndex) {
             return;
         }
 
-        const clickOnStickyRightColumn =
-            cursorIndex?.col === columns.length - 2 && hasStickyRightColumn;
+        const clickOnActiveCell = activeCell && activeCell.col === cursorIndex.col && activeCell.row === cursorIndex.row;
+        if (clickOnActiveCell) {
+            return;
+        }
 
-        startDragging({
+        const clickOnStickyRightColumn = cursorIndex?.col === columns.length - 2 && hasStickyRightColumn;
+
+        return {
             columns: (cursorIndex.col !== -1 && !clickOnStickyRightColumn) || Boolean(event.shiftKey && activeCell),
             rows: cursorIndex.row !== -1 || Boolean(event.shiftKey && activeCell),
-        });
+        };
+    });
+
+    const startDragSelect = useRef((event: MouseEvent) => {
+        const draggingCell = getDraggingCell.current(event);
+        if (!draggingCell) {
+            return;
+        }
+
+        isDraggingRef.current = true;
+
+        setTimeout(() => {
+            if (!isDraggingRef.current) {
+                return;
+            }
+
+            const { selection } = refs.current;
+
+            selection.startDragging(draggingCell);
+        }, delay);
     });
 
     const onMouseMove = useRef((event: MouseEvent) => {
+        if (!isDraggingRef.current) {
+            return;
+        }
+
         const {
             data,
             getCursorIndex,
@@ -74,9 +100,13 @@ export const useDragSelectHandler = <TRow extends RowData>(datagrid: UseDatagrid
     });
 
     const stopDragSelect = useRef(() => {
-        const { selection } = refs.current;
-        const { stopDragging } = selection;
-        stopDragging();
+        if (isDraggingRef.current) {
+            const { selection } = refs.current;
+            const { stopDragging } = selection;
+            stopDragging();
+        }
+
+        isDraggingRef.current = false;
     });
 
     useDocumentEventListener('mousedown', startDragSelect.current);

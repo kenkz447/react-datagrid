@@ -1,16 +1,21 @@
 import React, { useMemo } from 'react';
-import type { RowData } from '../../../core';
-import { useDatagridContext } from '../../../browser';
-import { useVirtualizers } from '../../hooks/useVirtualizers';
-import { HeaderRow } from './HeaderRow';
-import { DataRow } from './DataRow';
-import { SelectionRect } from './SelectionRect';
-import { EdgesDetector } from './EdgesDetector';
-import { TabIndexBefore } from './TabIndexBefore';
-import { TabIndexAfter } from './TabIndexAfter';
+import type { RowData } from '../../core';
+import { useDatagridContext } from '../../browser';
+import { useVirtualizers } from '../hooks/useVirtualizers';
+import { HeaderRow } from './layout/HeaderRow';
+import { DataRow } from './layout/DataRow';
+import { SelectionRect } from './layout/SelectionRect';
+import { EdgesDetector } from './layout/EdgesDetector';
+import { TabIndexBefore } from './layout/TabIndexBefore';
+import { TabIndexAfter } from './layout/TabIndexAfter';
+import { useContextMenuHandler } from '../hooks/useContextMenuHandler';
+import { useKeydownHandler } from '../hooks/useKeydownHandler';
+import { useDragSelectHandler } from '../hooks/useDragSelectHandler';
 
 // ===== Main Component =====
 function DatagridImpl<TRow extends RowData = RowData>() {
+    const datagrid = useDatagridContext<TRow>();
+
     const {
         outerRef,
         innerRef,
@@ -31,7 +36,11 @@ function DatagridImpl<TRow extends RowData = RowData>() {
         getRowSize,
         hasStickyRightColumn,
         rowKey
-    } = useDatagridContext<TRow>();
+    } = datagrid;
+
+    useKeydownHandler(datagrid);
+    useContextMenuHandler(datagrid);
+    useDragSelectHandler(datagrid);
 
     const { rowVirtualizer, colVirtualizer } = useVirtualizers({
         data,

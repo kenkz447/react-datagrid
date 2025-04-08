@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { createKeybindingsHandler, type KeyBindingMap } from 'tinykeys';
-import { isPrintableUnicode } from '../../utils/copyPasting';
-import { RowData } from '../../../core';
-import { UseDatagridReturn } from '../useDatagrid';
-import { getAllTabbableElements } from '../../utils/tab';
+import { UseDatagridReturn, getAllTabbableElements, isPrintableUnicode } from '../../browser';
+
+import { RowData } from '../../core';
 
 // Define keyboard action types
 export type KeyboardAction =
