@@ -1,25 +1,30 @@
-import { useCallback } from 'react';
+import { useRef } from 'react';
 import { Cell, RowData, UseDatagridCoreReturn } from '../../../core';
+import { useDocumentEventListener } from '../useDocumentEventListener';
 
-export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseDatagridCoreReturn<TRow>) => {
-    const {
-        propsRef,
-        columns,
-        data,
-        expandingSelectionFromRowIndex,
-        expandSelectionRowsCount,
-        setExpandSelectionRowsCount,
-        activeCell,
-        selection,
-        isCellDisabled,
-        setActiveCell,
-        setExpandingSelectionFromRowIndex
-    } = props;
+export const useMouseUpHandler = <TRow extends RowData = RowData>(datagrid: UseDatagridCoreReturn<TRow>) => {
 
-    const { onChange } = propsRef.current;
-    const { setSelectionCell } = selection;
+    const refs = useRef(datagrid);
+    refs.current = datagrid;
 
-    const onMouseUp = useCallback(() => {
+    const onMouseUp = useRef(() => {
+        const {
+            propsRef,
+            columns,
+            data,
+            expandingSelectionFromRowIndex,
+            expandSelectionRowsCount,
+            setExpandSelectionRowsCount,
+            activeCell,
+            selection,
+            isCellDisabled,
+            setActiveCell,
+            setExpandingSelectionFromRowIndex
+        } = refs.current;
+
+        const { onChange } = propsRef.current;
+        const { setSelectionCell } = selection;
+
         if (expandingSelectionFromRowIndex !== null) {
             if (expandSelectionRowsCount > 0 && activeCell) {
                 let copyData: Array<Array<string>> = [];
@@ -117,8 +122,7 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(props: UseData
             }
             setExpandingSelectionFromRowIndex(null);
         }
+    });
 
-    }, [expandingSelectionFromRowIndex, expandSelectionRowsCount, activeCell, setExpandingSelectionFromRowIndex, selection.range?.min, selection.range?.max, setExpandSelectionRowsCount, setActiveCell, setSelectionCell, columns, data, onChange, isCellDisabled]);
-
-    return onMouseUp;
+    useDocumentEventListener('mouseup', onMouseUp.current);
 };

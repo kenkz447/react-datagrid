@@ -1,48 +1,85 @@
-import { useCallback } from 'react';
+import { useRef } from 'react';
 import { UseDatagridReturn } from '../useDatagrid';
 import { useDocumentEventListener } from '../useDocumentEventListener';
 import { RowData } from '../../../core';
 
 export const useDragSelectHandler = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
-    const {
-        innerRef,
-        getCursorIndex,
-        activeCell,
-        selection,
-        hasStickyRightColumn,
-        columns,
-    } = datagrid;
+    const refs = useRef(datagrid);
+    refs.current = datagrid;
 
-    const { startDragging, stopDragging } = selection;
+    const startDragSelect = useRef((event: MouseEvent) => {
+        const {
+            innerRef,
+            getCursorIndex,
+            activeCell,
+            selection,
+            hasStickyRightColumn,
+            columns,
+        } = refs.current;
 
-    const startDragSelect = useCallback(
-        (event: MouseEvent) => {
-            const clickInside = innerRef.current?.contains(event.target as Node) || false;
-            if (!clickInside) {
-                return;
-            }
+        const { startDragging } = selection;
 
-            const rightClick = event.button === 2 || (event.button === 0 && event.ctrlKey);
-            const cursorIndex = getCursorIndex(event, true, true);
-            if (!cursorIndex || rightClick) {
-                return;
-            }
+        const clickInside = innerRef.current?.contains(event.target as Node) || false;
+        if (!clickInside) {
+            return;
+        }
 
-            const clickOnStickyRightColumn =
-                cursorIndex?.col === columns.length - 2 && hasStickyRightColumn;
+        const rightClick = event.button === 2 || (event.button === 0 && event.ctrlKey);
+        const cursorIndex = getCursorIndex(event, true, true);
+        if (!cursorIndex || rightClick) {
+            return;
+        }
 
-            startDragging({
-                columns: (cursorIndex.col !== -1 && !clickOnStickyRightColumn) || Boolean(event.shiftKey && activeCell),
-                rows: cursorIndex.row !== -1 || Boolean(event.shiftKey && activeCell),
-            });
-        },
-        [activeCell, columns.length, getCursorIndex, hasStickyRightColumn, innerRef, startDragging]
-    );
+        const clickOnStickyRightColumn =
+            cursorIndex?.col === columns.length - 2 && hasStickyRightColumn;
 
-    const stopDragSelect = useCallback(() => {
+        startDragging({
+            columns: (cursorIndex.col !== -1 && !clickOnStickyRightColumn) || Boolean(event.shiftKey && activeCell),
+            rows: cursorIndex.row !== -1 || Boolean(event.shiftKey && activeCell),
+        });
+    });
+
+    const onMouseMove = useRef((event: MouseEvent) => {
+        const {
+            data,
+            getCursorIndex,
+            setEditing,
+            selection,
+            hasStickyRightColumn,
+            columns,
+        } = refs.current;
+
+        const { dragging, setSelectionCell } = selection;
+
+        if (dragging.active) {
+            const cursorIndex = getCursorIndex(event);
+
+            const lastColumnIndex =
+                columns.length - (hasStickyRightColumn ? 3 : 2);
+
+            setSelectionCell(
+                cursorIndex && {
+                    col: dragging.columns
+                        ? Math.max(0, Math.min(lastColumnIndex, cursorIndex.col))
+                        : lastColumnIndex,
+                    row: dragging.rows
+                        ? Math.max(0, cursorIndex.row)
+                        : data.length - 1,
+                    doNotScrollX: !dragging.columns,
+                    doNotScrollY: !dragging.rows,
+                }
+            );
+            setEditing(false);
+        }
+    });
+
+    const stopDragSelect = useRef(() => {
+        const { selection } = refs.current;
+        const { stopDragging } = selection;
         stopDragging();
-    }, [stopDragging]);
+    });
 
-    useDocumentEventListener('mousedown', startDragSelect);
-    useDocumentEventListener('mouseup', stopDragSelect);
+    useDocumentEventListener('mousedown', startDragSelect.current);
+    useDocumentEventListener('mousemove', onMouseMove.current);
+    useDocumentEventListener('mouseup', stopDragSelect.current);
 };
