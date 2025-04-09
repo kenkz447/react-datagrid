@@ -135,8 +135,6 @@ export const useSelection = (props: UseCellNavigationProps) => {
                 cell
             }));
             setSelectionCell(null);
-
-            setSelectionCell(null);
         },
         goUp: () => {
             setEditing(false);

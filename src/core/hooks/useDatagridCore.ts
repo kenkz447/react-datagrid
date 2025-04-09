@@ -20,7 +20,6 @@ export type UseDatagridCoreReturn<TRow extends RowData = RowData> = ReturnType<t
 export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<TRow>) {
     const {
         data,
-        gutterColumn,
         stickyRightColumn,
         disableExpandSelection,
         disableSmartDelete,
@@ -52,7 +51,7 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
     const hasStickyRightColumn = Boolean(stickyRightColumn);
 
     const rawColumns = props.columns;
-    const columns = useColumns(rawColumns, gutterColumn, stickyRightColumn);
+    const columns = useColumns(rawColumns, stickyRightColumn);
 
     // Number of rows the user is expanding the selection by, always a number, even when not expanding selection
     const [expandSelectionRowsCount, setExpandSelectionRowsCount] = useState<number>(0);

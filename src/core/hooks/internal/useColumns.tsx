@@ -70,7 +70,6 @@ export const parseFlexValue = (value: string | number) => {
 
 export const useColumns = <TValue = any>(
     columns: Column<TValue, any, any>[],
-    gutterColumn?: SimpleColumn<TValue, any> | false,
     stickyRightColumn?: SimpleColumn<TValue, any>
 ): Column<TValue, any, any>[] => {
     return useMemo<Column<TValue, any, any>[]>(() => {

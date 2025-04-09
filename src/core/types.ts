@@ -30,7 +30,7 @@ export interface CellProps<TValue> {
   readonly disabled: boolean;
 }
 
-export interface Column<TValue, C, PasteValue> {
+export interface Column<TValue = any, C = any, PasteValue = any> {
   readonly id?: string
   readonly title?: React.ReactNode
   /** @deprecated Use `basis`, `grow`, and `shrink` instead */
@@ -52,7 +52,7 @@ export interface Column<TValue, C, PasteValue> {
   readonly isCellEmpty?: (opt: { rowData: TValue; rowIndex: number }) => boolean
 }
 
-export type SimpleColumn<T, C> = Partial<
+export type SimpleColumn<T = any, C = any> = Partial<
   Pick<Column<T, C, string>,
     | 'title'
     | 'maxWidth'
