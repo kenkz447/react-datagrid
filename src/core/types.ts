@@ -22,46 +22,46 @@ export interface RowSize {
   readonly top: number
 }
 
-export interface CellProps<T, C> {
-  readonly rowData: T
+export interface CellProps<TValue, TColumn> {
+  readonly rowData: TValue
   readonly rowIndex: number
   readonly columnIndex: number
   readonly active: boolean
   readonly focus: boolean
   readonly disabled: boolean
-  readonly columnData: C
-  readonly setRowData: (rowData: T) => void
+  readonly columnData: TColumn
+  readonly setRowData: (rowData: TValue) => void
   readonly stopEditing: (opts?: { nextRow?: boolean }) => void
   readonly insertRowBelow: () => void
   readonly duplicateRow: () => void
   readonly deleteRow: () => void
 }
 
-export type CellComponent<T, C> = React.ComponentType<CellProps<T, C>>;
 export type CellClassName<TValue> = string | ((opt: { rowData: TValue; rowIndex: number; columnId?: string }) => string | undefined);
 
 export interface Column<TValue, C, PasteValue> {
   readonly id?: string
-  readonly headerClassName?: string
   readonly title?: React.ReactNode
+  /** @deprecated */
+  readonly headerClassName?: string | ((opt: { columnId: string }) => string | undefined)
   /** @deprecated Use `basis`, `grow`, and `shrink` instead */
   readonly width?: string | number
-  readonly basis: number
-  readonly grow: number
-  readonly shrink: number
-  readonly minWidth: number
+  readonly basis?: number
+  readonly grow?: number
+  readonly shrink?: number
+  readonly minWidth?: number
   readonly maxWidth?: number
-  readonly component: CellComponent<TValue, C>
+  readonly component?: React.ComponentType<CellProps<TValue, C>>
   readonly columnData?: C
-  readonly disableKeys: boolean
-  readonly disabled: boolean | ((opt: { rowData: TValue; rowIndex: number }) => boolean)
+  readonly disableKeys?: boolean
+  readonly disabled?: boolean | ((opt: { rowData: TValue; rowIndex: number }) => boolean)
   readonly cellClassName?: CellClassName<TValue>
-  readonly keepFocus: boolean
-  readonly deleteValue: (opt: { rowData: TValue; rowIndex: number }) => TValue
-  readonly copyValue: (opt: { rowData: TValue; rowIndex: number }) => number | string | null
-  readonly pasteValue: (opt: { rowData: TValue; value: PasteValue; rowIndex: number }) => TValue
-  readonly prePasteValues: (values: string[]) => PasteValue[] | Promise<PasteValue[]>
-  readonly isCellEmpty: (opt: { rowData: TValue; rowIndex: number }) => boolean
+  readonly keepFocus?: boolean
+  readonly deleteValue?: (opt: { rowData: TValue; rowIndex: number }) => TValue
+  readonly copyValue?: (opt: { rowData: TValue; rowIndex: number }) => number | string | null
+  readonly pasteValue?: (opt: { rowData: TValue; value: PasteValue; rowIndex: number }) => TValue
+  readonly prePasteValues?: (values: string[]) => PasteValue[] | Promise<PasteValue[]>
+  readonly isCellEmpty?: (opt: { rowData: TValue; rowIndex: number }) => boolean
 }
 
 export interface SelectionContextType {

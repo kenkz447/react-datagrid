@@ -71,12 +71,12 @@ export const parseFlexValue = (value: string | number) => {
 };
 
 export const useColumns = <TValue = any>(
-    columns: Partial<Column<TValue, any, any>>[],
+    columns: Column<TValue, any, any>[],
     gutterColumn?: SimpleColumn<TValue, any> | false,
     stickyRightColumn?: SimpleColumn<TValue, any>
 ): Column<TValue, any, any>[] => {
     return useMemo<Column<TValue, any, any>[]>(() => {
-        const partialColumns: Partial<Column<TValue, any, any>>[] = [
+        const partialColumns: Column<TValue, any, any>[] = [
             gutterColumn === false
                 ? {
                     basis: 0,
@@ -114,7 +114,7 @@ export const useColumns = <TValue = any>(
             });
         }
 
-        return partialColumns.map<Column<TValue, any, any>>((column) => {
+        return partialColumns.map((column) => {
             const legacyWidth =
                 column.width !== undefined
                     ? parseFlexValue(column.width)

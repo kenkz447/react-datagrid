@@ -47,7 +47,7 @@
         "e2e": "cypress run",
         "lint": "eslint **/*.{ts,tsx} --no-warn-ignored",
         "lint:fix": "pnpm lint --fix",
-        "start": "pnpm build:esm && cd ./examples && pnpm install && pnpm start",
+        "start": "pnpm build:esm && cd ./examples && pnpm install && pnpm dev",
         "test": "jest --config ./scripts/jest/jest.config.ts",
         "test:coverage": "pnpm test --coverage",
         "test:watch": "pnpm test--onlyChanged --watch",

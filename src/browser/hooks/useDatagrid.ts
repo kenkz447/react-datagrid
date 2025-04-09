@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-import { useColumnWidths, useDebounceState, RowData, Cell, useDatagridCore, DataSheetGridProps, Column } from '../../core';
+import { useColumnWidths, RowData, Cell, useDatagridCore, DataSheetGridProps, Column } from '../../core';
 import { useDatagridScroll } from './useDatagridScroll';
 import { useDatagridCursor } from './useDatagridCursor';
 import { useCopyHandler } from './useCopy';
@@ -10,7 +10,6 @@ import { useCallbacks } from './useCallbacks';
 
 export type UseDatagridReturn<TRow extends RowData = RowData> = ReturnType<typeof useDatagrid<TRow>>;
 
-const BORDER_WIDTH = 1;
 const DEFAULT_DATA: any[] = [];
 const DEFAULT_COLUMNS: Column<any, any, any>[] = [];
 const DEFAULT_ROW_HEIGHT = 40;
@@ -38,8 +37,7 @@ export function useDatagrid<TRow extends RowData>({
     const {
         selection,
         activeCell,
-        columns,
-        getRowTotalSize
+        columns
     } = coreContext;
 
     const outerRef = useRef<HTMLDivElement>(null);
@@ -51,16 +49,6 @@ export function useDatagrid<TRow extends RowData>({
         refreshMode: 'throttle',
         refreshRate: 100,
     });
-
-    const [heightDiff, setHeightDiff] = useDebounceState(BORDER_WIDTH, 100);
-
-    // Height of the list (including scrollbars and borders) to display
-    const displayHeight = useMemo(() => Math.min(
-        maxHeight,
-        headerRowHeight + getRowTotalSize(maxHeight) + heightDiff
-    ), [maxHeight, headerRowHeight, getRowTotalSize, heightDiff]);
-
-    setHeightDiff(height ? displayHeight - height : 0);
 
     const {
         isFullWidth,
@@ -126,13 +114,11 @@ export function useDatagrid<TRow extends RowData>({
         innerRef,
         width,
         height,
-        displayHeight,
         contentWidth,
         columnWidths,
         columnRights,
         isFullWidth,
         contextMenu,
-        setHeightDiff,
         scrollTo,
         getCursorIndex,
         setContextMenu,

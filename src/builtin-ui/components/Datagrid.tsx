@@ -18,7 +18,6 @@ function DatagridImpl<TRow extends RowData = RowData>() {
     const {
         outerRef,
         innerRef,
-        displayHeight,
         isFullWidth,
         headerRowHeight,
         columnWidths,
@@ -59,7 +58,6 @@ function DatagridImpl<TRow extends RowData = RowData>() {
         <div
             ref={outerRef}
             className="dsg-container"
-            style={{ height: displayHeight }}
         >
             <TabIndexBefore
                 columns={columns}
