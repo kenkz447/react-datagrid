@@ -1,24 +1,24 @@
 import { defaultRangeExtractor, useVirtualizer, Virtualizer } from '@tanstack/react-virtual';
 import { RefObject, useEffect } from 'react';
-import { RowData } from '../../core';
+import { RowData, RowKey } from '../../core';
 
-export interface UseVirtualizersProps {
-    readonly data: any[];
-    readonly outerRef: RefObject<HTMLDivElement>;
+export interface UseVirtualizersProps<TRow extends RowData = RowData> {
+    readonly data: TRow[];
+    readonly outerRef: RefObject<HTMLElement>;
     readonly headerRowHeight: number;
     readonly columnWidths?: number[];
     readonly getRowSize: (index: number) => { readonly height: number; readonly top: number };
     readonly columns: any[];
     readonly hasStickyRightColumn: boolean;
-    readonly rowKey?: string | ((props: { readonly rowData: any; readonly rowIndex: number }) => string | number);
+    readonly rowKey?: RowKey<TRow>;
 }
 
 export interface UseVirtualizersResult {
-    readonly rowVirtualizer: Virtualizer<HTMLDivElement, Element>;
-    readonly colVirtualizer: Virtualizer<HTMLDivElement, Element>;
+    readonly rowVirtualizer: Virtualizer<HTMLElement, Element>;
+    readonly colVirtualizer: Virtualizer<HTMLElement, Element>;
 }
 
-export function useVirtualizers<TRow extends RowData = RowData>(props: UseVirtualizersProps): UseVirtualizersResult {
+export function useVirtualizers<TRow extends RowData = RowData>(props: UseVirtualizersProps<TRow>): UseVirtualizersResult {
     const {
         data,
         outerRef,
@@ -40,11 +40,10 @@ export function useVirtualizers<TRow extends RowData = RowData>(props: UseVirtua
                 const row = data[index - 1];
                 if (typeof rowKey === 'function') {
                     return rowKey({ rowData: row, rowIndex: index });
-                } else if (
-                    typeof rowKey === 'string' &&
-                    row instanceof Object && rowKey in (row as any)
-                ) {
-                    const key = row[rowKey as keyof TRow];
+                }
+
+                if (typeof rowKey === 'string' && row instanceof Object && rowKey in row) {
+                    const key = row[rowKey];
                     if (typeof key === 'string' || typeof key === 'number') {
                         return key;
                     }

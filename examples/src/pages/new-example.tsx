@@ -2,18 +2,18 @@ import { DatagridProvider, useDatagrid } from '@basestacks/react-datagrid';
 import { useState } from 'react';
 import { NewDatagrid } from '../components/NewDatagrid';
 import { CheckboxCell } from '../components/cells/CheckboxCell';
-import { textColumn } from '../components/cells/TextCell';
+import { TextCell } from '../components/cells/TextCell';
 
 const columns = [
     { id: 'active', component: CheckboxCell, title: 'Active' },
-    { id: 'firstName', title: 'First name', ...textColumn },
-    { id: 'lastName', title: 'Last name', ...textColumn }
+    { id: 'firstName', title: 'First name', component: TextCell },
+    { id: 'lastName', title: 'Last name', component: TextCell }
 ];
 
 export default function Example() {
     const [data, setData] = useState([
-        { active: true, firstName: 'Elon', lastName: 'Musk' },
-        { active: false, firstName: 'Jeff', lastName: 'Bezos' },
+        { id: 1, active: true, firstName: 'Elon', lastName: 'Musk' },
+        { id: 2, active: false, firstName: 'Jeff', lastName: 'Bezos' },
     ]);
 
     const datagrid = useDatagrid({

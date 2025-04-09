@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Cell, UseDatagridCoreReturn } from '../../core';
+import { Cell, RowData, UseDatagridCoreReturn } from '../../core';
 import { useGetBoundingClientRect } from './useGetBoundingClientRect';
 
 interface UseDatagridCursorProps {
@@ -9,7 +9,7 @@ interface UseDatagridCursorProps {
     columnWidths: number[] | null;
 }
 
-export const useDatagridCursor = (coreContext: UseDatagridCoreReturn, props: UseDatagridCursorProps) => {
+export const useDatagridCursor = <TRow extends RowData = RowData>(coreContext: UseDatagridCoreReturn<TRow>, props: UseDatagridCursorProps) => {
     const {
         outerRef,
         innerRef

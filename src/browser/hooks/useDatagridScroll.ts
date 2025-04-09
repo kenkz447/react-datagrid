@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Cell, ScrollBehavior, UseDatagridCoreReturn } from '../../core';
+import { Cell, RowData, ScrollBehavior, UseDatagridCoreReturn } from '../../core';
 
 const BORDER_WIDTH = 1;
 
@@ -8,10 +8,10 @@ interface UseDatagridScrollProps {
     width: number | undefined;
     columnRights: number[] | null;
     columnWidths: number[] | null;
-    outerRef: React.RefObject<HTMLDivElement>;
+    outerRef: React.RefObject<HTMLElement>;
 }
 
-export const useDatagridScroll = (coreContext: UseDatagridCoreReturn, props: UseDatagridScrollProps) => {
+export const useDatagridScroll = <TRow extends RowData = RowData>(coreContext: UseDatagridCoreReturn<TRow>, props: UseDatagridScrollProps) => {
 
     const refsValues = { ...coreContext, ...props };
     const refs = useRef(refsValues);

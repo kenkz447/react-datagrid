@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { Cell, UseDatagridCoreReturn } from '../../core';
+import { Cell, RowData, UseDatagridCoreReturn } from '../../core';
 import { formatCopyData } from '../utils/copyPasting';
 import { writeToClipboard } from '../utils/clipboard';
 import { UseSelectionReturn } from '../../core/hooks/useSelection';
@@ -29,13 +29,13 @@ export const generateCopyData = (
     return copyData;
 };
 
-export const useCopyHandler = ({
+export const useCopyHandler = <TRow extends RowData = RowData>({
     activeCell,
     selection,
     editing,
     columns,
     data,
-}: UseDatagridCoreReturn) => {
+}: UseDatagridCoreReturn<TRow>) => {
 
     const activeCellRef = useRef(activeCell);
     activeCellRef.current = activeCell;

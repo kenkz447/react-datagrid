@@ -1,7 +1,7 @@
 import { CellProps } from '@basestacks/react-datagrid';
 import { useLayoutEffect, useRef } from 'react';
 
-export function CheckboxCell({ focus, rowData, setRowData, active, stopEditing, disabled }: CellProps<boolean, any>) {
+export function CheckboxCell({ focus, value, setRowData, active, stopEditing, disabled }: CellProps<boolean, any>) {
     const ref = useRef<HTMLInputElement>(null);
 
     // When cell becomes focus we immediately toggle the checkbox and blur the cell by calling `stopEditing`
@@ -9,7 +9,7 @@ export function CheckboxCell({ focus, rowData, setRowData, active, stopEditing, 
     // This way the user can keep pressing Enter to toggle the checkbox on and off multiple times
     useLayoutEffect(() => {
         if (focus) {
-            setRowData(!rowData);
+            setRowData(!value);
             stopEditing({ nextRow: false });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -22,10 +22,11 @@ export function CheckboxCell({ focus, rowData, setRowData, active, stopEditing, 
             type="checkbox"
             ref={ref}
             disabled={disabled}
-            checked={Boolean(rowData)}
+            checked={Boolean(value)}
             // When cell is not active, we allow the user to toggle the checkbox by clicking on it
             // When cell becomes active, we disable this feature and rely on focus instead (see `useLayoutEffect` above)
-            onMouseDown={() => !active && setRowData(!rowData)}
-            onChange={() => null} />
+            onMouseDown={() => !active && setRowData(!value)}
+            onChange={() => null}
+        />
     );
 }

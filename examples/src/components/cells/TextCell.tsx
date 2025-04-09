@@ -1,5 +1,5 @@
 import { useRef, useLayoutEffect, useEffect } from 'react';
-import { CellProps, createEditableColumn, useFirstRender } from '@basestacks/react-datagrid';
+import { CellProps, useFirstRender } from '@basestacks/react-datagrid';
 
 export type TextColumnData<T> = {
     placeholder?: string
@@ -11,9 +11,9 @@ export type TextColumnData<T> = {
 }
 
 export function TextCell({
+    value,
     active,
     focus,
-    rowData,
     setRowData,
     columnData: {
         placeholder,
@@ -22,13 +22,13 @@ export function TextCell({
         parseUserInput,
         continuousUpdates,
     },
-}: CellProps<string | number, TextColumnData<string | number>>) {
+}: CellProps<string | number>) {
     const ref = useRef<HTMLInputElement>(null);
     const firstRender = useFirstRender();
 
     // We create refs for async access so we don't have to add it to the useEffect dependencies
     const asyncRef = useRef({
-        rowData,
+        value,
         formatInputOnFocus,
         formatBlurredInput,
         setRowData,
@@ -44,7 +44,7 @@ export function TextCell({
         escPressed: false,
     });
     asyncRef.current = {
-        rowData,
+        value,
         formatInputOnFocus,
         formatBlurredInput,
         setRowData,
@@ -65,7 +65,7 @@ export function TextCell({
             if (ref.current) {
                 // Make sure to first format the input
                 ref.current.value = asyncRef.current.formatInputOnFocus(
-                    asyncRef.current.rowData
+                    asyncRef.current.value
                 );
                 ref.current.focus();
                 ref.current.select();
@@ -100,14 +100,14 @@ export function TextCell({
     useEffect(() => {
         if (!focus && ref.current) {
             // On blur or when the data changes, format it for display
-            ref.current.value = asyncRef.current.formatBlurredInput?.(rowData);
+            ref.current.value = asyncRef.current.formatBlurredInput?.(value);
         }
-    }, [focus, rowData]);
+    }, [focus, value]);
 
     return (
         <input
             // We use an uncontrolled component for better performance
-            defaultValue={formatBlurredInput?.(rowData)}
+            defaultValue={formatBlurredInput?.(value)}
             placeholder={active ? placeholder : undefined}
             // Important to prevent any undesired "tabbing"
             tabIndex={-1}
@@ -133,5 +133,3 @@ export function TextCell({
         />
     );
 }
-
-export const textColumn = createEditableColumn(TextCell);

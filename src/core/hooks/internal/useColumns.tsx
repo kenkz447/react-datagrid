@@ -1,13 +1,11 @@
-import React, { useMemo } from 'react';
-import { CellProps, Column, RowData, SimpleColumn } from '../../types';
+import { useMemo } from 'react';
+import { Column, RowData, SimpleColumn } from '../../types';
 
 const defaultComponent = () => <></>;
 const defaultIsCellEmpty = () => false;
 const identityRow = <TRow extends RowData>({ rowData }: { rowData: TRow }) => rowData;
 const defaultCopyValue = () => null;
-const defaultGutterComponent = ({ rowIndex }: CellProps<any, any>) => (
-    <>{rowIndex + 1}</>
-);
+
 const cellAlwaysEmpty = () => true;
 const defaultPrePasteValues = (values: string[]) => values;
 
@@ -76,32 +74,7 @@ export const useColumns = <TValue = any>(
     stickyRightColumn?: SimpleColumn<TValue, any>
 ): Column<TValue, any, any>[] => {
     return useMemo<Column<TValue, any, any>[]>(() => {
-        const partialColumns: Column<TValue, any, any>[] = [
-            gutterColumn === false
-                ? {
-                    basis: 0,
-                    grow: 0,
-                    shrink: 0,
-                    minWidth: 0,
-                    component: () => <></>,
-                    headerClassName: 'dsg-hidden-cell',
-                    cellClassName: 'dsg-hidden-cell',
-                    isCellEmpty: cellAlwaysEmpty,
-                }
-                : {
-                    ...gutterColumn,
-                    basis: gutterColumn?.basis ?? 40,
-                    grow: gutterColumn?.grow ?? 0,
-                    shrink: gutterColumn?.shrink ?? 0,
-                    minWidth: gutterColumn?.minWidth ?? 0,
-                    title: gutterColumn?.title ?? (
-                        <div className="dsg-corner-indicator" />
-                    ),
-                    component: gutterColumn?.component ?? defaultGutterComponent,
-                    isCellEmpty: cellAlwaysEmpty,
-                },
-            ...columns,
-        ];
+        const partialColumns: Column<TValue, any, any>[] = [...columns];
 
         if (stickyRightColumn) {
             partialColumns.push({
@@ -141,5 +114,5 @@ export const useColumns = <TValue = any>(
                 isCellEmpty: column.isCellEmpty ?? defaultIsCellEmpty,
             };
         });
-    }, [gutterColumn, stickyRightColumn, columns]);
+    }, [stickyRightColumn, columns]);
 };

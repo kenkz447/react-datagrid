@@ -22,19 +22,11 @@ export interface RowSize {
   readonly top: number
 }
 
-export interface CellProps<TValue, TColumn> {
-  readonly rowData: TValue
-  readonly rowIndex: number
-  readonly columnIndex: number
-  readonly active: boolean
-  readonly focus: boolean
-  readonly disabled: boolean
-  readonly columnData: TColumn
-  readonly setRowData: (rowData: TValue) => void
-  readonly stopEditing: (opts?: { nextRow?: boolean }) => void
-  readonly insertRowBelow: () => void
-  readonly duplicateRow: () => void
-  readonly deleteRow: () => void
+export interface CellProps<TValue> {
+  readonly value?: TValue;
+  readonly active: boolean;
+  readonly focus: boolean;
+  readonly disabled: boolean;
 }
 
 export type CellClassName<TValue> = string | ((opt: { rowData: TValue; rowIndex: number; columnId?: string }) => string | undefined);
@@ -51,7 +43,7 @@ export interface Column<TValue, C, PasteValue> {
   readonly shrink?: number
   readonly minWidth?: number
   readonly maxWidth?: number
-  readonly component?: React.ComponentType<CellProps<TValue, C>>
+  readonly component?: React.ComponentType<CellProps<TValue>>
   readonly columnData?: C
   readonly disableKeys?: boolean
   readonly disabled?: boolean | ((opt: { rowData: TValue; rowIndex: number }) => boolean)
@@ -65,7 +57,7 @@ export interface Column<TValue, C, PasteValue> {
 }
 
 export interface SelectionContextType {
-  readonly outerRef: RefObject<HTMLDivElement>;
+  readonly outerRef: RefObject<HTMLElement>;
   readonly columnRights?: number[]
   readonly columnWidths?: number[]
   readonly viewWidth?: number
@@ -112,18 +104,20 @@ export interface Operation {
   readonly toRowIndex: number
 }
 
-export interface DataSheetGridProps<T extends RowData = RowData> {
-  readonly data?: T[]
-  readonly onChange?: (value: T[], operations: Operation[]) => void
-  readonly columns?: Partial<Column<T, any, any>>[]
-  readonly gutterColumn?: SimpleColumn<T, any> | false
-  readonly stickyRightColumn?: SimpleColumn<T, any>
-  readonly rowKey?: string | ((opts: { rowData: T; rowIndex: number }) => string)
+export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
+
+export interface DataSheetGridProps<TRow extends RowData = RowData> {
+  readonly data?: TRow[]
+  readonly onChange?: (value: TRow[], operations: Operation[]) => void
+  readonly columns?: Partial<Column<TRow, any, any>>[]
+  readonly gutterColumn?: SimpleColumn<TRow, any> | false
+  readonly stickyRightColumn?: SimpleColumn<TRow, any>
+  readonly rowKey?: RowKey<TRow>;
   readonly maxHeight?: number
-  readonly rowHeight?: number | ((opt: { rowData: T; rowIndex: number }) => number)
+  readonly rowHeight?: number | ((opt: { rowData: TRow; rowIndex: number }) => number)
   readonly headerRowHeight?: number
-  readonly createRow?: () => T
-  readonly duplicateRow?: (opts: { rowData: T; rowIndex: number }) => T
+  readonly createRow?: () => TRow
+  readonly duplicateRow?: (opts: { rowData: TRow; rowIndex: number }) => TRow
   readonly autoAddRow?: boolean
   readonly lockRows?: boolean
   readonly disableContextMenu?: boolean

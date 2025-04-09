@@ -40,8 +40,8 @@ export function useDatagrid<TRow extends RowData>({
         columns
     } = coreContext;
 
-    const outerRef = useRef<HTMLDivElement>(null);
-    const innerRef = useRef<HTMLDivElement>(null);
+    const outerRef = useRef<HTMLElement>(null);
+    const innerRef = useRef<HTMLElement>(null);
 
     // Width and height of the scrollable area
     const { width, height } = useResizeDetector({

@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react';
 import { parseTextHtmlData, parseTextPlainData } from '../utils/copyPasting';
-import { UseDatagridCoreReturn } from '../../core';
+import { RowData, UseDatagridCoreReturn } from '../../core';
 
-export const usePasteHandler = ({
+export const usePasteHandler = <TRow extends RowData = RowData>({
     activeCell,
     editing,
     applyPasteDataToDatasheet,
-}: UseDatagridCoreReturn) => {
+}: UseDatagridCoreReturn<TRow>) => {
 
     const activeCellRef = useRef(activeCell);
     activeCellRef.current = activeCell;

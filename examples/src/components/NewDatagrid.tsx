@@ -1,5 +1,7 @@
 import { useDatagridContext } from '@basestacks/react-datagrid';
 import { cn } from '../utils/classnames';
+import { useRows } from '../hooks/useRows';
+import { Ref } from 'react';
 
 const classNames = {
     table: 'w-full table-auto border-collapse text-sm',
@@ -10,13 +12,18 @@ const classNames = {
 
 export function NewDatagrid() {
     const datagrid = useDatagridContext();
-    const { outerRef, innerRef, columns, data } = datagrid;
+    const rows = useRows(datagrid);
+
+    const { outerRef, innerRef, columns } = datagrid;
 
     return (
-        <div ref={outerRef} className="my-8 overflow-hidden">
-            <table ref={innerRef} className={cn(classNames.table)}>
+        <div ref={outerRef as Ref<HTMLDivElement>} className="my-8 overflow-hidden">
+            <table ref={innerRef as Ref<HTMLTableElement>} className={cn(classNames.table)}>
                 <thead>
                     <tr>
+                        <th className={cn(classNames.header)}>
+                            #
+                        </th>
                         {columns.map((column) => (
                             <th key={column.id ?? '0'} className={cn(classNames.header)}>
                                 {column.title}
@@ -25,21 +32,16 @@ export function NewDatagrid() {
                     </tr>
                 </thead>
                 <tbody className={cn(classNames.body)}>
-                    {data.map((row, rowIndex) => (
+                    {rows.map((row, rowIndex) => (
                         <tr key={rowIndex}>
-                            {columns.map((column, columnIndex) => {
-                                const Cell = column.component;
-                                
-                                return (
-                                    <td key={columnIndex} className={cn(classNames.cell)}>
-                                        <Cell
-                                            rowData={row[column.id]}
-                                            rowIndex={rowIndex}
-                                            columnData={column.columnData}
-                                        />
-                                    </td>
-                                );
-                            })}
+                            <td className={cn(classNames.cell)}>
+                                {rowIndex + 1}
+                            </td>
+                            {row.cells.map((cell) => (
+                                <td key={cell.key} className={cn(classNames.cell)}>
+                                    {cell.render()}
+                                </td>
+                            ))}
                         </tr>
                     ))}
                 </tbody>
