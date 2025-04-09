@@ -1,11 +1,11 @@
-import { Cell, CellWithId, Column, Selection, SelectionWithId } from '../types';
+import { CellCoordinates, CellWithId, Column, RangeSelection, SelectionWithId } from '../types';
 
 export const getCell = (
     value: any,
     colMax: number,
     rowMax: number,
     columns: Column<any, any, any>[]
-): Cell | null => {
+): CellCoordinates | null => {
     if (value === null || !colMax || !rowMax) {
         return null;
     }
@@ -16,7 +16,7 @@ export const getCell = (
 
     const colIndex = columns.findIndex((column) => column.id === value.col);
 
-    const cell: Cell = {
+    const cell: CellCoordinates = {
         col: Math.max(
             0,
             Math.min(colMax - 1, colIndex === -1 ? Number(value.col) : colIndex - 1)
@@ -32,7 +32,7 @@ export const getCell = (
 };
 
 export const getCellWithId = (
-    cell: Cell | null,
+    cell: CellCoordinates | null,
     columns: Column<any, any, any>[]
 ): typeof cell extends null ? CellWithId | null : CellWithId =>
     cell
@@ -48,7 +48,7 @@ export const getSelection = (
     colMax: number,
     rowMax: number,
     columns: Column<any, any, any>[]
-): Selection | null => {
+): RangeSelection | null => {
     if (value === null || !colMax || !rowMax) {
         return null;
     }
@@ -66,11 +66,11 @@ export const getSelection = (
         throw new Error('min and max must be defined');
     }
 
-    return selection as Selection;
+    return selection as RangeSelection;
 };
 
 export const getSelectionWithId = (
-    selection: Selection | null,
+    selection: RangeSelection | null,
     columns: Column<any, any, any>[]
 ): SelectionWithId | null =>
     selection

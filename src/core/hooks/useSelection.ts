@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { Cell, Column, ScrollBehavior, Selection, SelectionMode } from '../types';
+import { CellCoordinates, Column, ScrollBehavior, RangeSelection, SelectionMode } from '../types';
 import { useDeepEqualState } from './internal/useDeepEqualState';
 
 
@@ -9,7 +9,7 @@ const add = ({
     hasStickyRightColumn,
     offset,
     cell
-}: { columnLength: number, maxRow: number, hasStickyRightColumn: boolean, offset: [number, number], cell: Cell | null }): Cell | null => {
+}: { columnLength: number, maxRow: number, hasStickyRightColumn: boolean, offset: [number, number], cell: CellCoordinates | null }): CellCoordinates | null => {
     // Return null if cell is null
     if (!cell) return null;
 
@@ -33,10 +33,10 @@ interface UseCellNavigationProps {
     data: unknown[];
     columns: Column<any, any, any>[];
     editing: boolean;
-    activeCell: Cell | null;
+    activeCell: CellCoordinates | null;
     hasStickyRightColumn: boolean;
     setEditing: (editing: boolean) => void;
-    setActiveCell: React.Dispatch<React.SetStateAction<Cell & ScrollBehavior>>;
+    setActiveCell: React.Dispatch<React.SetStateAction<CellCoordinates & ScrollBehavior>>;
 }
 
 export type UseSelectionReturn = ReturnType<typeof useSelection>;
@@ -64,10 +64,10 @@ export const useSelection = (props: UseCellNavigationProps) => {
     refs.current = refsValue;
 
     // The selection cell and the active cell are the two corners of the selection, null when nothing is selected
-    const [selectionCell, setSelectionCell] = useDeepEqualState<(Cell & ScrollBehavior) | null>(null);
+    const [selectionCell, setSelectionCell] = useDeepEqualState<(CellCoordinates & ScrollBehavior) | null>(null);
 
     // Min and max of the current selection (rectangle defined by the active cell and the selection cell), null when nothing is selected
-    const range = useMemo<Selection | null>(
+    const range = useMemo<RangeSelection | null>(
         () =>
             activeCell &&
             selectionCell && {

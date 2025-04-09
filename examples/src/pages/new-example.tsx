@@ -5,9 +5,9 @@ import { CheckboxCell } from '../components/cells/CheckboxCell';
 import { TextCell } from '../components/cells/TextCell';
 
 const columns = [
-    { id: 'active', component: CheckboxCell, title: 'Active' },
-    { id: 'firstName', title: 'First name', component: TextCell },
-    { id: 'lastName', title: 'Last name', component: TextCell }
+    { id: 'active', component: CheckboxCell, title: 'Active', columnData: {} },
+    { id: 'firstName', title: 'First name', component: TextCell, columnData: {} },
+    { id: 'lastName', title: 'Last name', component: TextCell, columnData: {} }
 ];
 
 export default function Example() {

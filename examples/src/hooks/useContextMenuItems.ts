@@ -1,14 +1,26 @@
 import * as React from 'react';
-import { Cell, ContextMenuItem, Selection, readClipboard, UseDatagridReturn } from '@basestacks/react-datagrid';
+import { CellCoordinates, readClipboard, UseDatagridReturn } from '@basestacks/react-datagrid';
+
+export type ContextMenuItem =
+    | {
+        readonly type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW' | 'COPY' | 'CUT' | 'PASTE'
+        readonly action: () => void
+    }
+    | {
+        readonly type: 'DELETE_ROWS' | 'DUPLICATE_ROWS'
+        readonly action: () => void
+        readonly fromRow: number
+        readonly toRow: number
+    }
 
 // Main hook that uses the pure functions
 export const useContextMenuItems = (datagrid: UseDatagridReturn) => {
     const { activeCell, selection, applyPasteDataToDatasheet, duplicateRows, deleteRows, insertRowAfter, cut, copy, closeContextMenu } = datagrid;
 
-    const selectionRangeRef = React.useRef<Selection>(selection.range);
+    const selectionRangeRef = React.useRef(selection.range);
     selectionRangeRef.current = selection.range;
 
-    const activeCellRef = React.useRef<Cell>(activeCell);
+    const activeCellRef = React.useRef<CellCoordinates>(activeCell);
     activeCellRef.current = activeCell;
 
     const [contextMenuItems] = React.useState<ContextMenuItem[]>(() => {

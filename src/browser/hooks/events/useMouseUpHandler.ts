@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Cell, RowData, UseDatagridCoreReturn } from '../../../core';
+import { CellCoordinates, RowData, UseDatagridCoreReturn } from '../../../core';
 import { useDocumentEventListener } from '../useDocumentEventListener';
 
 export const useMouseUpHandler = <TRow extends RowData = RowData>(datagrid: UseDatagridCoreReturn<TRow>) => {
@@ -29,8 +29,8 @@ export const useMouseUpHandler = <TRow extends RowData = RowData>(datagrid: UseD
             if (expandSelectionRowsCount > 0 && activeCell) {
                 let copyData: Array<Array<string>> = [];
 
-                const min: Cell = selection.range?.min || activeCell;
-                const max: Cell = selection.range?.max || activeCell;
+                const min: CellCoordinates = selection.range?.min || activeCell;
+                const max: CellCoordinates = selection.range?.max || activeCell;
 
                 for (let row = min.row; row <= max.row; ++row) {
                     copyData.push([]);

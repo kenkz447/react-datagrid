@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { UseDatagridReturn, useDocumentEventListener } from '../../browser';
-import { RowData, Cell } from '../../core';
+import { RowData, CellCoordinates } from '../../core';
 
 export const useContextMenu = <TRow extends RowData>(datagrid: UseDatagridReturn<TRow>) => {
     const refs = useRef(datagrid);
@@ -52,7 +52,7 @@ export const useContextMenu = <TRow extends RowData>(datagrid: UseDatagridReturn
         setContextMenu({
             x: event.clientX,
             y: event.clientY,
-            cursorIndex: cursorIndex as Cell,
+            cursorIndex: cursorIndex as CellCoordinates,
         });
 
         const {

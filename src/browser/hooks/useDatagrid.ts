@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useResizeDetector } from 'react-resize-detector';
-import { useColumnWidths, RowData, Cell, useDatagridCore, DataSheetGridProps, Column } from '../../core';
+import { useColumnWidths, RowData, CellCoordinates, useDatagridCore, DataSheetGridProps, Column } from '../../core';
 import { useDatagridScroll } from './useDatagridScroll';
 import { useDatagridCursor } from './useDatagridCursor';
 import { useCopyHandler } from './useCopy';
@@ -76,7 +76,7 @@ export function useDatagrid<TRow extends RowData>({
     const copy = useCopyHandler(coreContext);
     const cut = useCutHandler(coreContext, { copy });
 
-    const [contextMenu, setContextMenu] = useState<{ x: number, y: number, cursorIndex: Cell } | null>(null);
+    const [contextMenu, setContextMenu] = useState<{ x: number, y: number, cursorIndex: CellCoordinates } | null>(null);
 
     const closeContextMenu = useCallback(() => {
         setContextMenu(null);

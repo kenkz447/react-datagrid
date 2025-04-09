@@ -4,7 +4,7 @@ import {
     useState,
 } from 'react';
 import {
-    Cell,
+    CellCoordinates,
     DataSheetGridProps,
     ScrollBehavior,
     RowData
@@ -40,8 +40,8 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
         setExpandingSelectionFromRowIndex,
     ] = useState<number | null>(null);
     // Highlighted cell, null when not focused
-    const [activeCell, setActiveCell] = useDeepEqualState<(Cell & ScrollBehavior) | null>(null);
-    const [lastEditingCell, setLastEditingCell] = useState<Cell | null>(null);
+    const [activeCell, setActiveCell] = useDeepEqualState<(CellCoordinates & ScrollBehavior) | null>(null);
+    const [lastEditingCell, setLastEditingCell] = useState<CellCoordinates | null>(null);
 
     const propsRef = useRef(props);
     const dataRef = useRef(data);
@@ -84,7 +84,7 @@ export function useDatagridCore<TRow extends RowData>(props: DataSheetGridProps<
             ? null
             : expandSelectionRowsCount;
 
-    const isCellDisabled = useCallback((cell: Cell): boolean => {
+    const isCellDisabled = useCallback((cell: CellCoordinates): boolean => {
         const disabled = columns[cell.col + 1].disabled;
 
         return Boolean(typeof disabled === 'function'

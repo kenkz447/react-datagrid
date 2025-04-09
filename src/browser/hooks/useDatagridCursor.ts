@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Cell, RowData, UseDatagridCoreReturn } from '../../core';
+import { CellCoordinates, RowData, UseDatagridCoreReturn } from '../../core';
 import { useGetBoundingClientRect } from './useGetBoundingClientRect';
 
 interface UseDatagridCursorProps {
@@ -25,7 +25,7 @@ export const useDatagridCursor = <TRow extends RowData = RowData>(coreContext: U
     const getOuterBoundingClientRect = useGetBoundingClientRect(outerRef);
     const getInnerBoundingClientRect = useGetBoundingClientRect(innerRef);
 
-    const getCursorIndex = useRef((event: MouseEvent, force: boolean = false, includeSticky: boolean = false): Cell | null => {
+    const getCursorIndex = useRef((event: MouseEvent, force: boolean = false, includeSticky: boolean = false): CellCoordinates | null => {
         const {
             columnRights,
             columnWidths,

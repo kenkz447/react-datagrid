@@ -3,7 +3,7 @@ import {
     useRef,
 } from 'react';
 import {
-    Cell,
+    CellCoordinates,
     Operation,
     RowData,
 } from '../types';
@@ -93,8 +93,8 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
     const applyPasteDataToDatasheet = useCallback(
         async (pasteData: string[][]) => {
             if (!editing && activeCellRef.current) {
-                const min: Cell = selectionRef.current?.range?.min || activeCellRef.current;
-                const max: Cell = selectionRef.current?.range?.max || activeCellRef.current;
+                const min: CellCoordinates = selectionRef.current?.range?.min || activeCellRef.current;
+                const max: CellCoordinates = selectionRef.current?.range?.max || activeCellRef.current;
 
                 const results = await Promise.all(
                     pasteData[0].map((_, columnIndex) => {
@@ -284,8 +284,8 @@ export const useRowController = <TRow extends RowData>(props: UseRowControllerPr
                 return;
             }
 
-            const min: Cell = selectionRef.current?.range?.min || activeCellRef.current;
-            const max: Cell = selectionRef.current?.range?.max || activeCellRef.current;
+            const min: CellCoordinates = selectionRef.current?.range?.min || activeCellRef.current;
+            const max: CellCoordinates = selectionRef.current?.range?.max || activeCellRef.current;
 
             if (
                 data?.slice(min.row, max.row + 1).every((rowData, i) =>

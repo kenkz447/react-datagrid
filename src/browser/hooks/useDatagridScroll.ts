@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Cell, RowData, ScrollBehavior, UseDatagridCoreReturn } from '../../core';
+import { CellCoordinates, RowData, ScrollBehavior, UseDatagridCoreReturn } from '../../core';
 
 const BORDER_WIDTH = 1;
 
@@ -17,7 +17,7 @@ export const useDatagridScroll = <TRow extends RowData = RowData>(coreContext: U
     const refs = useRef(refsValues);
 
 
-    const scrollTo = useRef((cell: Cell & ScrollBehavior) => {
+    const scrollTo = useRef((cell: CellCoordinates & ScrollBehavior) => {
         const { height, width, columnRights, columnWidths, outerRef, hasStickyRightColumn, headerRowHeight, getRowSize } = refs.current;
 
         if (!height || !width || cell.doNotScrollY) {

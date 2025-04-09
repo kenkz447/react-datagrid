@@ -1,6 +1,9 @@
-import React, { RefObject } from 'react';
+import React from 'react';
 
-export interface Cell {
+export type RowData = Record<string, any>;
+export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
+
+export interface CellCoordinates {
   readonly col: number
   readonly row: number
 }
@@ -10,12 +13,10 @@ export interface ScrollBehavior {
   readonly doNotScrollY?: boolean
 }
 
-export interface Selection {
-  readonly min: Cell;
-  readonly max: Cell
+export interface RangeSelection {
+  readonly min: CellCoordinates;
+  readonly max: CellCoordinates
 }
-
-export type RowData = Record<string, any>;
 
 export interface RowSize {
   readonly height: number;
@@ -29,13 +30,9 @@ export interface CellProps<TValue> {
   readonly disabled: boolean;
 }
 
-export type CellClassName<TValue> = string | ((opt: { rowData: TValue; rowIndex: number; columnId?: string }) => string | undefined);
-
 export interface Column<TValue, C, PasteValue> {
   readonly id?: string
   readonly title?: React.ReactNode
-  /** @deprecated */
-  readonly headerClassName?: string | ((opt: { columnId: string }) => string | undefined)
   /** @deprecated Use `basis`, `grow`, and `shrink` instead */
   readonly width?: string | number
   readonly basis?: number
@@ -47,7 +44,6 @@ export interface Column<TValue, C, PasteValue> {
   readonly columnData?: C
   readonly disableKeys?: boolean
   readonly disabled?: boolean | ((opt: { rowData: TValue; rowIndex: number }) => boolean)
-  readonly cellClassName?: CellClassName<TValue>
   readonly keepFocus?: boolean
   readonly deleteValue?: (opt: { rowData: TValue; rowIndex: number }) => TValue
   readonly copyValue?: (opt: { rowData: TValue; rowIndex: number }) => number | string | null
@@ -56,18 +52,8 @@ export interface Column<TValue, C, PasteValue> {
   readonly isCellEmpty?: (opt: { rowData: TValue; rowIndex: number }) => boolean
 }
 
-export interface SelectionContextType {
-  readonly outerRef: RefObject<HTMLElement>;
-  readonly columnRights?: number[]
-  readonly columnWidths?: number[]
-  readonly viewWidth?: number
-  readonly viewHeight?: number
-  readonly contentWidth?: number
-}
-
 export type SimpleColumn<T, C> = Partial<
-  Pick<
-    Column<T, C, string>,
+  Pick<Column<T, C, string>,
     | 'title'
     | 'maxWidth'
     | 'minWidth'
@@ -75,36 +61,14 @@ export type SimpleColumn<T, C> = Partial<
     | 'grow'
     | 'shrink'
     | 'component'
-    | 'columnData'
-  >
+    | 'columnData'>
 >
-
-export type ContextMenuItem =
-  | {
-    readonly type: 'INSERT_ROW_BELLOW' | 'DELETE_ROW' | 'DUPLICATE_ROW' | 'COPY' | 'CUT' | 'PASTE'
-    readonly action: () => void
-  }
-  | {
-    readonly type: 'DELETE_ROWS' | 'DUPLICATE_ROWS'
-    readonly action: () => void
-    readonly fromRow: number
-    readonly toRow: number
-  }
-
-export interface ContextMenuComponentProps {
-  readonly clientX: number
-  readonly clientY: number
-  readonly cursorIndex: Cell
-  readonly close: () => void
-}
 
 export interface Operation {
   readonly type: 'UPDATE' | 'DELETE' | 'CREATE'
   readonly fromRowIndex: number
   readonly toRowIndex: number
 }
-
-export type RowKey<TRow extends RowData> = keyof TRow | ((opts: { rowData: TRow; rowIndex: number }) => TRow[keyof TRow])
 
 export interface DataSheetGridProps<TRow extends RowData = RowData> {
   readonly data?: TRow[]
@@ -129,13 +93,6 @@ export interface DataSheetGridProps<TRow extends RowData = RowData> {
   readonly onSelectionChange?: (opts: { selection: SelectionWithId | null }) => void
 }
 
-interface CellWithIdInput {
-  readonly col: number | string
-  readonly row: number
-}
-
-type SelectionWithIdInput = { readonly min: CellWithIdInput; readonly max: CellWithIdInput }
-
 export interface CellWithId {
   readonly colId?: string
   readonly col: number
@@ -143,13 +100,6 @@ export interface CellWithId {
 }
 
 export interface SelectionWithId { readonly min: CellWithId; readonly max: CellWithId }
-
-export interface DataSheetGridRef {
-  readonly activeCell: CellWithId | null
-  readonly selection: SelectionWithId | null
-  readonly setActiveCell: (activeCell: CellWithIdInput | null) => void
-  readonly setSelection: (selection: SelectionWithIdInput | null) => void
-}
 
 export interface SelectionMode {
   readonly columns: boolean;

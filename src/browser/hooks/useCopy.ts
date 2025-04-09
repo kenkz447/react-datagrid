@@ -1,19 +1,19 @@
 import { useCallback, useRef } from 'react';
-import { Cell, RowData, UseDatagridCoreReturn } from '../../core';
+import { CellCoordinates, RowData, UseDatagridCoreReturn } from '../../core';
 import { formatCopyData } from '../utils/copyPasting';
 import { writeToClipboard } from '../utils/clipboard';
 import { UseSelectionReturn } from '../../core/hooks/useSelection';
 
 // Generate 2D array of data to be copied
 export const generateCopyData = (
-    activeCell: Cell,
+    activeCell: CellCoordinates,
     selectionRange: UseSelectionReturn['range'] | null,
     columns: any[],
     data: any[]
 ): Array<Array<number | string | null>> => {
     const copyData: Array<Array<number | string | null>> = [];
-    const min: Cell = selectionRange?.min || activeCell;
-    const max: Cell = selectionRange?.max || activeCell;
+    const min: CellCoordinates = selectionRange?.min || activeCell;
+    const max: CellCoordinates = selectionRange?.max || activeCell;
 
     for (let row = min.row; row <= max.row; ++row) {
         copyData.push([]);
